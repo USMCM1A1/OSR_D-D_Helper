@@ -29,6 +29,7 @@ DEFAULT_DB = PROJECT_ROOT / "saves" / "session.db"
 RENDER_DIR = PROJECT_ROOT / "render_output"
 DM_HTML = RENDER_DIR / "dm.html"
 PLAYER_HTML = RENDER_DIR / "player.html"
+DEFAULT_EDITOR_PORT = 8765
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -67,10 +68,12 @@ def _ensure_render_output_exists() -> None:
     RENDER_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def _open_browser_tabs() -> None:
-    """Open both DM and Player HTML pages in the default browser."""
+def _open_browser_tabs(editor_url: str | None = None) -> None:
+    """Open the DM map, Player map, and (optionally) editor browser tabs."""
     for path in (DM_HTML, PLAYER_HTML):
         webbrowser.open(path.resolve().as_uri(), new=2)
+    if editor_url:
+        webbrowser.open(editor_url, new=2)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -102,13 +105,40 @@ def main(argv: list[str] | None = None) -> int:
 
     # Defer pygame import so --list works without SDL.
     from renderer import run
+    import editor_server
+
+    # Spin the editor HTTP server in a daemon thread. Bound to localhost only.
+    server, _thread = editor_server.start_editor_server(
+        dungeon_path, port=DEFAULT_EDITOR_PORT,
+    )
+    bound_port = server.server_address[1]
+    editor_url = f"http://127.0.0.1:{bound_port}/"
+    print(f"Room editor: {editor_url}")
+
+    def open_tabs() -> None:
+        _open_browser_tabs(editor_url=editor_url)
+
+    def open_player_tab() -> None:
+        webbrowser.open(PLAYER_HTML.resolve().as_uri(), new=2)
+
+    def open_editor_tab() -> None:
+        webbrowser.open(editor_url, new=2)
 
     if not args.no_open:
-        _open_browser_tabs()
+        open_tabs()
 
     # The renderer snapshots PNGs to render_output/ on every state change;
     # the HTML pages auto-refresh from those files via a 2 s JS poll.
-    run(session, dungeon_path=dungeon_path, on_open_browser=_open_browser_tabs)
+    try:
+        run(
+            session,
+            dungeon_path=dungeon_path,
+            on_open_browser=open_tabs,
+            on_open_editor=open_editor_tab,
+            on_open_player=open_player_tab,
+        )
+    finally:
+        server.shutdown()
     return 0
 
 

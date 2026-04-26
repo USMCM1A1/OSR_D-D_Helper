@@ -25,6 +25,8 @@ Public API:
 
 from __future__ import annotations
 
+import os
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -36,6 +38,10 @@ from PIL import Image, ImageDraw
 import dungeon as dungeon_mod
 from dungeon import Dungeon, ImageRegion, Level, Room
 from session import Session
+
+
+# How often to check the dungeon JSON mtime for external edits.
+MTIME_POLL_SECONDS = 1.0
 
 
 # --- Aesthetic constants ----------------------------------------------------
@@ -274,6 +280,28 @@ class MapView:
         # full Room (so undoing a delete restores name/state/tags/region).
         self._undo_stack: list[tuple[str, int, Room, int]] = []
 
+        # Track the dungeon JSON's mtime so we can detect external edits
+        # (the browser editor server writes the same file). _last_self_mtime
+        # is updated after every self-write so we don't react to our own
+        # dumps; _last_poll_time throttles the os.stat call to ~1 Hz.
+        self._last_self_mtime: float = 0.0
+        self._last_poll_time: float = 0.0
+        if dungeon_path is not None and Path(dungeon_path).exists():
+            self._last_self_mtime = Path(dungeon_path).stat().st_mtime
+
+        # Options menu (toggled with O). Hit-test rects are recomputed each
+        # frame in _draw_options_menu so resizing the window stays in sync.
+        self._options_open: bool = False
+        self._options_button_rects: list[tuple[pygame.Rect,
+                                               Callable[[], None],
+                                               bool]] = []
+        # Filled in by set_menu_actions(); see run().
+        self._action_open_editor: Callable[[], None] | None = None
+        self._action_open_player: Callable[[], None] | None = None
+        self._action_ascend: Callable[[], None] | None = None
+        self._action_descend: Callable[[], None] | None = None
+        self._action_quit: Callable[[], None] | None = None
+
         self.help_font = pygame.font.SysFont("monospace,courier", 12)
         self.title_font = pygame.font.SysFont("georgia,serif", 18, bold=True)
 
@@ -365,6 +393,13 @@ class MapView:
     # -- Event loop ----------------------------------------------------------
 
     def handle_event(self, event: pygame.event.Event) -> None:
+        # Options menu intercepts mouse clicks while open so the underlying
+        # map doesn't receive them (otherwise clicking a menu button would
+        # also try to reveal a room behind it).
+        if self._options_open and event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                if self._handle_options_click(event.pos):
+                    return
         if self._annot_mode:
             self._handle_annotation_event(event)
             return
@@ -400,6 +435,12 @@ class MapView:
     # -- Drawing -------------------------------------------------------------
 
     def draw(self, surface: pygame.Surface) -> None:
+        # Cheap once-per-second poll for external edits to the dungeon JSON
+        # (the browser editor server writes via dungeon.dump). When detected
+        # we merge metadata fields back onto the in-memory rooms without
+        # disturbing reveal state or annotated regions.
+        self._poll_dungeon_mtime()
+
         surface.fill(BG_OUTSIDE)
         if self.image is None:
             return
@@ -413,6 +454,8 @@ class MapView:
             self._draw_room_markers(surface)
             self._draw_party_marker(surface)
         self._draw_chrome(surface)
+        # Options panel renders last so it sits above everything else.
+        self._draw_options_menu(surface)
 
     def _draw_image(self, surface: pygame.Surface, fog: pygame.Surface | None) -> None:
         """Composite image (+ optional fog) at the camera's zoom."""
@@ -545,8 +588,8 @@ class MapView:
             msg = ("A: exit · drag: rect · P: polygon · click+Del: remove · "
                    "Enter: close poly · ⌘Z: undo · ⌘+/⌘-: zoom · ⌘0: fit · Esc: cancel/exit")
         else:
-            msg = ("click room: cycle state · middle-drag: pan · scroll or ⌘+/⌘-: zoom · "
-                   "⌘0: fit · A: annotate · V: open browser · Esc: quit")
+            msg = ("O: options menu · click room: cycle state · middle-drag: pan · "
+                   "scroll or ⌘+/⌘-: zoom · ⌘0: fit · Esc: quit")
         help_text = self.help_font.render(msg, True, HELP_INK)
         surface.blit(help_text, (8, surface.get_height() - help_text.get_height() - 6))
 
@@ -766,6 +809,181 @@ class MapView:
         if self._dungeon_path is None:
             return
         dungeon_mod.dump(self.dungeon, self._dungeon_path)
+        # Record our own write so the mtime poller doesn't react to it.
+        try:
+            self._last_self_mtime = Path(self._dungeon_path).stat().st_mtime
+        except OSError:
+            pass
+
+    # -- Options menu --------------------------------------------------------
+
+    def set_menu_actions(
+        self,
+        *,
+        open_editor: Callable[[], None] | None = None,
+        open_player: Callable[[], None] | None = None,
+        ascend: Callable[[], None] | None = None,
+        descend: Callable[[], None] | None = None,
+        quit_app: Callable[[], None] | None = None,
+    ) -> None:
+        """Wire the actions the options menu (and matching keyboard
+        shortcuts) can invoke. Called from run() so callbacks have closure
+        over session + view + the running flag."""
+        self._action_open_editor = open_editor
+        self._action_open_player = open_player
+        self._action_ascend = ascend
+        self._action_descend = descend
+        self._action_quit = quit_app
+
+    def toggle_options_menu(self) -> None:
+        self._options_open = not self._options_open
+
+    def _options_items(self) -> list[tuple[str, str, Callable[[], None] | None, bool]]:
+        """Return the menu rows: (label, key_hint, action, enabled)."""
+        return [
+            ("Annotation mode", "A",
+             self.toggle_annotation_mode, True),
+            ("Open Room Editor", "E",
+             self._action_open_editor,
+             self._action_open_editor is not None),
+            ("Open Player Map", "M",
+             self._action_open_player,
+             self._action_open_player is not None),
+            ("Ascend Level", "⌘↑",
+             self._action_ascend,
+             self.session.can_ascend() and self._action_ascend is not None),
+            ("Descend Level", "⌘↓",
+             self._action_descend,
+             self.session.can_descend() and self._action_descend is not None),
+            ("Quit", "Esc",
+             self._action_quit,
+             self._action_quit is not None),
+        ]
+
+    def _draw_options_menu(self, surface: pygame.Surface) -> None:
+        """Draw the modal options panel. Recomputes button rects so the
+        click handler stays accurate after window resizes."""
+        self._options_button_rects = []
+        if not self._options_open:
+            return
+
+        # Dim backdrop so the map fades behind the menu.
+        backdrop = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+        backdrop.fill((0, 0, 0, 130))
+        surface.blit(backdrop, (0, 0))
+
+        items = self._options_items()
+        panel_w = 380
+        btn_h = 46
+        btn_gap = 8
+        title_h = 56
+        panel_pad = 22
+        panel_h = title_h + panel_pad + len(items) * (btn_h + btn_gap) + panel_pad
+        panel_x = (surface.get_width() - panel_w) // 2
+        panel_y = max(40, (surface.get_height() - panel_h) // 2)
+
+        # Panel background.
+        panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
+        panel_bg = pygame.Surface(panel_rect.size, pygame.SRCALPHA)
+        panel_bg.fill((244, 228, 193, 250))
+        surface.blit(panel_bg, panel_rect.topleft)
+        pygame.draw.rect(surface, (26, 26, 26), panel_rect, 3,
+                         border_radius=6)
+
+        # Title bar.
+        title = self.title_font.render("OPTIONS", True, (26, 26, 26))
+        surface.blit(title, (panel_x + (panel_w - title.get_width()) // 2,
+                             panel_y + 16))
+
+        # Buttons.
+        btn_x = panel_x + 20
+        btn_w = panel_w - 40
+        btn_y = panel_y + title_h + panel_pad
+        for label, key_hint, action, enabled in items:
+            rect = pygame.Rect(btn_x, btn_y, btn_w, btn_h)
+            if enabled:
+                fill = (252, 252, 250)
+                edge = (26, 26, 26)
+                ink = (26, 26, 26)
+            else:
+                fill = (220, 215, 200)
+                edge = (130, 110, 80)
+                ink = (130, 110, 80)
+            pygame.draw.rect(surface, fill, rect, border_radius=4)
+            pygame.draw.rect(surface, edge, rect, 2, border_radius=4)
+            label_surf = self.title_font.render(label, True, ink)
+            key_surf = self.help_font.render(key_hint, True, ink)
+            surface.blit(label_surf, (rect.x + 16,
+                                      rect.y + (btn_h - label_surf.get_height()) // 2))
+            surface.blit(key_surf, (rect.right - 16 - key_surf.get_width(),
+                                    rect.y + (btn_h - key_surf.get_height()) // 2))
+            self._options_button_rects.append((rect, action, enabled))
+            btn_y += btn_h + btn_gap
+
+    def _handle_options_click(self, pos: tuple[int, int]) -> bool:
+        """Return True if the click was consumed by the options menu."""
+        if not self._options_open:
+            return False
+        for rect, action, enabled in self._options_button_rects:
+            if rect.collidepoint(pos):
+                if enabled and action is not None:
+                    self._options_open = False
+                    action()
+                return True
+        # Click outside any button (and the menu is open) → close.
+        self._options_open = False
+        return True
+
+    # -- External-edit detection (mtime poll → metadata merge) ---------------
+
+    def _poll_dungeon_mtime(self) -> None:
+        """If the dungeon JSON has been modified externally since our last
+        write, re-parse it and merge metadata fields onto the in-memory
+        Rooms. Cheap (≤ 1 Hz; an os.stat call)."""
+        if self._dungeon_path is None:
+            return
+        now = time.monotonic()
+        if now - self._last_poll_time < MTIME_POLL_SECONDS:
+            return
+        self._last_poll_time = now
+        try:
+            mtime = os.stat(self._dungeon_path).st_mtime
+        except OSError:
+            return
+        if mtime <= self._last_self_mtime:
+            return
+        self._reload_dungeon_metadata()
+        self._last_self_mtime = mtime
+
+    def _reload_dungeon_metadata(self) -> None:
+        """Re-parse the JSON and copy *metadata* fields onto each in-memory
+        Room. Preserves `state` (runtime fog reveal) and `image_region`
+        (annotated geometry) — those flow through pygame, not the editor."""
+        try:
+            fresh = dungeon_mod.load(self._dungeon_path)
+        except (FileNotFoundError, dungeon_mod.DungeonValidationError):
+            return
+        for fresh_lv in fresh.levels:
+            live_lv = self.dungeon.levels_by_number.get(fresh_lv.level_number)
+            if live_lv is None:
+                continue
+            for fresh_r in fresh_lv.rooms:
+                live_r = live_lv.rooms_by_id.get(fresh_r.id)
+                if live_r is None:
+                    continue
+                live_r.name = fresh_r.name
+                live_r.tags = fresh_r.tags
+                live_r.reaction_required = fresh_r.reaction_required
+                live_r.notes = fresh_r.notes
+                live_r.encounter_ref = fresh_r.encounter_ref
+                live_r.treasure_tier = fresh_r.treasure_tier
+                live_r.box_text = fresh_r.box_text
+                live_r.encounter_text = fresh_r.encounter_text
+                live_r.treasure_text = fresh_r.treasure_text
+                # Deliberately NOT copied: state, image_region.
+        self._invalidate_fog()
+        if self._on_change is not None:
+            self._on_change()
 
     # -- Snapshots (for browser auto-refresh) --------------------------------
 
@@ -792,8 +1010,12 @@ def run(
     window_size: tuple[int, int] = (1280, 800),
     on_change: Callable[[], None] | None = None,
     on_open_browser: Callable[[], None] | None = None,
+    on_open_editor: Callable[[], None] | None = None,
+    on_open_player: Callable[[], None] | None = None,
 ) -> None:
-    """Run the pygame event loop. on_change fires after any state change."""
+    """Run the pygame event loop. on_change fires after any state change.
+    The on_open_* hooks are individual tab openers used by the options
+    menu; on_open_browser is the legacy "open all tabs" shortcut for V."""
     pygame.init()
     pygame.font.init()
     surface = pygame.display.set_mode(window_size, pygame.RESIZABLE)
@@ -808,12 +1030,38 @@ def run(
     view = MapView(session, dungeon_path=dungeon_path, on_change=_on_change)
     view.snapshot_to_disk()
 
+    # Closures for the options-menu actions. We keep them here so they can
+    # close over `running` (for quit) and the level-switch sequence (which
+    # touches both session and view).
+    running = True
+
+    def _ascend() -> None:
+        if session.can_ascend():
+            session.switch_level(-1)
+            view.switch_to_current_level()
+
+    def _descend() -> None:
+        if session.can_descend():
+            session.switch_level(+1)
+            view.switch_to_current_level()
+
+    def _quit() -> None:
+        nonlocal running
+        running = False
+
+    view.set_menu_actions(
+        open_editor=on_open_editor,
+        open_player=on_open_player,
+        ascend=_ascend,
+        descend=_descend,
+        quit_app=_quit,
+    )
+
     # On macOS the conventional shortcut modifier is Cmd, which pygame
     # reports as KMOD_META; on Linux/Windows it's Ctrl (KMOD_CTRL). Accept
     # either so the same shortcut sheet works cross-platform.
     cmd_mask = pygame.KMOD_CTRL | pygame.KMOD_META
 
-    running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -821,7 +1069,9 @@ def run(
             elif event.type == pygame.KEYDOWN:
                 cmd = bool(event.mod & cmd_mask)
                 if event.key == pygame.K_ESCAPE:
-                    if view._annot_mode and (
+                    if view._options_open:
+                        view._options_open = False
+                    elif view._annot_mode and (
                         view._annot_drag_start_world is not None
                         or view._annot_polygon_points
                     ):
@@ -832,6 +1082,14 @@ def run(
                         running = False
                 elif event.key == pygame.K_v and on_open_browser is not None:
                     on_open_browser()
+                elif event.key == pygame.K_o and not cmd and not view._annot_mode:
+                    view.toggle_options_menu()
+                elif event.key == pygame.K_e and not cmd and not view._annot_mode:
+                    if on_open_editor is not None:
+                        on_open_editor()
+                elif event.key == pygame.K_m and not cmd and not view._annot_mode:
+                    if on_open_player is not None:
+                        on_open_player()
                 elif event.key == pygame.K_a and not cmd:
                     view.toggle_annotation_mode()
                 elif cmd and event.key == pygame.K_z:
@@ -856,12 +1114,10 @@ def run(
                         view._commit_polygon()
                 elif view._annot_mode and event.key in (pygame.K_DELETE, pygame.K_BACKSPACE):
                     view._delete_selected_room()
-                elif cmd and event.key == pygame.K_UP and session.can_ascend():
-                    session.switch_level(-1)
-                    view.switch_to_current_level()
-                elif cmd and event.key == pygame.K_DOWN and session.can_descend():
-                    session.switch_level(+1)
-                    view.switch_to_current_level()
+                elif cmd and event.key == pygame.K_UP:
+                    _ascend()
+                elif cmd and event.key == pygame.K_DOWN:
+                    _descend()
                 else:
                     view.handle_event(event)
             else:

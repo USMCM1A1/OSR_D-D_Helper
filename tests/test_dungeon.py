@@ -285,6 +285,32 @@ class TestPartyValidation:
 # --- Loader-level errors -----------------------------------------------------
 
 
+class TestNarrativeFields:
+    """box_text / encounter_text / treasure_text — the per-room narrative
+    fields edited via the browser editor. Must round-trip through dump/load
+    and default to '' when absent (legacy JSON)."""
+
+    def test_defaults_are_empty(self, base: dict) -> None:
+        d = _load_dict(base)
+        room = d.get_level(1).rooms[0]
+        assert room.box_text == ""
+        assert room.encounter_text == ""
+        assert room.treasure_text == ""
+
+    def test_round_trip(self, base: dict, tmp_path: Path) -> None:
+        _level0(base)["rooms"][0]["box_text"] = "Read me aloud."
+        _level0(base)["rooms"][0]["encounter_text"] = "1 ghoul"
+        _level0(base)["rooms"][0]["treasure_text"] = "200 gp"
+        d = _load_dict(base)
+        out = tmp_path / "rt.json"
+        dungeon.dump(d, out)
+        d2 = dungeon.load(out)
+        room = d2.get_level(1).rooms[0]
+        assert room.box_text == "Read me aloud."
+        assert room.encounter_text == "1 ghoul"
+        assert room.treasure_text == "200 gp"
+
+
 class TestLoaderErrors:
     def test_missing_file_raises(self, tmp_path: Path) -> None:
         with pytest.raises(FileNotFoundError):

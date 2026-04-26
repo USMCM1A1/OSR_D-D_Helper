@@ -285,6 +285,52 @@ class TestMapView:
         assert len(view.level.rooms) == before - 1
 
 
+class TestExternalReload:
+    """The renderer polls the dungeon JSON's mtime and merges metadata
+    fields when an external process (the editor server) edits the file."""
+
+    def test_reload_updates_metadata(self, session, torrel):
+        view = MapView(session, dungeon_path=torrel)
+        view._add_room_with_region(
+            ImageRegion(kind="rect", rect=(10, 10, 20, 20))
+        )
+        rid = view.level.rooms[-1].id
+        view.cycle_room_state(rid)
+        assert view.level.rooms_by_id[rid].state == "known"
+
+        # Simulate an external edit (the editor server pattern):
+        d = dungeon_mod.load(torrel)
+        d.get_level(1).rooms_by_id[rid].box_text = "External edit applied."
+        dungeon_mod.dump(d, torrel)
+
+        view._reload_dungeon_metadata()
+        live = view.level.rooms_by_id[rid]
+        assert live.box_text == "External edit applied."
+        # Reveal state preserved.
+        assert live.state == "known"
+        # Region preserved (geometry shouldn't flow through the metadata path).
+        assert live.image_region is not None
+        assert live.image_region.kind == "rect"
+
+    def test_reload_does_not_reset_state_for_other_rooms(self, session, torrel):
+        view = MapView(session, dungeon_path=torrel)
+        view._add_room_with_region(
+            ImageRegion(kind="rect", rect=(10, 10, 20, 20))
+        )
+        view._add_room_with_region(
+            ImageRegion(kind="rect", rect=(50, 50, 20, 20))
+        )
+        for r in view.level.rooms:
+            view.cycle_room_state(r.id)
+        # External edit on one room.
+        d = dungeon_mod.load(torrel)
+        d.get_level(1).rooms[0].notes = "edited"
+        dungeon_mod.dump(d, torrel)
+        view._reload_dungeon_metadata()
+        for r in view.level.rooms:
+            assert r.state == "known"
+
+
 class TestUndo:
     def test_undo_add_removes_added_room(self, session, tmp_path):
         view = MapView(session, dungeon_path=tmp_path / "annotated.json")

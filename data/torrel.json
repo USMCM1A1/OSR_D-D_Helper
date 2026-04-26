@@ -53,7 +53,7 @@
       "rooms": [
         {
           "id": "R01",
-          "name": "R01",
+          "name": "Entrance",
           "state": "unexplored",
           "tags": [
             "empty"
@@ -62,6 +62,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "An entrance",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 5384,
@@ -72,7 +75,7 @@
         },
         {
           "id": "R02",
-          "name": "R02",
+          "name": "Guard Room",
           "state": "unexplored",
           "tags": [
             "empty"
@@ -81,6 +84,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 4193,
@@ -100,6 +106,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 4372,
@@ -119,6 +128,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 2436,
@@ -138,6 +150,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 1334,
@@ -157,6 +172,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 2473,
@@ -176,6 +194,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 3851,
@@ -195,6 +216,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 3248,
@@ -214,6 +238,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 1640,
@@ -233,6 +260,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 300,
@@ -252,6 +282,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 769,
@@ -271,6 +304,9 @@
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
           "image_region": {
             "kind": "rect",
             "x": 4588,

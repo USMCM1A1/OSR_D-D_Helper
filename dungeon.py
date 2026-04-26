@@ -102,6 +102,11 @@ class Room:
     encounter_ref: str | None = None
     treasure_tier: str | None = None
     image_region: ImageRegion | None = None
+    # Free-form narrative content edited via the browser-tab room editor.
+    # All default to "" so legacy JSON without these keys still loads.
+    box_text: str = ""             # read aloud to players
+    encounter_text: str = ""       # encounter / monsters / tactics
+    treasure_text: str = ""        # treasure / loot details
 
 
 @dataclass(frozen=True)
@@ -258,6 +263,9 @@ def _room_to_dict(r: Room) -> dict:
         "notes": r.notes,
         "encounter_ref": r.encounter_ref,
         "treasure_tier": r.treasure_tier,
+        "box_text": r.box_text,
+        "encounter_text": r.encounter_text,
+        "treasure_text": r.treasure_text,
     }
     if r.image_region is not None:
         out["image_region"] = r.image_region.to_dict()
@@ -474,6 +482,9 @@ def _parse_rooms(raw: Any, prefix: str, source: str) -> tuple[Room, ...]:
             encounter_ref=r.get("encounter_ref"),
             treasure_tier=r.get("treasure_tier"),
             image_region=region,
+            box_text=str(r.get("box_text", "")),
+            encounter_text=str(r.get("encounter_text", "")),
+            treasure_text=str(r.get("treasure_text", "")),
         ))
     return tuple(rooms)
 
