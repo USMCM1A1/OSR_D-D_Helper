@@ -1,0 +1,106 @@
+Turn   1 (0h10m) — Elapsed: 0h10m
+Turn   1 (0h10m) — WM Check: rolled 4 — No encounter
+Turn   2 (0h20m) — Elapsed: 0h20m
+Turn   2 (0h20m) — WM Check: rolled 1 — No encounter
+Turn   3 (0h30m) — Elapsed: 0h30m
+Turn   3 (0h30m) — WM Check: rolled 9 — No encounter
+Turn   4 (0h40m) — Elapsed: 0h40m
+Turn   4 (0h40m) — Torch #1: 2 turns remaining ⚠
+Turn   4 (0h40m) — Torch #2: 2 turns remaining ⚠
+Turn   4 (0h40m) — WM Check: rolled 8 — No encounter
+Turn   5 (0h50m) — Elapsed: 0h50m
+Turn   5 (0h50m) — Torch #1: 1 turns remaining ⚠
+Turn   5 (0h50m) — Torch #2: 1 turns remaining ⚠
+Turn   5 (0h50m) — WM Check: rolled 8 — No encounter
+Turn   6 (1h00m) — Elapsed: 1h00m
+Turn   6 (1h00m) — Torch #1: EXTINGUISHED
+Turn   6 (1h00m) — Torch #2: EXTINGUISHED
+Turn   6 (1h00m) — WM Check: rolled 5 — No encounter
+Turn   7 (1h10m) — Elapsed: 1h10m
+Turn   7 (1h10m) — WM Check: rolled 4 — No encounter
+Turn   8 (1h20m) — Elapsed: 1h20m
+Turn   8 (1h20m) — WM Check: rolled 18 — ENCOUNTER → 2d6 Skeletons
+Turn   9 (1h30m) — Elapsed: 1h30m
+Turn   9 (1h30m) — WM Check: rolled 19 — ENCOUNTER → Gelatinous Cube
+Turn  10 (1h40m) — Elapsed: 1h40m
+Turn  10 (1h40m) — WM Check: rolled 2 — No encounter
+Turn  11 (1h50m) — Elapsed: 1h50m
+Turn  11 (1h50m) — WM Check: rolled 1 — No encounter
+Turn  12 (2h00m) — Elapsed: 2h00m
+Turn  12 (2h00m) — WM Check: rolled 3 — No encounter
+Turn  13 (2h10m) — Elapsed: 2h10m
+Turn  13 (2h10m) — WM Check: rolled 7 — No encounter
+Turn  14 (2h20m) — Elapsed: 2h20m
+Turn  14 (2h20m) — WM Check: rolled 8 — No encounter
+Turn  15 (2h30m) — Elapsed: 2h30m
+Turn  15 (2h30m) — WM Check: rolled 17 — No encounter
+Turn  16 (2h40m) — Elapsed: 2h40m
+Turn  16 (2h40m) — WM Check: rolled 20 — ENCOUNTER → 2d6 Skeletons
+Turn  17 (2h50m) — Elapsed: 2h50m
+Turn  17 (2h50m) — WM Check: rolled 18 — ENCOUNTER → 1d4 Zombies
+Turn  18 (3h00m) — Elapsed: 3h00m
+Turn  18 (3h00m) — WM Check: rolled 18 — ENCOUNTER → Gelatinous Cube
+Turn  19 (3h10m) — Elapsed: 3h10m
+Turn  19 (3h10m) — WM Check: rolled 8 — No encounter
+Turn  20 (3h20m) — Elapsed: 3h20m
+Turn  20 (3h20m) — WM Check: rolled 15 — No encounter
+Turn  21 (3h30m) — Elapsed: 3h30m
+Turn  21 (3h30m) — WM Check: rolled 19 — ENCOUNTER → Giant Spider
+Turn  22 (3h40m) — Elapsed: 3h40m
+Turn  22 (3h40m) — WM Check: rolled 1 — No encounter
+Turn  23 (3h50m) — Elapsed: 3h50m
+Turn  23 (3h50m) — WM Check: rolled 6 — No encounter
+Turn  24 (4h00m) — Elapsed: 4h00m
+Turn  24 (4h00m) — WM Check: rolled 14 — No encounter
+Turn  25 (4h10m) — Elapsed: 4h10m
+Turn  25 (4h10m) — WM Check: rolled 11 — No encounter
+Turn  26 (4h20m) — Elapsed: 4h20m
+Turn  26 (4h20m) — WM Check: rolled 9 — No encounter
+Turn  27 (4h30m) — Elapsed: 4h30m
+Turn  27 (4h30m) — WM Check: rolled 5 — No encounter
+Turn  28 (4h40m) — Elapsed: 4h40m
+Turn  28 (4h40m) — WM Check: rolled 7 — No encounter
+Turn  29 (4h50m) — Elapsed: 4h50m
+Turn  29 (4h50m) — WM Check: rolled 11 — No encounter
+Turn  30 (5h00m) — Elapsed: 5h00m
+Turn  30 (5h00m) — WM Check: rolled 4 — No encounter
+Turn  31 (5h10m) — Elapsed: 5h10m
+Turn  31 (5h10m) — WM Check: rolled 3 — No encounter
+Turn  32 (5h20m) — Elapsed: 5h20m
+Turn  32 (5h20m) — WM Check: rolled 13 — No encounter
+Turn  33 (5h30m) — Elapsed: 5h30m
+Turn  33 (5h30m) — WM Check: rolled 4 — No encounter
+Turn  34 (5h40m) — Elapsed: 5h40m
+Turn  34 (5h40m) — WM Check: rolled 12 — No encounter
+Turn  35 (5h50m) — Elapsed: 5h50m
+Turn  35 (5h50m) — WM Check: rolled 12 — No encounter
+Turn  36 (6h00m) — Elapsed: 6h00m
+Turn  36 (6h00m) — WM Check: rolled 20 — ENCOUNTER → Giant Spider
+Turn  37 (6h10m) — Elapsed: 6h10m
+Turn  37 (6h10m) — WM Check: rolled 2 — No encounter
+Turn  38 (6h20m) — Elapsed: 6h20m
+Turn  38 (6h20m) — WM Check: rolled 15 — No encounter
+Turn  39 (6h30m) — Elapsed: 6h30m
+Turn  39 (6h30m) — WM Check: rolled 18 — ENCOUNTER → 2d6 Skeletons
+Turn  40 (6h40m) — Elapsed: 6h40m
+Turn  40 (6h40m) — WM Check: rolled 13 — No encounter
+Turn  41 (6h50m) — Elapsed: 6h50m
+Turn  41 (6h50m) — WM Check: rolled 3 — No encounter
+Turn  42 (7h00m) — Elapsed: 7h00m
+Turn  42 (7h00m) — WM Check: rolled 18 — ENCOUNTER → Giant Spider
+Turn  43 (7h10m) — Elapsed: 7h10m
+Turn  43 (7h10m) — WM Check: rolled 20 — ENCOUNTER → Giant Spider
+Turn  44 (7h20m) — Elapsed: 7h20m
+Turn  44 (7h20m) — WM Check: rolled 19 — ENCOUNTER → 1d4 Zombies
+Turn  45 (7h30m) — Elapsed: 7h30m
+Turn  45 (7h30m) — WM Check: rolled 3 — No encounter
+Turn  46 (7h40m) — Elapsed: 7h40m
+Turn  46 (7h40m) — WM Check: rolled 2 — No encounter
+Turn  47 (7h50m) — Elapsed: 7h50m
+Turn  47 (7h50m) — WM Check: rolled 8 — No encounter
+Turn  48 (8h00m) — Elapsed: 8h00m
+Turn  48 (8h00m) — WM Check: rolled 10 — No encounter
+Turn  49 (8h10m) — Elapsed: 8h10m
+Turn  49 (8h10m) — WM Check: rolled 3 — No encounter
+Turn  50 (8h20m) — Elapsed: 8h20m
+Turn  50 (8h20m) — WM Check: rolled 8 — No encounter

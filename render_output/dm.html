@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OSR Dungeon — DM Map</title>
+<style>
+  html, body { margin: 0; height: 100vh; background: #1a1a1a; }
+  #map { width: 100vw; height: 100vh; object-fit: contain; display: block; }
+  #status {
+    position: fixed; bottom: 8px; right: 12px;
+    font: 12px Georgia, serif; color: #f4e4c1;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 4px 8px; border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+<img id="map" src="dm_map.png" alt="DM map">
+<div id="status">DM Map · auto-refresh 2s</div>
+<script>
+  setInterval(() => {
+    const img = document.getElementById('map');
+    img.src = 'dm_map.png?t=' + Date.now();
+  }, 2000);
+</script>
+</body>
+</html>

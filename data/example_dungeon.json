@@ -1,0 +1,165 @@
+{
+  "dungeon_name": "The Tomb of the Iron Lich",
+  "party_level": 3,
+  "current_level": 1,
+  "party": {
+    "size": 4,
+    "characters": [
+      {"name": "Thorin",  "darkvision": true,  "exhaustion": 0},
+      {"name": "Mira",    "darkvision": true,  "exhaustion": 0},
+      {"name": "Aldric",  "darkvision": false, "exhaustion": 0},
+      {"name": "Sera",    "darkvision": false, "exhaustion": 0}
+    ]
+  },
+  "levels": [
+    {
+      "level_number": 1,
+      "display_name": "Level 1 — The Entry Vaults",
+      "map_image": "target_dungeon_maps/level1.png",
+      "map_image_scale": 1.0,
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wandering_monster_table": [
+        {"roll": 1, "encounter": "2d6 Skeletons"},
+        {"roll": 2, "encounter": "1d4 Zombies"},
+        {"roll": 3, "encounter": "Giant Spider"},
+        {"roll": 4, "encounter": "Gelatinous Cube"},
+        {"roll": 5, "encounter": "Shadows (1d3)"},
+        {"roll": 6, "encounter": "Ghoul"}
+      ],
+      "rooms": [
+        {
+          "id": "R01",
+          "name": "Entrance Hall",
+          "state": "unexplored",
+          "tags": ["empty"],
+          "reaction_required": false,
+          "notes": "10x30 ft. Bas-relief carvings of robed figures. Dust undisturbed.",
+          "encounter_ref": null,
+          "treasure_tier": null
+        },
+        {
+          "id": "R02",
+          "name": "Guard Antechamber",
+          "state": "unexplored",
+          "tags": ["encounter", "treasure"],
+          "reaction_required": true,
+          "notes": "4 skeletons standing rigid against the walls. Footlocker behind the rear-right one.",
+          "encounter_ref": "Skeleton Guard Room",
+          "treasure_tier": "cr0-4"
+        },
+        {
+          "id": "R03",
+          "name": "Pit Corridor Junction",
+          "state": "unexplored",
+          "tags": ["trap"],
+          "reaction_required": false,
+          "notes": "10-ft covered pit, 20 ft deep. DC 12 Perception to spot the seam in the flagstones.",
+          "encounter_ref": null,
+          "treasure_tier": null
+        },
+        {
+          "id": "R04",
+          "name": "Ossuary",
+          "state": "unexplored",
+          "tags": ["special", "stairs_down"],
+          "reaction_required": false,
+          "notes": "Walls lined with skulls in alcoves. A worn stone stair behind the rear shrine descends to the burial halls below.",
+          "encounter_ref": null,
+          "treasure_tier": null
+        },
+        {
+          "id": "R05",
+          "name": "Flooded Crypt",
+          "state": "unexplored",
+          "tags": ["encounter"],
+          "reaction_required": true,
+          "notes": "Knee-deep stagnant water. Ghoul lurking under the surface near the central sarcophagus.",
+          "encounter_ref": "Crypt Ghoul",
+          "treasure_tier": null
+        },
+        {
+          "id": "R06",
+          "name": "Hidden Reliquary",
+          "state": "unexplored",
+          "tags": ["treasure"],
+          "reaction_required": false,
+          "notes": "Behind a secret door from R04. Silver censer (50 gp), 200 gp in old coin, +1 dagger.",
+          "encounter_ref": null,
+          "treasure_tier": "cr0-4"
+        },
+        {
+          "id": "R07",
+          "name": "Lich's Sanctum",
+          "state": "unexplored",
+          "tags": ["encounter", "treasure"],
+          "reaction_required": false,
+          "notes": "Iron Lich on a throne of fused weapons. Phylactery hidden in the iron crown. Treasure: spellbook, 1000 gp, gem of brightness.",
+          "encounter_ref": "Iron Lich Sanctum",
+          "treasure_tier": "cr5-10"
+        }
+      ],
+      "corridors": [
+        {"from": "R01", "to": "R02", "distance_ft": 30, "tags": ["locked"]},
+        {"from": "R02", "to": "R03", "distance_ft": 40, "tags": []},
+        {"from": "R03", "to": "R04", "distance_ft": 20, "tags": []},
+        {"from": "R03", "to": "R05", "distance_ft": 50, "tags": ["trapped"]},
+        {"from": "R04", "to": "R06", "distance_ft": 10, "tags": ["secret"]},
+        {"from": "R05", "to": "R07", "distance_ft": 30, "tags": ["locked"]},
+        {"from": "R07", "to": "R01", "distance_ft": 80, "tags": ["secret", "one-way"]}
+      ]
+    },
+    {
+      "level_number": 2,
+      "display_name": "Level 2 — The Burial Halls",
+      "map_image": "target_dungeon_maps/level2.png",
+      "map_image_scale": 1.0,
+      "wm_check_method": "d20",
+      "wm_check_threshold": 17,
+      "wm_check_frequency": "every_turn",
+      "wandering_monster_table": [
+        {"roll": 1, "encounter": "Wight"},
+        {"roll": 2, "encounter": "1d6 Specters"},
+        {"roll": 3, "encounter": "2d4 Ghouls"},
+        {"roll": 4, "encounter": "Wraith"}
+      ],
+      "rooms": [
+        {
+          "id": "R10",
+          "name": "Stair Landing",
+          "state": "unexplored",
+          "tags": ["empty", "stairs_up"],
+          "reaction_required": false,
+          "notes": "Foot of the spiral stair from the Ossuary above.",
+          "encounter_ref": null,
+          "treasure_tier": null
+        },
+        {
+          "id": "R11",
+          "name": "Bone Pit",
+          "state": "unexplored",
+          "tags": ["encounter"],
+          "reaction_required": true,
+          "notes": "Sunken floor packed with bones. Two ghouls feast among the remains.",
+          "encounter_ref": "Bone Pit Ghouls",
+          "treasure_tier": "cr0-4"
+        },
+        {
+          "id": "R12",
+          "name": "Embalmer's Chamber",
+          "state": "unexplored",
+          "tags": ["treasure", "trap"],
+          "reaction_required": false,
+          "notes": "Stone tables stained black. A canopic jar on the central pedestal — poison gas trap on lift.",
+          "encounter_ref": null,
+          "treasure_tier": "cr5-10"
+        }
+      ],
+      "corridors": [
+        {"from": "R10", "to": "R11", "distance_ft": 40, "tags": []},
+        {"from": "R11", "to": "R12", "distance_ft": 30, "tags": ["locked"]}
+      ]
+    }
+  ]
+}

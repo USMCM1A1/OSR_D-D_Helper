@@ -1,0 +1,336 @@
+{
+  "dungeon_name": "Ancient Temple of Torrel",
+  "party_level": 3,
+  "current_level": 1,
+  "party": {
+    "size": 4,
+    "characters": [
+      {
+        "name": "Thorin",
+        "darkvision": true,
+        "exhaustion": 0
+      },
+      {
+        "name": "Mira",
+        "darkvision": true,
+        "exhaustion": 0
+      },
+      {
+        "name": "Aldric",
+        "darkvision": false,
+        "exhaustion": 0
+      },
+      {
+        "name": "Sera",
+        "darkvision": false,
+        "exhaustion": 0
+      }
+    ]
+  },
+  "levels": [
+    {
+      "level_number": 1,
+      "display_name": "Level 1 \u2014 Entry Vaults",
+      "map_image": "target_dungeon_maps/ancient-temple-of-torrel-level1.png",
+      "map_image_scale": 1.0,
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": "1d4 Skeletons"
+        },
+        {
+          "roll": 2,
+          "encounter": "Giant Rat"
+        },
+        {
+          "roll": 3,
+          "encounter": "Stirge"
+        }
+      ],
+      "rooms": [
+        {
+          "id": "R01",
+          "name": "R01",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 5384,
+            "y": 1481,
+            "width": 1109,
+            "height": 1585
+          }
+        },
+        {
+          "id": "R02",
+          "name": "R02",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 4193,
+            "y": 1250,
+            "width": 1183,
+            "height": 2032
+          }
+        },
+        {
+          "id": "R03",
+          "name": "R03",
+          "state": "known",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 4372,
+            "y": 3268,
+            "width": 1228,
+            "height": 1250
+          }
+        },
+        {
+          "id": "R04",
+          "name": "R04",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 2436,
+            "y": 4072,
+            "width": 1876,
+            "height": 1161
+          }
+        },
+        {
+          "id": "R05",
+          "name": "R05",
+          "state": "known",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 1334,
+            "y": 2977,
+            "width": 1131,
+            "height": 1474
+          }
+        },
+        {
+          "id": "R06",
+          "name": "R06",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 2473,
+            "y": 2985,
+            "width": 1853,
+            "height": 1057
+          }
+        },
+        {
+          "id": "R07",
+          "name": "R07",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 3851,
+            "y": 1518,
+            "width": 342,
+            "height": 1466
+          }
+        },
+        {
+          "id": "R08",
+          "name": "R08",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 3248,
+            "y": 402,
+            "width": 1064,
+            "height": 1109
+          }
+        },
+        {
+          "id": "R09",
+          "name": "R09",
+          "state": "known",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 1640,
+            "y": 379,
+            "width": 1660,
+            "height": 2657
+          }
+        },
+        {
+          "id": "R10",
+          "name": "R10",
+          "state": "known",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 300,
+            "y": 1488,
+            "width": 1325,
+            "height": 1838
+          }
+        },
+        {
+          "id": "R11",
+          "name": "R11",
+          "state": "known",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 769,
+            "y": 885,
+            "width": 1317,
+            "height": 536
+          }
+        },
+        {
+          "id": "R12",
+          "name": "R12",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "image_region": {
+            "kind": "rect",
+            "x": 4588,
+            "y": 320,
+            "width": 1622,
+            "height": 751
+          }
+        }
+      ],
+      "corridors": []
+    },
+    {
+      "level_number": 2,
+      "display_name": "Level 2 \u2014 Pilgrim's Halls",
+      "map_image": "target_dungeon_maps/ancient-temple-of-torrel-level2.png",
+      "map_image_scale": 1.0,
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": "1d4 Skeletons"
+        },
+        {
+          "roll": 2,
+          "encounter": "Giant Rat"
+        },
+        {
+          "roll": 3,
+          "encounter": "Stirge"
+        }
+      ],
+      "rooms": [],
+      "corridors": []
+    },
+    {
+      "level_number": 3,
+      "display_name": "Level 3 \u2014 The Sanctum",
+      "map_image": "target_dungeon_maps/ancient-temple-of-torrel-level3.png",
+      "map_image_scale": 1.0,
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": "1d4 Skeletons"
+        },
+        {
+          "roll": 2,
+          "encounter": "Giant Rat"
+        },
+        {
+          "roll": 3,
+          "encounter": "Stirge"
+        }
+      ],
+      "rooms": [],
+      "corridors": []
+    }
+  ]
+}
