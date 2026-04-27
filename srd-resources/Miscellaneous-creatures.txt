@@ -1,0 +1,3435 @@
+# Appendix MM-A: Miscellaneous Creatures
+
+This appendix contains statistics for various animals, vermin, and other critters. The stat blocks are organized alphabetically by creature name.
+
+## Ape
+
+_Medium beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 19 (3d8 + 6)
+- **Speed** 30 ft., climb 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |     14 |     14 |      6 |     12 |      7 |
+| **Modifier**     |     +3 |     +2 |     +2 |     -2 |     +1 |     -2 |
+| **Saving Throw** |     +3 |     +2 |     +2 |     -2 |     +1 |     -2 |
+
+- **Skills** Athletics +5, Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 1/2 (100 XP)
+
+### Actions
+
+_**Multiattack.**_ The ape makes two fist attacks.
+
+_**Fist.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 6 (1d6 + 3) bludgeoning damage.
+
+_**Rock.**_ _Ranged Weapon Attack:_ +5 to hit, range 25/50 ft., one target. _Hit:_ 6 (1d6 + 3) bludgeoning damage.
+
+## Awakened Shrub
+
+_Small plant, unaligned_
+
+- **Armor Class** 9
+- **Hit Points** 10 (3d6)
+- **Speed** 20 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      3 |      8 |     11 |     10 |     10 |      6 |
+| **Modifier**     |     -4 |     -1 |     +0 |     +0 |     +0 |     -2 |
+| **Saving Throw** |     -4 |     -1 |     +0 |     +0 |     +0 |     -2 |
+
+- **Damage Vulnerabilities** fire
+- **Damage Resistances** piercing
+- **Senses** passive Perception 10
+- **Languages** one language known by its creator
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**False Appearance.**_ While the shrub remains motionless, it is indistinguishable from a normal shrub.
+
+### Actions
+
+_**Rake.**_ _Melee Weapon Attack:_ +1 to hit, reach 5 ft., one target. _Hit:_ 1 (1d4 - 1) slashing damage.
+
+An **awakened shrub** is an ordinary shrub given sentience and mobility by the _Awaken_ spell or similar magic.
+
+## Awakened Tree
+
+_Huge plant, unaligned_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 59 (7d12 + 14)
+- **Speed** 20 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     19 |      6 |     15 |     10 |     10 |      7 |
+| **Modifier**     |     +4 |     -2 |     +2 |     +0 |     +0 |     -2 |
+| **Saving Throw** |     +4 |     -2 |     +2 |     +0 |     +0 |     -2 |
+
+- **Damage Vulnerabilities** fire
+- **Damage Resistances** bludgeoning, piercing
+- **Senses** passive Perception 10
+- **Languages** one language known by its creator
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**False Appearance.**_ While the tree remains motionless, it is indistinguishable from a normal tree.
+
+### Actions
+
+_**Slam.**_ _Melee Weapon Attack:_ +6 to hit, reach 10 ft., one target. _Hit:_ 14 (3d6 + 4) bludgeoning damage.
+
+An **awakened tree** is an ordinary tree given sentience and mobility by the _Awaken_ spell or similar magic.
+
+## Axe Beak
+
+_Large beast, unaligned_
+
+- **Armor Class** 11
+- **Hit Points** 19 (3d10 + 3)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     14 |     12 |     12 |      2 |     10 |      5 |
+| **Modifier**     |     +2 |     +1 |     +1 |     -4 |     +0 |     -3 |
+| **Saving Throw** |     +2 |     +1 |     +1 |     -4 |     +0 |     -3 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Actions
+
+_**Beak.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 6 (1d8 + 2) slashing damage.
+
+An **axe beak** is a tall flightless bird with strong legs and a heavy, wedge-shaped beak. It has a nasty disposition and tends to attack any unfamiliar creature that wanders too close.
+
+## Baboon
+
+_Small beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 3 (1d6)
+- **Speed** 30 ft., climb 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      8 |     14 |     11 |      4 |     12 |      6 |
+| **Modifier**     |     -1 |     +2 |     +0 |     -3 |     +1 |     -2 |
+| **Saving Throw** |     -1 |     +2 |     +0 |     -3 |     +1 |     -2 |
+
+- **Senses** passive Perception 11
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Pack Tactics.**_ The baboon has advantage on an attack roll against a creature if at least one of the baboon's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +1 to hit, reach 5 ft., one target. _Hit:_ 1 (1d4 - 1) piercing damage.
+
+## Badger
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 3 (1d4 + 1)
+- **Speed** 20 ft., burrow 5 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      4 |     11 |     12 |      2 |     12 |      5 |
+| **Modifier**     |     -3 |     +0 |     +1 |     -4 |     +1 |     -3 |
+| **Saving Throw** |     -3 |     +0 |     +1 |     -4 |     +1 |     -3 |
+
+- **Senses** darkvision 30 ft., passive Perception 11
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Keen Smell.**_ The badger has advantage on Wisdom (Perception) checks that rely on smell.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one target. _Hit:_ 1 piercing damage.
+
+## Bat
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 5 ft., fly 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      2 |     15 |      8 |      2 |     12 |      4 |
+| **Modifier**     |     -4 |     +2 |     -1 |     -4 |     +1 |     -3 |
+| **Saving Throw** |     -4 |     +2 |     -1 |     -4 |     +1 |     -3 |
+
+- **Senses** blindsight 60 ft., passive Perception 11
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Echolocation.**_ The bat can't use its blindsight while deafened.
+
+_**Keen Hearing.**_ The bat has advantage on Wisdom (Perception) checks that rely on hearing.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +0 to hit, reach 5 ft., one creature. _Hit:_ 1 piercing damage.
+
+## Black Bear
+
+_Medium beast, unaligned_
+
+- **Armor Class** 11 (natural armor)
+- **Hit Points** 19 (3d8 + 6)
+- **Speed** 40 ft., climb 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     10 |     14 |      2 |     12 |      7 |
+| **Modifier**     |     +2 |     +0 |     +2 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +2 |     +0 |     +2 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Keen Smell.**_ The bear has advantage on Wisdom (Perception) checks that rely on smell.
+
+### Actions
+
+_**Multiattack.**_ The bear makes two attacks: one with its bite and one with its claws.
+
+_**Bite.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.
+
+_**Claws.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 7 (2d4 + 2) slashing damage.
+
+## Blink Dog
+
+_Medium fey, lawful good_
+
+- **Armor Class** 13
+- **Hit Points** 22 (4d8 + 4)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     12 |     17 |     12 |     10 |     13 |     11 |
+| **Modifier**     |     +1 |     +3 |     +1 |     +0 |     +1 |     +0 |
+| **Saving Throw** |     +1 |     +3 |     +1 |     +0 |     +1 |     +0 |
+
+- **Skills** Perception +3, Stealth +5
+- **Senses** passive Perception 13
+- **Languages** Blink Dog, understands Sylvan but can't speak it
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Keen Hearing and Smell.**_ The dog has advantage on Wisdom (Perception) checks that rely on hearing or smell.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 4 (1d6 + 1) piercing damage.
+
+_**Teleport (Recharge 4-6).**_ The dog magically teleports, along with any equipment it is wearing or carrying, up to 40 feet to an unoccupied space it can see. Before or after teleporting, the dog can make one bite attack.
+
+A **blink dog** takes its name from its ability to blink in and out of existence, a talent it uses to aid its attacks and to avoid harm.
+
+## Blood Hawk
+
+_Small beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 7 (2d6)
+- **Speed** 10 ft., fly 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      6 |     14 |     10 |      3 |     14 |      5 |
+| **Modifier**     |     -2 |     +2 |     +0 |     -4 |     +2 |     -3 |
+| **Saving Throw** |     -2 |     +2 |     +0 |     -4 |     +2 |     -3 |
+
+- **Skills** Perception +4
+- **Senses** passive Perception 14
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Traits
+
+_**Keen Sight.**_ The hawk has advantage on Wisdom (Perception) checks that rely on sight.
+
+_**Pack Tactics.**_ The hawk has advantage on an attack roll against a creature if at least one of the hawk's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Beak.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 4 (1d4 + 2) piercing damage.
+
+Taking its name from its crimson feathers and aggressive nature, the **blood hawk** fearlessly attacks almost any animal, stabbing it with its daggerlike beak. Blood hawks flock together in large numbers, attacking as a pack to take down prey.
+
+## Boar
+
+_Medium beast, unaligned_
+
+- **Armor Class** 11 (natural armor)
+- **Hit Points** 11 (2d8 + 2)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     13 |     11 |     12 |      2 |      9 |      5 |
+| **Modifier**     |     +1 |     +0 |     +1 |     -4 |     -1 |     -3 |
+| **Saving Throw** |     +1 |     +0 |     +1 |     -4 |     -1 |     -3 |
+
+- **Senses** passive Perception 9
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Charge.**_ If the boar moves at least 20 feet straight toward a target and then hits it with a tusk attack on the same turn, the target takes an extra 3 (1d6) slashing damage. If the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone.
+
+_**Relentless (Recharges after a Short or Long Rest).**_ If the boar takes 7 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead.
+
+### Actions
+
+_**Tusk.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 4 (1d6 + 1) slashing damage.
+
+## Brown Bear
+
+_Large beast, unaligned_
+
+- **Armor Class** 11 (natural armor)
+- **Hit Points** 34 (4d10 + 12)
+- **Speed** 40 ft., climb 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     19 |     10 |     16 |      2 |     13 |      7 |
+| **Modifier**     |     +4 |     +0 |     +3 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +4 |     +0 |     +3 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Keen Smell.**_ The bear has advantage on Wisdom (Perception) checks that rely on smell.
+
+### Actions
+
+_**Multiattack.**_ The bear makes two attacks: one with its bite and one with its claws.
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 8 (1d8 + 4) piercing damage.
+
+_**Claws.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 11 (2d6 + 4) slashing damage.
+
+## Camel
+
+_Large beast, unaligned_
+
+- **Armor Class** 9
+- **Hit Points** 15 (2d10 + 4)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |      8 |     14 |      2 |      8 |      5 |
+| **Modifier**     |     +3 |     -1 |     +2 |     -4 |     -1 |     -3 |
+| **Saving Throw** |     +3 |     -1 |     +2 |     -4 |     -1 |     -3 |
+
+- **Senses** passive Perception 9
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 2 (1d4) bludgeoning damage.
+
+## Cat
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 2 (1d4)
+- **Speed** 40 ft., climb 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      3 |     15 |     10 |      3 |     12 |      7 |
+| **Modifier**     |     -4 |     +2 |     +0 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     -4 |     +2 |     +0 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3, Stealth +4
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Keen Smell.**_ The cat has advantage on Wisdom (Perception) checks that rely on smell.
+
+### Actions
+
+_**Claws.**_ _Melee Weapon Attack:_ +0 to hit, reach 5 ft., one target. _Hit:_ 1 slashing damage.
+
+## Constrictor Snake
+
+_Large beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 13 (2d10 + 2)
+- **Speed** 30 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     14 |     12 |      1 |     10 |      3 |
+| **Modifier**     |     +2 |     +2 |     +1 |     -5 |     +0 |     -4 |
+| **Saving Throw** |     +2 |     +2 |     +1 |     -5 |     +0 |     -4 |
+
+- **Senses** blindsight 10 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 5 (1d6 + 2) piercing damage.
+
+_**Constrict.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 6 (1d8 + 2) bludgeoning damage, and the target is grappled (escape DC 14). Until this grapple ends, the creature is restrained, and the snake can't constrict another target.
+
+## Crab
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 11 (natural armor)
+- **Hit Points** 2 (1d4)
+- **Speed** 20 ft., swim 20 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      2 |     11 |     10 |      1 |      8 |      2 |
+| **Modifier**     |     -4 |     +0 |     +0 |     -5 |     -1 |     -4 |
+| **Saving Throw** |     -4 |     +0 |     +0 |     -5 |     -1 |     -4 |
+
+- **Skills** Stealth +2
+- **Senses** blindsight 30 ft., passive Perception 9
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Amphibious.**_ The crab can breathe air and water.
+
+### Actions
+
+_**Claw.**_ _Melee Weapon Attack:_ +0 to hit, reach 5 ft., one target. _Hit:_ 1 bludgeoning damage.
+
+## Crocodile
+
+_Large beast, unaligned_
+
+- **Armor Class** 12 (natural armor)
+- **Hit Points** 19 (3d10 + 3)
+- **Speed** 20 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     10 |     13 |      2 |     10 |      5 |
+| **Modifier**     |     +2 |     +0 |     +1 |     -4 |     +0 |     -3 |
+| **Saving Throw** |     +2 |     +0 |     +1 |     -4 |     +0 |     -3 |
+
+- **Skills** Stealth +2
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Hold Breath.**_ The crocodile can hold its breath for 15 minutes.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 7 (1d10 + 2) piercing damage, and the target is grappled (escape DC 12). Until this grapple ends, the target is restrained, and the crocodile can't bite another target.
+
+## Death Dog
+
+_Medium monstrosity, neutral evil_
+
+- **Armor Class** 12
+- **Hit Points** 39 (6d8 + 12)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     14 |     14 |      3 |     13 |      6 |
+| **Modifier**     |     +2 |     +2 |     +2 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +2 |     +2 |     +2 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +5, Stealth +4
+- **Senses** darkvision 120 ft., passive Perception 15
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Two-Headed.**_ The dog has advantage on Wisdom (Perception) checks and on saving throws against being blinded, charmed, deafened, frightened, stunned, or knocked unconscious.
+
+### Actions
+
+_**Multiattack.**_ The dog makes two bite attacks.
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage. If the target is a creature, it must succeed on a DC 12 Constitution saving throw against disease or become poisoned until the disease is cured. Every 24 hours that elapse, the creature must repeat the saving throw, reducing its hit point maximum by 5 (1d10) on a failure. This reduction lasts until the disease is cured. The creature dies if the disease reduces its hit point maximum to 0.
+
+A **death dog** is an ugly two-headed hound that roams plains, and deserts. Hate burns in a death dog's heart, and a taste for humanoid flesh drives it to attack travelers and explorers. Death dog saliva carries a foul disease that causes a victim's flesh to slowly rot off the bone.
+
+## Deer
+
+_Medium beast, unaligned_
+
+- **Armor Class** 13
+- **Hit Points** 4 (1d8)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     11 |     16 |     11 |      2 |     14 |      5 |
+| **Modifier**     |     +0 |     +3 |     +0 |     -4 |     +2 |     -3 |
+| **Saving Throw** |     +0 |     +3 |     +0 |     -4 |     +2 |     -3 |
+
+- **Senses** passive Perception 12
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one target. _Hit:_ 2 (1d4) piercing damage.
+
+## Dire Wolf
+
+_Large beast, unaligned_
+
+- **Armor Class** 14 (natural armor)
+- **Hit Points** 37 (5d10 + 10)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     17 |     15 |     15 |      3 |     12 |      7 |
+| **Modifier**     |     +3 |     +2 |     +2 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +3 |     +2 |     +2 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3, Stealth +4
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Keen Hearing and Smell.**_ The wolf has advantage on Wisdom (Perception) checks that rely on hearing or smell.
+
+_**Pack Tactics.**_ The wolf has advantage on an attack roll against a creature if at least one of the wolf's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 10 (2d6 + 3) piercing damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone.
+
+## Draft Horse
+
+_Large beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 19 (3d10 + 3)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     18 |     10 |     12 |      2 |     11 |      7 |
+| **Modifier**     |     +4 |     +0 |     +1 |     -4 |     +0 |     -2 |
+| **Saving Throw** |     +4 |     +0 |     +1 |     -4 |     +0 |     -2 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Actions
+
+_**Hooves.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one target. _Hit:_ 9 (2d4 + 4) bludgeoning damage.
+
+## Eagle
+
+_Small beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 3 (1d6)
+- **Speed** 10 ft., fly 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      6 |     15 |     10 |      2 |     14 |      7 |
+| **Modifier**     |     -2 |     +2 |     +0 |     -4 |     +2 |     -2 |
+| **Saving Throw** |     -2 |     +2 |     +0 |     -4 |     +2 |     -2 |
+
+- **Skills** Perception +4
+- **Senses** passive Perception 14
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Keen Sight.**_ The eagle has advantage on Wisdom (Perception) checks that rely on sight.
+
+### Actions
+
+_**Talons.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 4 (1d4 + 2) slashing damage.
+
+## Elephant
+
+_Huge beast, unaligned_
+
+- **Armor Class** 12 (natural armor)
+- **Hit Points** 76 (8d12 + 24)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     22 |      9 |     17 |      3 |     11 |      6 |
+| **Modifier**     |     +6 |     -1 |     +3 |     -4 |     +0 |     -2 |
+| **Saving Throw** |     +6 |     -1 |     +3 |     -4 |     +0 |     -2 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 4 (1,100 XP)
+
+### Traits
+
+_**Trampling Charge.**_ If the elephant moves at least 20 feet straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 12 Strength saving throw or be knocked prone. If the target is prone, the elephant can make one stomp attack against it as a bonus action.
+
+### Actions
+
+_**Gore.**_ _Melee Weapon Attack:_ +8 to hit, reach 5 ft., one target. _Hit:_ 19 (3d8 + 6) piercing damage.
+
+_**Stomp.**_ _Melee Weapon Attack:_ +8 to hit, reach 5 ft., one prone creature. _Hit:_ 22 (3d10 + 6) bludgeoning damage.
+
+## Elk
+
+_Large beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 13 (2d10 + 2)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |     10 |     12 |      2 |     10 |      6 |
+| **Modifier**     |     +3 |     +0 |     +1 |     -4 |     +0 |     -2 |
+| **Saving Throw** |     +3 |     +0 |     +1 |     -4 |     +0 |     -2 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Charge.**_ If the elk moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone.
+
+### Actions
+
+_**Ram.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 6 (1d6 + 3) bludgeoning damage.
+
+_**Hooves.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one prone creature. _Hit:_ 8 (2d4 + 3) bludgeoning damage.
+
+## Flying Snake
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 14
+- **Hit Points** 5 (2d4)
+- **Speed** 30 ft., fly 60 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      4 |     18 |     11 |      2 |     12 |      5 |
+| **Modifier**     |     -3 |     +4 |     +0 |     -4 |     +1 |     -3 |
+| **Saving Throw** |     -3 |     +4 |     +0 |     -4 |     +1 |     -3 |
+
+- **Senses** blindsight 10 ft., passive Perception 11
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Traits
+
+_**Flyby.**_ The snake doesn't provoke opportunity attacks when it flies out of an enemy's reach.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one target. _Hit:_ 1 piercing damage plus 7 (3d4) poison damage.
+
+A **flying snake** is a brightly colored, winged serpent found in remote jungles. Tribespeople and cultists sometimes domesticate flying snakes to serve as messengers that deliver scrolls wrapped in their coils.
+
+## Frog
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 11
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 20 ft., swim 20 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      1 |     13 |      8 |      1 |      8 |      3 |
+| **Modifier**     |     -5 |     +1 |     -1 |     -5 |     -1 |     -4 |
+| **Saving Throw** |     -5 |     +1 |     -1 |     -5 |     -1 |     -4 |
+
+- **Skills** Perception +1, Stealth +3
+- **Senses** darkvision 30 ft., passive Perception 11
+- **Languages** —
+- **Challenge** 0 (0 XP)
+
+### Traits
+
+_**Amphibious.**_ The frog can breathe air and water.
+
+_**Standing Leap.**_ The frog's long jump is up to 10 feet and its high jump is up to 5 feet, with or without a running start.
+
+A **frog** has no effective attacks. It feeds on small insects and typically dwells near water, in trees, or underground. The frog's statistics can also be used to represent a **toad**.
+
+## Giant Ape
+
+_Huge beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 157 (15d12 + 60)
+- **Speed** 40 ft., climb 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     23 |     14 |     18 |      7 |     12 |      7 |
+| **Modifier**     |     +6 |     +2 |     +4 |     -2 |     +1 |     -2 |
+| **Saving Throw** |     +6 |     +2 |     +4 |     -2 |     +1 |     -2 |
+
+- **Skills** Athletics +9, Perception +4
+- **Senses** passive Perception 14
+- **Languages** —
+- **Challenge** 7 (2,900 XP)
+
+### Actions
+
+_**Multiattack.**_ The ape makes two fist attacks.
+
+_**Fist.**_ _Melee Weapon Attack:_ +9 to hit, reach 10 ft., one target. _Hit:_ 22 (3d10 + 6) bludgeoning damage.
+
+_**Rock.**_ _Ranged Weapon Attack:_ +9 to hit, range 50/100 ft., one target. _Hit:_ 30 (7d6 + 6) bludgeoning damage.
+
+## Giant Badger
+
+_Medium beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 13 (2d8 + 4)
+- **Speed** 30 ft., burrow 10 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     13 |     10 |     15 |      2 |     12 |      5 |
+| **Modifier**     |     +1 |     +0 |     +2 |     -4 |     +1 |     -3 |
+| **Saving Throw** |     +1 |     +0 |     +2 |     -4 |     +1 |     -3 |
+
+- **Senses** darkvision 30 ft., passive Perception 11
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Keen Smell.**_ The badger has advantage on Wisdom (Perception) checks that rely on smell.
+
+### Actions
+
+_**Multiattack.**_ The badger makes two attacks: one with its bite and one with its claws.
+
+_**Bite.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 4 (1d6 + 1) piercing damage.
+
+_**Claws.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 6 (2d4 + 1) slashing damage.
+
+## Giant Bat
+
+_Large beast, unaligned_
+
+- **Armor Class** 13
+- **Hit Points** 22 (4d10)
+- **Speed** 10 ft., fly 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     16 |     11 |      2 |     12 |      6 |
+| **Modifier**     |     +2 |     +3 |     +0 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +2 |     +3 |     +0 |     -4 |     +1 |     -2 |
+
+- **Senses** blindsight 60 ft., passive Perception 11
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Echolocation.**_ The bat can't use its blindsight while deafened.
+
+_**Keen Hearing.**_ The bat has advantage on Wisdom (Perception) checks that rely on hearing.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 5 (1d6 + 2) piercing damage.
+
+## Giant Boar
+
+_Large beast, unaligned_
+
+- **Armor Class** 12 (natural armor)
+- **Hit Points** 42 (5d10 + 15)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     17 |     10 |     16 |      2 |      7 |      5 |
+| **Modifier**     |     +3 |     +0 |     +3 |     -4 |     -2 |     -3 |
+| **Saving Throw** |     +3 |     +0 |     +3 |     -4 |     -2 |     -3 |
+
+- **Senses** passive Perception 8
+- **Languages** —
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Charge.**_ If the boar moves at least 20 feet straight toward a target and then hits it with a tusk attack on the same turn, the target takes an extra 7 (2d6) slashing damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone.
+
+_**Relentless (Recharges after a Short or Long Rest).**_ If the boar takes 10 damage or less that would reduce it to 0 hit points, it is reduced to 1 hit point instead.
+
+### Actions
+
+_**Tusk.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 10 (2d6 + 3) slashing damage.
+
+## Giant Centipede
+
+_Small beast, unaligned_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 4 (1d6 + 1)
+- **Speed** 30 ft., climb 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      5 |     14 |     12 |      1 |      7 |      3 |
+| **Modifier**     |     -3 |     +2 |     +1 |     -5 |     -2 |     -4 |
+| **Saving Throw** |     -3 |     +2 |     +1 |     -5 |     -2 |     -4 |
+
+- **Senses** blindsight 30 ft., passive Perception 8
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 4 (1d4 + 2) piercing damage, and the target must succeed on a DC 11 Constitution saving throw or take 10 (3d6) poison damage. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.
+
+## Giant Constrictor Snake
+
+_Huge beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 60 (8d12 + 8)
+- **Speed** 30 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     19 |     14 |     12 |      1 |     10 |      3 |
+| **Modifier**     |     +4 |     +2 |     +1 |     -5 |     +0 |     -4 |
+| **Saving Throw** |     +4 |     +2 |     +1 |     -5 |     +0 |     -4 |
+
+- **Skills** Perception +2
+- **Senses** blindsight 10 ft., passive Perception 12
+- **Languages** —
+- **Challenge** 2 (450 XP)
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +6 to hit, reach 10 ft., one creature. _Hit:_ 11 (2d6 + 4) piercing damage.
+
+_**Constrict.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one creature. _Hit:_ 13 (2d8 + 4) bludgeoning damage, and the target is grappled (escape DC 16). Until this grapple ends, the creature is restrained, and the snake can't constrict another target.
+
+## Giant Crab
+
+_Medium beast, unaligned_
+
+- **Armor Class** 15 (natural armor)
+- **Hit Points** 13 (3d8)
+- **Speed** 30 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     13 |     15 |     11 |      1 |      9 |      3 |
+| **Modifier**     |     +1 |     +2 |     +0 |     -5 |     -1 |     -4 |
+| **Saving Throw** |     +1 |     +2 |     +0 |     -5 |     -1 |     -4 |
+
+- **Skills** Stealth +4
+- **Senses** blindsight 30 ft., passive Perception 9
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Traits
+
+_**Amphibious.**_ The crab can breathe air and water.
+
+### Actions
+
+_**Claw.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 4 (1d6 + 1) bludgeoning damage, and the target is grappled (escape DC 11). The crab has two claws, each of which can grapple only one target.
+
+## Giant Crocodile
+
+_Huge beast, unaligned_
+
+- **Armor Class** 14 (natural armor)
+- **Hit Points** 85 (9d12 + 27)
+- **Speed** 30 ft., swim 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     21 |      9 |     17 |      2 |     10 |      7 |
+| **Modifier**     |     +5 |     -1 |     +3 |     -4 |     +0 |     -2 |
+| **Saving Throw** |     +5 |     -1 |     +3 |     -4 |     +0 |     -2 |
+
+- **Skills** Stealth +5
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 5 (1,800 XP)
+
+### Traits
+
+_**Hold Breath.**_ The crocodile can hold its breath for 30 minutes.
+
+### Actions
+
+_**Multiattack.**_ The crocodile makes two attacks: one with its bite and one with its tail.
+
+_**Bite.**_ _Melee Weapon Attack:_ +8 to hit, reach 5 ft., one target. _Hit:_ 21 (3d10 + 5) piercing damage, and the target is grappled (escape DC 16). Until this grapple ends, the target is restrained, and the crocodile can't bite another target.
+
+_**Tail.**_ _Melee Weapon Attack:_ +8 to hit, reach 10 ft., one target not grappled by the crocodile. _Hit:_ 14 (2d8 + 5) bludgeoning damage. If the target is a creature, it must succeed on a DC 16 Strength saving throw or be knocked prone.
+
+## Giant Eagle
+
+_Large beast, neutral good_
+
+- **Armor Class** 13
+- **Hit Points** 26 (4d10 + 4)
+- **Speed** 10 ft., fly 80 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |     17 |     13 |      8 |     14 |     10 |
+| **Modifier**     |     +3 |     +3 |     +1 |     -1 |     +2 |     +0 |
+| **Saving Throw** |     +3 |     +3 |     +1 |     -1 |     +2 |     +0 |
+
+- **Skills** Perception +4
+- **Senses** passive Perception 14
+- **Languages** Giant Eagle, understands Common and Auran but can't speak them
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Keen Sight.**_ The eagle has advantage on Wisdom (Perception) checks that rely on sight.
+
+### Actions
+
+_**Multiattack.**_ The eagle makes two attacks: one with its beak and one with its talons.
+
+_**Beak.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 6 (1d6 + 3) piercing damage.
+
+_**Talons.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 10 (2d6 + 3) slashing damage.
+
+A **giant eagle** is a noble creature that speaks its own language and understands speech in the Common tongue. A mated pair of giant eagles typically has up to four eggs or young in their nest (treat the young as normal eagles).
+
+## Giant Elk
+
+_Huge beast, unaligned_
+
+- **Armor Class** 14 (natural armor)
+- **Hit Points** 42 (5d12 + 10)
+- **Speed** 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     19 |     16 |     14 |      7 |     14 |     10 |
+| **Modifier**     |     +4 |     +3 |     +2 |     -2 |     +2 |     +0 |
+| **Saving Throw** |     +4 |     +3 |     +2 |     -2 |     +2 |     +0 |
+
+- **Skills** Perception +4
+- **Senses** passive Perception 14
+- **Languages** Giant Elk, understands Common, Elvish, and Sylvan but can't speak them
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Charge.**_ If the elk moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) damage. If the target is a creature, it must succeed on a DC 14 Strength saving throw or be knocked prone.
+
+### Actions
+
+_**Ram.**_ _Melee Weapon Attack:_ +6 to hit, reach 10 ft., one target. _Hit:_ 11 (2d6 + 4) bludgeoning damage.
+
+_**Hooves.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one prone creature. _Hit:_ 22 (4d8 + 4) bludgeoning damage.
+
+The majestic **giant elk** is rare to the point that its appearance is often taken as a foreshadowing of an important event, such as the birth of a king. Legends tell of gods that take the form of giant elk when visiting the Material Plane. Many cultures therefore believe that to hunt these creatures is to invite divine wrath.
+
+## Giant Fire Beetle
+
+_Small beast, unaligned_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 4 (1d6 + 1)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      8 |     10 |     12 |      1 |      7 |      3 |
+| **Modifier**     |     -1 |     +0 |     +1 |     -5 |     -2 |     -4 |
+| **Saving Throw** |     -1 |     +0 |     +1 |     -5 |     -2 |     -4 |
+
+- **Senses** blindsight 30 ft., passive Perception 8
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Illumination.**_ The beetle sheds bright light in a 10-foot radius and dim light for an additional 10 feet.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +1 to hit, reach 5 ft., one target. _Hit:_ 2 (1d6 - 1) slashing damage.
+
+A **giant fire beetle** is a nocturnal creature that takes its name from a pair of glowing glands that give off light. Miners and adventurers prize these creatures, for a giant fire beetle's glands continue to shed light for 1d6 days after the beetle dies. Giant fire beetles are most commonly found underground and in dark forests.
+
+## Giant Frog
+
+_Medium beast, unaligned_
+
+- **Armor Class** 11
+- **Hit Points** 18 (4d8)
+- **Speed** 30 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     12 |     13 |     11 |      2 |     10 |      3 |
+| **Modifier**     |     +1 |     +1 |     +0 |     -4 |     +0 |     -4 |
+| **Saving Throw** |     +1 |     +1 |     +0 |     -4 |     +0 |     -4 |
+
+- **Skills** Perception +2, Stealth +3
+- **Senses** darkvision 30 ft., passive Perception 12
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Amphibious.**_ The frog can breathe air and water.
+
+_**Standing Leap.**_ The frog's long jump is up to 20 feet and its high jump is up to 10 feet, with or without a running start.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 4 (1d6 + 1) piercing damage, and the target is grappled (escape DC 11). Until this grapple ends, the target is restrained, and the frog can't bite another target.
+
+_**Swallow.**_ The frog makes one bite attack against a Small or smaller target it is grappling. If the attack hits, the target is swallowed, and the grapple ends. The swallowed target is blinded and restrained, it has total cover against attacks and other effects outside the frog, and it takes 5 (2d4) acid damage at the start of each of the frog's turns. The frog can have only one target swallowed at a time.
+
+If the frog dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 5 feet of movement, exiting prone.
+
+## Giant Goat
+
+_Large beast, unaligned_
+
+- **Armor Class** 11 (natural armor)
+- **Hit Points** 19 (3d10 + 3)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     17 |     11 |     12 |      3 |     12 |      6 |
+| **Modifier**     |     +3 |     +0 |     +1 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +3 |     +0 |     +1 |     -4 |     +1 |     -2 |
+
+- **Senses** passive Perception 11
+- **Languages** —
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Charge.**_ If the goat moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 5 (2d4) bludgeoning damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone.
+
+_**Sure-Footed.**_ The goat has advantage on Strength and Dexterity saving throws made against effects that would knock it prone.
+
+### Actions
+
+_**Ram.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 8 (2d4 + 3) bludgeoning damage.
+
+## Giant Hyena
+
+_Large beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 45 (6d10 + 12)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |     14 |     14 |      2 |     12 |      7 |
+| **Modifier**     |     +3 |     +2 |     +2 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +3 |     +2 |     +2 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Rampage.**_ When the hyena reduces a creature to 0 hit points with a melee attack on its turn, the hyena can take a bonus action to move up to half its speed and make a bite attack.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 10 (2d6 + 3) piercing damage.
+
+## Giant Lizard
+
+_Large beast, unaligned_
+
+- **Armor Class** 12 (natural armor)
+- **Hit Points** 19 (3d10 + 3)
+- **Speed** 30 ft., climb 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     12 |     13 |      2 |     10 |      5 |
+| **Modifier**     |     +2 |     +1 |     +1 |     -4 |     +0 |     -3 |
+| **Saving Throw** |     +2 |     +1 |     +1 |     -4 |     +0 |     -3 |
+
+- **Senses** darkvision 30 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 6 (1d8 + 2) piercing damage.
+
+A **giant lizard** can be ridden or used as a draft animal. Lizardfolk also keep them as pets, and subterranean giant lizards are used as mounts and pack animals by drow, duergar, and others.
+
+## Giant Octopus
+
+_Large beast, unaligned_
+
+- **Armor Class** 11
+- **Hit Points** 52 (8d10 + 8)
+- **Speed** 10 ft., swim 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     17 |     13 |     13 |      4 |     10 |      4 |
+| **Modifier**     |     +3 |     +1 |     +1 |     -3 |     +0 |     -3 |
+| **Saving Throw** |     +3 |     +1 |     +1 |     -3 |     +0 |     -3 |
+
+- **Skills** Perception +4, Stealth +5
+- **Senses** darkvision 60 ft., passive Perception 14
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Hold Breath.**_ While out of water, the octopus can hold its breath for 1 hour.
+
+_**Underwater Camouflage.**_ The octopus has advantage on Dexterity (Stealth) checks made while underwater.
+
+_**Water Breathing.**_ The octopus can breathe only underwater.
+
+### Actions
+
+_**Tentacles.**_ _Melee Weapon Attack:_ +5 to hit, reach 15 ft., one target. _Hit:_ 10 (2d6 + 3) bludgeoning damage. If the target is a creature, it is grappled (escape DC 16). Until this grapple ends, the target is restrained, and the octopus can't use its tentacles on another target.
+
+_**Ink Cloud (Recharges after a Short or Long Rest).**_ A 20 foot-radius cloud of ink extends all around the octopus if it is underwater. The area is heavily obscured for 1 minute, although a significant current can disperse the ink. After releasing the ink, the octopus can use the Dash action as a bonus action.
+
+## Giant Owl
+
+_Large beast, neutral_
+
+- **Armor Class** 12
+- **Hit Points** 19 (3d10 + 3)
+- **Speed** 5 ft., fly 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     13 |     15 |     12 |      8 |     13 |     10 |
+| **Modifier**     |     +1 |     +2 |     +1 |     -1 |     +1 |     +0 |
+| **Saving Throw** |     +1 |     +2 |     +1 |     -1 |     +1 |     +0 |
+
+- **Skills** Perception +5, Stealth +4
+- **Senses** darkvision 120 ft., passive Perception 15
+- **Languages** Giant Owl, understands Common, Elvish, and Sylvan but can't speak them
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Flyby.**_ The owl doesn't provoke opportunity attacks when it flies out of an enemy's reach.
+
+_**Keen Hearing and Sight.**_ The owl has advantage on Wisdom (Perception) checks that rely on hearing or sight.
+
+### Actions
+
+_**Talons.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 8 (2d6 + 1) slashing damage.
+
+**Giant owls** often befriend fey and other sylvan creatures and are guardians of their woodland realms.
+
+## Giant Poisonous Snake
+
+_Medium beast, unaligned_
+
+- **Armor Class** 14
+- **Hit Points** 11 (2d8 + 2)
+- **Speed** 30 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     10 |     18 |     13 |      2 |     10 |      3 |
+| **Modifier**     |     +0 |     +4 |     +1 |     -4 |     +0 |     -4 |
+| **Saving Throw** |     +0 |     +4 |     +1 |     -4 |     +0 |     -4 |
+
+- **Skills** Perception +2
+- **Senses** blindsight 10 ft., passive Perception 12
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +6 to hit, reach 10 ft., one target. _Hit:_ 6 (1d4 + 4) piercing damage, and the target must make a DC 11 Constitution saving throw, taking 10 (3d6) poison damage on a failed save, or half as much damage on a successful one.
+
+## Giant Rat
+
+_Small beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 7 (2d6)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      7 |     15 |     11 |      2 |     10 |      4 |
+| **Modifier**     |     -2 |     +2 |     +0 |     -4 |     +0 |     -3 |
+| **Saving Throw** |     -2 |     +2 |     +0 |     -4 |     +0 |     -3 |
+
+- **Senses** darkvision 60 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Traits
+
+_**Keen Smell.**_ The rat has advantage on Wisdom (Perception) checks that rely on smell.
+
+_**Pack Tactics.**_ The rat has advantage on an attack roll against a creature if at least one of the rat's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 4 (1d4 + 2) piercing damage.
+
+### Variant: Diseased Giant Rats
+
+Some giant rats carry vile diseases that they spread with their bites. A diseased giant rat has a challenge rating of 1/8 (25 XP) and the following action instead of its normal bite attack.
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 4 (1d4 + 2) piercing damage. If the target is a creature, it must succeed on a DC 10 Constitution saving throw or contract a disease. Until the disease is cured, the target can't regain hit points except by magical means, and the target's hit point maximum decreases by 3 (1d6) every 24 hours. If the target's hit point maximum drops to 0 as a result of this disease, the target dies.
+
+## Giant Scorpion
+
+_Large beast, unaligned_
+
+- **Armor Class** 15 (natural armor)
+- **Hit Points** 52 (7d10 + 14)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     13 |     15 |      1 |      9 |      3 |
+| **Modifier**     |     +2 |     +1 |     +2 |     -5 |     -1 |     -4 |
+| **Saving Throw** |     +2 |     +1 |     +2 |     -5 |     -1 |     -4 |
+
+- **Senses** blindsight 60 ft., passive Perception 9
+- **Languages** —
+- **Challenge** 3 (700 XP)
+
+### Actions
+
+_**Multiattack.**_ The scorpion makes three attacks: two with its claws and one with its sting.
+
+_**Claw.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 6 (1d8 + 2) bludgeoning damage, and the target is grappled (escape DC 12). The scorpion has two claws, each of which can grapple only one target.
+
+_**Sting.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 7 (1d10 + 2) piercing damage, and the target must make a DC 12 Constitution saving throw, taking 22 (4d10) poison damage on a failed save, or half as much damage on a successful one.
+
+## Giant Sea Horse
+
+_Large beast, unaligned_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 16 (3d10)
+- **Speed** 0 ft., swim 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     12 |     15 |     11 |      2 |     12 |      5 |
+| **Modifier**     |     +1 |     +2 |     +0 |     -4 |     +1 |     -3 |
+| **Saving Throw** |     +1 |     +2 |     +0 |     -4 |     +1 |     -3 |
+
+- **Senses** passive Perception 11
+- **Languages** —
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Charge.**_ If the sea horse moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 7 (2d6) bludgeoning damage. It the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone.
+
+_**Water Breathing.**_ The sea horse can breathe only underwater.
+
+### Actions
+
+_**Ram.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 4 (1d6 + 1) bludgeoning damage.
+
+Like their smaller kin, **giant sea horses** are shy, colorful fish with elongated bodies and curled tails. Aquatic elves train them as mounts.
+
+## Giant Shark
+
+_Huge beast, unaligned_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 126 (11d12 + 55)
+- **Speed** 0 ft., swim 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     23 |     11 |     21 |      1 |     10 |      5 |
+| **Modifier**     |     +6 |     +0 |     +5 |     -5 |     +0 |     -3 |
+| **Saving Throw** |     +6 |     +0 |     +5 |     -5 |     +0 |     -3 |
+
+- **Skills** Perception +3
+- **Senses** blindsight 60 ft., passive Perception 13
+- **Languages** —
+- **Challenge** 5 (1,800 XP)
+
+### Traits
+
+_**Blood Frenzy.**_ The shark has advantage on melee attack rolls against any creature that doesn't have all its hit points.
+
+_**Water Breathing.**_ The shark can breathe only underwater.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +9 to hit, reach 5 ft., one target. _Hit:_ 22 (3d10 + 6) piercing damage.
+
+A **giant shark** is 30 feet long and normally found in deep oceans. Utterly fearless, it preys on anything that crosses its path, including whales and ships.
+
+## Giant Spider
+
+_Large beast, unaligned_
+
+- **Armor Class** 14 (natural armor)
+- **Hit Points** 26 (4d10 + 4)
+- **Speed** 30 ft., climb 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     14 |     16 |     12 |      2 |     11 |      4 |
+| **Modifier**     |     +2 |     +3 |     +1 |     -4 |     +0 |     -3 |
+| **Saving Throw** |     +2 |     +3 |     +1 |     -4 |     +0 |     -3 |
+
+- **Skills** Stealth +7
+- **Senses** blindsight 10 ft., darkvision 60 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Spider Climb.**_ The spider can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check.
+
+_**Web Sense.**_ While in contact with a web, the spider knows the exact location of any other creature in contact with the same web.
+
+_**Web Walker.**_ The spider ignores movement restrictions caused by webbing.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one creature. _Hit:_ 7 (1d8 + 3) piercing damage, and the target must make a DC 11 Constitution saving throw, taking 9 (2d8) poison damage on a failed save, or half as much damage on a successful one. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.
+
+_**Web (Recharge 5-6).**_ _Ranged Weapon Attack:_ +5 to hit, range 30/60 ft., one creature. _Hit:_ The target is restrained by webbing. As an action, the restrained target can make a DC 12 Strength check, bursting the webbing on a success. The webbing can also be attacked and destroyed (AC 10; hp 5; vulnerability to fire damage; immunity to bludgeoning, poison, and psychic damage).
+
+To snare its prey, a **giant spider** spins elaborate webs or shoots sticky strands of webbing from its abdomen. Giant spiders are most commonly found underground, making their lairs on ceilings or in dark, web-filled crevices. Such lairs are often festooned with web cocoons holding past victims.
+
+## Giant Toad
+
+_Large beast, unaligned_
+
+- **Armor Class** 11
+- **Hit Points** 39 (6d10 + 6)
+- **Speed** 20 ft., swim 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     13 |     13 |      2 |     10 |      3 |
+| **Modifier**     |     +2 |     +1 |     +1 |     -4 |     +0 |     -4 |
+| **Saving Throw** |     +2 |     +1 |     +1 |     -4 |     +0 |     -4 |
+
+- **Senses** darkvision 30 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Amphibious.**_ The toad can breathe air and water.
+
+_**Standing Leap.**_ The toad's long jump is up to 20 feet and its high jump is up to 10 feet, with or without a running start.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 7 (1d10 + 2) piercing damage plus 5 (1d10) poison damage, and the target is grappled (escape DC 13). Until this grapple ends, the target is restrained, and the toad can't bite another target.
+
+_**Swallow.**_ The toad makes one bite attack against a Medium or smaller target it is grappling. If the attack hits, the target is swallowed, and the grapple ends. The swallowed target is blinded and restrained, it has total cover against attacks and other effects outside the toad, and it takes 10 (3d6) acid damage at the start of each of the toad's turns. The toad can have only one target swallowed at a time.
+
+If the toad dies, a swallowed creature is no longer restrained by it and can escape from the corpse using 5 feet of movement, exiting prone.
+
+## Giant Vulture
+
+_Large beast, neutral evil_
+
+- **Armor Class** 10
+- **Hit Points** 22 (3d10 + 6)
+- **Speed** 10 ft., fly 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     10 |     15 |      6 |     12 |      7 |
+| **Modifier**     |     +2 |     +0 |     +2 |     -2 |     +1 |     -2 |
+| **Saving Throw** |     +2 |     +0 |     +2 |     -2 |     +1 |     -2 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** understands Common but can't speak
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Keen Sight and Smell.**_ The vulture has advantage on Wisdom (Perception) checks that rely on sight or smell.
+
+_**Pack Tactics.**_ The vulture has advantage on an attack roll against a creature if at least one of the vulture's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Multiattack.**_ The vulture makes two attacks: one with its beak and one with its talons.
+
+_**Beak.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 7 (2d4 + 2) piercing damage.
+
+_**Talons.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 9 (2d6 + 2) slashing damage.
+
+A **giant vulture** has advanced intelligence and a malevolent bent. Unlike its smaller kin, it will attack a wounded creature to hasten its end. Giant vultures have been known to haunt a thirsty, starving creature for days to enjoy its suffering.
+
+## Giant Wasp
+
+_Medium beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 13 (3d8)
+- **Speed** 10 ft., fly 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     10 |     14 |     10 |      1 |     10 |      3 |
+| **Modifier**     |     +0 |     +2 |     +0 |     -5 |     +0 |     -4 |
+| **Saving Throw** |     +0 |     +2 |     +0 |     -5 |     +0 |     -4 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 1/2 (100 XP)
+
+### Actions
+
+_**Sting.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 5 (1d6 + 2) piercing damage, and the target must make a DC 11 Constitution saving throw, taking 10 (3d6) poison damage on a failed save, or half as much damage on a successful one. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.
+
+## Giant Weasel
+
+_Medium beast, unaligned_
+
+- **Armor Class** 13
+- **Hit Points** 9 (2d8)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     11 |     16 |     10 |      4 |     12 |      5 |
+| **Modifier**     |     +0 |     +3 |     +0 |     -3 |     +1 |     -3 |
+| **Saving Throw** |     +0 |     +3 |     +0 |     -3 |     +1 |     -3 |
+
+- **Skills** Perception +3, Stealth +5
+- **Senses** darkvision 60 ft., passive Perception 13
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Traits
+
+_**Keen Hearing and Smell.**_ The weasel has advantage on Wisdom (Perception) checks that rely on hearing or smell.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 5 (1d4 + 3) piercing damage.
+
+## Giant Wolf Spider
+
+_Medium beast, unaligned_
+
+- **Armor Class** 13
+- **Hit Points** 11 (2d8 + 2)
+- **Speed** 40 ft., climb 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     12 |     16 |     13 |      3 |     12 |      4 |
+| **Modifier**     |     +1 |     +3 |     +1 |     -4 |     +1 |     -3 |
+| **Saving Throw** |     +1 |     +3 |     +1 |     -4 |     +1 |     -3 |
+
+- **Skills** Perception +3, Stealth +7
+- **Senses** blindsight 10 ft., darkvision 60 ft., passive Perception 13
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Spider Climb.**_ The spider can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check.
+
+_**Web Sense.**_ While in contact with a web, the spider knows the exact location of any other creature in contact with the same web.
+
+_**Web Walker.**_ The spider ignores movement restrictions caused by webbing.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one creature. _Hit:_ 4 (1d6 + 1) piercing damage, and the target must make a DC 11 Constitution saving throw, taking 7 (2d6) poison damage on a failed save, or half as much damage on a successful one. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.
+
+Smaller than a giant spider, a **giant wolf spider** hunts prey across open ground or hides in a burrow or crevice, or in a hidden cavity beneath debris.
+
+## Goat
+
+_Medium beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 4 (1d8)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     12 |     10 |     11 |      2 |     10 |      5 |
+| **Modifier**     |     +1 |     +0 |     +0 |     -4 |     +0 |     -3 |
+| **Saving Throw** |     +1 |     +0 |     +0 |     -4 |     +0 |     -3 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Charge.**_ If the goat moves at least 20 feet straight toward a target and then hits it with a ram attack on the same turn, the target takes an extra 2 (1d4) bludgeoning damage. If the target is a creature, it must succeed on a DC 10 Strength saving throw or be knocked prone.
+
+_**Sure-Footed.**_ The goat has advantage on Strength and Dexterity saving throws made against effects that would knock it prone.
+
+### Actions
+
+_**Ram.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 3 (1d4 + 1) bludgeoning damage.
+
+## Hawk
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 13
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 10 ft., fly 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      5 |     16 |      8 |      2 |     14 |      6 |
+| **Modifier**     |     -3 |     +3 |     -1 |     -4 |     +2 |     -2 |
+| **Saving Throw** |     -3 |     +3 |     -1 |     -4 |     +2 |     -2 |
+
+- **Skills** Perception +4
+- **Senses** passive Perception 14
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Keen Sight.**_ The hawk has advantage on Wisdom (Perception) checks that rely on sight.
+
+### Actions
+
+_**Talons.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 1 slashing damage.
+
+## Hunter Shark
+
+_Large beast, unaligned_
+
+- **Armor Class** 12 (natural armor)
+- **Hit Points** 45 (6d10 + 12)
+- **Speed** 0 ft., swim 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     18 |     13 |     15 |      1 |     10 |      4 |
+| **Modifier**     |     +4 |     +1 |     +2 |     -5 |     +0 |     -3 |
+| **Saving Throw** |     +4 |     +1 |     +2 |     -5 |     +0 |     -3 |
+
+- **Skills** Perception +2
+- **Senses** blindsight 30 ft., passive Perception 12
+- **Languages** —
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Blood Frenzy.**_ The shark has advantage on melee attack rolls against any creature that doesn't have all its hit points.
+
+_**Water Breathing.**_ The shark can breathe only underwater.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one target. _Hit:_ 13 (2d8 + 4) piercing damage.
+
+Smaller than a giant shark but larger and fiercer than a reef shark, a **hunter shark** haunts deep waters. It usually hunts alone, but multiple hunter sharks might feed in the same area. A fully grown hunter shark is 15 to 20 feet long.
+
+## Hyena
+
+_Medium beast, unaligned_
+
+- **Armor Class** 11
+- **Hit Points** 5 (1d8 + 1)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     11 |     13 |     12 |      2 |     12 |      5 |
+| **Modifier**     |     +0 |     +1 |     +1 |     -4 |     +1 |     -3 |
+| **Saving Throw** |     +0 |     +1 |     +1 |     -4 |     +1 |     -3 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Pack Tactics.**_ The hyena has advantage on an attack roll against a creature if at least one of the hyena's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one target. _Hit:_ 3 (1d6) piercing damage.
+
+## Jackal
+
+_Small beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 3 (1d6)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      8 |     15 |     11 |      3 |     12 |      6 |
+| **Modifier**     |     -1 |     +2 |     +0 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     -1 |     +2 |     +0 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Keen Hearing and Smell.**_ The jackal has advantage on Wisdom (Perception) checks that rely on hearing or smell.
+
+_**Pack Tactics.**_ The jackal has advantage on an attack roll against a creature if at least one of the jackal's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +1 to hit, reach 5 ft., one target. _Hit:_ 1 (1d4 - 1) piercing damage.
+
+## Killer Whale
+
+_Huge beast, unaligned_
+
+- **Armor Class** 12 (natural armor)
+- **Hit Points** 90 (12d12 + 12)
+- **Speed** 0 ft., swim 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     19 |     10 |     13 |      3 |     12 |      7 |
+| **Modifier**     |     +4 |     +0 |     +1 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +4 |     +0 |     +1 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3
+- **Senses** blindsight 120 ft., passive Perception 13
+- **Languages** —
+- **Challenge** 3 (700 XP)
+
+### Traits
+
+_**Echolocation.**_ The whale can't use its blindsight while deafened.
+
+_**Hold Breath.**_ The whale can hold its breath for 30 minutes.
+
+_**Keen Hearing.**_ The whale has advantage on Wisdom (Perception) checks that rely on hearing.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one target. _Hit:_ 21 (5d6 + 4) piercing damage.
+
+## Lion
+
+_Large beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 26 (4d10 + 4)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     17 |     15 |     13 |      3 |     12 |      8 |
+| **Modifier**     |     +3 |     +2 |     +1 |     -4 |     +1 |     -1 |
+| **Saving Throw** |     +3 |     +2 |     +1 |     -4 |     +1 |     -1 |
+
+- **Skills** Perception +3, Stealth +6
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Keen Smell.**_ The lion has advantage on Wisdom (Perception) checks that rely on smell.
+
+_**Pack Tactics.**_ The lion has advantage on an attack roll against a creature if at least one of the lion's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+_**Pounce.**_ If the lion moves at least 20 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 13 Strength saving throw or be knocked prone. If the target is prone, the lion can make one bite attack against it as a bonus action.
+
+_**Running Leap.**_ With a 10-foot running start, the lion can long jump up to 25 feet.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 7 (1d8 + 3) piercing damage.
+
+_**Claw.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 6 (1d6 + 3) slashing damage.
+
+## Lizard
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 2 (1d4)
+- **Speed** 20 ft., climb 20 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      2 |     11 |     10 |      1 |      8 |      3 |
+| **Modifier**     |     -4 |     +0 |     +0 |     -5 |     -1 |     -4 |
+| **Saving Throw** |     -4 |     +0 |     +0 |     -5 |     -1 |     -4 |
+
+- **Senses** darkvision 30 ft., passive Perception 9
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +0 to hit, reach 5 ft., one target. _Hit:_ 1 piercing damage.
+
+## Mammoth
+
+_Huge beast, unaligned_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 126 (11d12 + 55)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     24 |      9 |     21 |      3 |     11 |      6 |
+| **Modifier**     |     +7 |     -1 |     +5 |     -4 |     +0 |     -2 |
+| **Saving Throw** |     +7 |     -1 |     +5 |     -4 |     +0 |     -2 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 6 (2,300 XP)
+
+### Traits
+
+_**Trampling Charge.**_ If the mammoth moves at least 20 feet straight toward a creature and then hits it with a gore attack on the same turn, that target must succeed on a DC 18 Strength saving throw or be knocked prone. If the target is prone, the mammoth can make one stomp attack against it as a bonus action.
+
+### Actions
+
+_**Gore.**_ _Melee Weapon Attack:_ +10 to hit, reach 10 ft., one target. _Hit:_ 25 (4d8 + 7) piercing damage.
+
+_**Stomp.**_ _Melee Weapon Attack:_ +10 to hit, reach 5 ft., one prone creature. _Hit:_ 29 (4d10 + 7) bludgeoning damage.
+
+A **mammoth** is an elephantine creature with thick fur and long tusks. Stockier and fiercer than normal elephants, mammoths inhabit a wide range of climes, from subarctic to subtropical.
+
+## Mastiff
+
+_Medium beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 5 (1d8 + 1)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     13 |     14 |     12 |      3 |     12 |      7 |
+| **Modifier**     |     +1 |     +2 |     +1 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +1 |     +2 |     +1 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Traits
+
+_**Keen Hearing and Smell.**_ The mastiff has advantage on Wisdom (Perception) checks that rely on hearing or smell.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 4 (1d6 + 1) piercing damage. If the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone.
+
+**Mastiffs** are impressive hounds prized by humanoids for their loyalty and keen senses. Mastiffs can be trained as guard dogs, hunting dogs, and war dogs. Halflings and other Small humanoids ride them as mounts.
+
+## Mule
+
+_Medium beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 11 (2d8 + 2)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     14 |     10 |     13 |      2 |     10 |      5 |
+| **Modifier**     |     +2 |     +0 |     +1 |     -4 |     +0 |     -3 |
+| **Saving Throw** |     +2 |     +0 |     +1 |     -4 |     +0 |     -3 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Traits
+
+_**Beast of Burden.**_ The mule is considered to be a Large animal for the purpose of determining its carrying capacity.
+
+_**Sure-Footed.**_ The mule has advantage on Strength and Dexterity saving throws made against effects that would knock it prone.
+
+### Actions
+
+_**Hooves.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one target. _Hit:_ 4 (1d4 + 2) bludgeoning damage.
+
+## Octopus
+
+_Small beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 3 (1d6)
+- **Speed** 5 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      4 |     15 |     11 |      3 |     10 |      4 |
+| **Modifier**     |     -3 |     +2 |     +0 |     -4 |     +0 |     -3 |
+| **Saving Throw** |     -3 |     +2 |     +0 |     -4 |     +0 |     -3 |
+
+- **Skills** Perception +2, Stealth +4
+- **Senses** darkvision 30 ft., passive Perception 12
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Hold Breath.**_ While out of water, the octopus can hold its breath for 30 minutes.
+
+_**Underwater Camouflage.**_ The octopus has advantage on Dexterity (Stealth) checks made while underwater.
+
+_**Water Breathing.**_ The octopus can breathe only underwater.
+
+### Actions
+
+_**Tentacles.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 1 bludgeoning damage, and the target is grappled (escape DC 10). Until this grapple ends, the octopus can't use its tentacles on another target.
+
+_**Ink Cloud (Recharges after a Short or Long Rest).**_ A 5 foot-radius cloud of ink extends all around the octopus if it is underwater. The area is heavily obscured for 1 minute, although a significant current can disperse the ink. After releasing the ink, the octopus can use the Dash action as a bonus action.
+
+## Owl
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 11
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 5 ft., fly 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      3 |     13 |      8 |      2 |     12 |      7 |
+| **Modifier**     |     -4 |     +1 |     -1 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     -4 |     +1 |     -1 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3, Stealth +3
+- **Senses** darkvision 120 ft., passive Perception 13
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Flyby.**_ The owl doesn't provoke opportunity attacks when it flies out of an enemy's reach.
+
+_**Keen Hearing and Sight.**_ The owl has advantage on Wisdom (Perception) checks that rely on hearing or sight.
+
+### Actions
+
+_**Talons.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 1 slashing damage.
+
+## Panther
+
+_Medium beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 13 (3d8)
+- **Speed** 50 ft., climb 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     14 |     15 |     10 |      3 |     14 |      7 |
+| **Modifier**     |     +2 |     +2 |     +0 |     -4 |     +2 |     -2 |
+| **Saving Throw** |     +2 |     +2 |     +0 |     -4 |     +2 |     -2 |
+
+- **Skills** Perception +4, Stealth +6
+- **Senses** passive Perception 14
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Keen Smell.**_ The panther has advantage on Wisdom (Perception) checks that rely on smell.
+
+_**Pounce.**_ If the panther moves at least 20 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 12 Strength saving throw or be knocked prone. If the target is prone, the panther can make one bite attack against it as a bonus action.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.
+
+_**Claw.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 4 (1d4 + 2) slashing damage.
+
+## Phase Spider
+
+_Large monstrosity, unaligned_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 32 (5d10 + 5)
+- **Speed** 30 ft., climb 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     15 |     12 |      6 |     10 |      6 |
+| **Modifier**     |     +2 |     +2 |     +1 |     -2 |     +0 |     -2 |
+| **Saving Throw** |     +2 |     +2 |     +1 |     -2 |     +0 |     -2 |
+
+- **Skills** Stealth +6
+- **Senses** darkvision 60 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 3 (700 XP)
+
+### Traits
+
+_**Ethereal Jaunt.**_ As a bonus action, the spider can magically shift from the Material Plane to the Ethereal Plane, or vice versa.
+
+_**Spider Climb.**_ The spider can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check.
+
+_**Web Walker.**_ The spider ignores movement restrictions caused by webbing.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 7 (1d10 + 2) piercing damage, and the target must make a DC 11 Constitution saving throw, taking 18 (4d8) poison damage on a failed save, or half as much damage on a successful one. If the poison damage reduces the target to 0 hit points, the target is stable but poisoned for 1 hour, even after regaining hit points, and is paralyzed while poisoned in this way.
+
+A **phase spider** possesses the magical ability to phase in and out of the Ethereal Plane. It seems to appear out of nowhere and quickly vanishes after attacking. Its movement on the Ethereal Plane before coming back to the Material Plane makes it seem like it can teleport.
+
+## Poisonous Snake
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 13
+- **Hit Points** 2 (1d4)
+- **Speed** 30 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      2 |     16 |     11 |      1 |     10 |      3 |
+| **Modifier**     |     -4 |     +3 |     +0 |     -5 |     +0 |     -4 |
+| **Saving Throw** |     -4 |     +3 |     +0 |     -5 |     +0 |     -4 |
+
+- **Senses** blindsight 10 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 1 piercing damage, and the target must make a DC 10 Constitution saving throw, taking 5 (2d4) poison damage on a failed save, or half as much damage on a successful one.
+
+## Polar Bear
+
+_Large beast, unaligned_
+
+- **Armor Class** 12 (natural armor)
+- **Hit Points** 42 (5d10 + 15)
+- **Speed** 40 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     20 |     10 |     16 |      2 |     13 |      7 |
+| **Modifier**     |     +5 |     +0 |     +3 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +5 |     +0 |     +3 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Keen Smell.**_ The bear has advantage on Wisdom (Perception) checks that rely on smell.
+
+### Actions
+
+_**Multiattack.**_ The bear makes two attacks: one with its bite and one with its claws.
+
+_**Bite.**_ _Melee Weapon Attack:_ +7 to hit, reach 5 ft., one target. _Hit:_ 9 (1d8 + 5) piercing damage.
+
+_**Claws.**_ _Melee Weapon Attack:_ +7 to hit, reach 5 ft., one target. _Hit:_ 12 (2d6 + 5) slashing damage.
+
+## Pony
+
+_Medium beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 11 (2d8 + 2)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     10 |     13 |      2 |     11 |      7 |
+| **Modifier**     |     +2 |     +0 |     +1 |     -4 |     +0 |     -2 |
+| **Saving Throw** |     +2 |     +0 |     +1 |     -4 |     +0 |     -2 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 1/8 (25 XP)
+
+### Actions
+
+_**Hooves.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 7 (2d4 + 2) bludgeoning damage.
+
+## Quipper
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 13
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 0 ft., swim 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      2 |     16 |      9 |      1 |      7 |      2 |
+| **Modifier**     |     -4 |     +3 |     -1 |     -5 |     -2 |     -4 |
+| **Saving Throw** |     -4 |     +3 |     -1 |     -5 |     -2 |     -4 |
+
+- **Senses** darkvision 60 ft., passive Perception 8
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Blood Frenzy.**_ The quipper has advantage on melee attack rolls against any creature that doesn't have all its hit points.
+
+_**Water Breathing.**_ The quipper can breathe only underwater.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 1 piercing damage.
+
+A **quipper** is a carnivorous fish with sharp teeth. Quippers can adapt to any aquatic environment, including cold subterranean lakes. They frequently gather in swarms; the statistics for a swarm of quippers appear later in this appendix.
+
+## Rat
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 20 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      2 |     11 |      9 |      2 |     10 |      4 |
+| **Modifier**     |     -4 |     +0 |     -1 |     -4 |     +0 |     -3 |
+| **Saving Throw** |     -4 |     +0 |     -1 |     -4 |     +0 |     -3 |
+
+- **Senses** darkvision 30 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Keen Smell.**_ The rat has advantage on Wisdom (Perception) checks that rely on smell.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +0 to hit, reach 5 ft., one target. _Hit:_ 1 piercing damage.
+
+## Raven
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 10 ft., fly 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      2 |     14 |      8 |      2 |     12 |      6 |
+| **Modifier**     |     -4 |     +2 |     -1 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     -4 |     +2 |     -1 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Mimicry.**_ The raven can mimic simple sounds it has heard, such as a person whispering, a baby crying, or an animal chittering. A creature that hears the sounds can tell they are imitations with a successful DC 10 Wisdom (Insight) check.
+
+### Actions
+
+_**Beak.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 1 piercing damage.
+
+## Reef Shark
+
+_Medium beast, unaligned_
+
+- **Armor Class** 12 (natural armor)
+- **Hit Points** 22 (4d8 + 4)
+- **Speed** 0 ft., swim 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     14 |     13 |     13 |      1 |     10 |      4 |
+| **Modifier**     |     +2 |     +1 |     +1 |     -5 |     +0 |     -3 |
+| **Saving Throw** |     +2 |     +1 |     +1 |     -5 |     +0 |     -3 |
+
+- **Skills** Perception +2
+- **Senses** blindsight 30 ft., passive Perception 12
+- **Languages** —
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Pack Tactics.**_ The shark has advantage on an attack roll against a creature if at least one of the shark's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+_**Water Breathing.**_ The shark can breathe only underwater.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 6 (1d8 + 2) piercing damage.
+
+Smaller than giant sharks and hunter sharks, **reef sharks** inhabit shallow waters and coral reefs, gathering in small packs to hunt. A full-grown specimen measures 6 to 10 feet long.
+
+## Rhinoceros
+
+_Large beast, unaligned_
+
+- **Armor Class** 11 (natural armor)
+- **Hit Points** 45 (6d10 + 12)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     21 |      8 |     15 |      2 |     12 |      6 |
+| **Modifier**     |     +5 |     -1 |     +2 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +5 |     -1 |     +2 |     -4 |     +1 |     -2 |
+
+- **Senses** passive Perception 11
+- **Languages** —
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Charge.**_ If the rhinoceros moves at least 20 feet straight toward a target and then hits it with a gore attack on the same turn, the target takes an extra 9 (2d8) bludgeoning damage. If the target is a creature, it must succeed on a DC 15 Strength saving throw or be knocked prone.
+
+### Actions
+
+_**Gore.**_ _Melee Weapon Attack:_ +7 to hit, reach 5 ft., one target. _Hit:_ 14 (2d8 + 5) bludgeoning damage.
+
+## Riding Horse
+
+_Large beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 13 (2d10 + 2)
+- **Speed** 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |     10 |     12 |      2 |     11 |      7 |
+| **Modifier**     |     +3 |     +0 |     +1 |     -4 |     +0 |     -2 |
+| **Saving Throw** |     +3 |     +0 |     +1 |     -4 |     +0 |     -2 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Actions
+
+_**Hooves.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 8 (2d4 + 3) bludgeoning damage.
+
+## Saber-Toothed Tiger
+
+_Large beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 52 (7d10 + 14)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     18 |     14 |     15 |      3 |     12 |      8 |
+| **Modifier**     |     +4 |     +2 |     +2 |     -4 |     +1 |     -1 |
+| **Saving Throw** |     +4 |     +2 |     +2 |     -4 |     +1 |     -1 |
+
+- **Skills** Perception +3, Stealth +6
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Keen Smell.**_ The tiger has advantage on Wisdom (Perception) checks that rely on smell.
+
+_**Pounce.**_ If the tiger moves at least 20 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 14 Strength saving throw or be knocked prone. If the target is prone, the tiger can make one bite attack against it as a bonus action.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one target. _Hit:_ 10 (1d10 + 5) piercing damage.
+
+_**Claw.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one target. _Hit:_ 12 (2d6 + 5) slashing damage.
+
+## Scorpion
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 11 (natural armor)
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 10 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      2 |     11 |      8 |      1 |      8 |      2 |
+| **Modifier**     |     -4 |     +0 |     -1 |     -5 |     -1 |     -4 |
+| **Saving Throw** |     -4 |     +0 |     -1 |     -5 |     -1 |     -4 |
+
+- **Senses** blindsight 10 ft., passive Perception 9
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Actions
+
+_**Sting.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one creature. _Hit:_ 1 piercing damage, and the target must make a DC 9 Constitution saving throw, taking 4 (1d8) poison damage on a failed save, or half as much damage on a successful one.
+
+## Sea Horse
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 11
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 0 ft., swim 20 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      1 |     12 |      8 |      1 |     10 |      2 |
+| **Modifier**     |     -5 |     +1 |     -1 |     -5 |     +0 |     -4 |
+| **Saving Throw** |     -5 |     +1 |     -1 |     -5 |     +0 |     -4 |
+
+- **Senses** passive Perception 10
+- **Languages** —
+- **Challenge** 0 (0 XP)
+
+### Traits
+
+_**Water Breathing.**_ The sea horse can breathe only underwater.
+
+## Spider
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 20 ft., climb 20 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      2 |     14 |      8 |      1 |     10 |      2 |
+| **Modifier**     |     -4 |     +2 |     -1 |     -5 |     +0 |     -4 |
+| **Saving Throw** |     -4 |     +2 |     -1 |     -5 |     +0 |     -4 |
+
+- **Skills** Stealth +4
+- **Senses** darkvision 30 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Spider Climb.**_ The spider can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check.
+
+_**Web Sense.**_ While in contact with a web, the spider knows the exact location of any other creature in contact with the same web.
+
+_**Web Walker.**_ The spider ignores movement restrictions caused by webbing.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 1 piercing damage, and the target must succeed on a DC 9 Constitution saving throw or take 2 (1d4) poison damage.
+
+## Swarm of Bats
+
+_Medium swarm of Tiny beasts, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 22 (5d8)
+- **Speed** 0 ft., fly 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      5 |     15 |     10 |      2 |     12 |      4 |
+| **Modifier**     |     -3 |     +2 |     +0 |     -4 |     +1 |     -3 |
+| **Saving Throw** |     -3 |     +2 |     +0 |     -4 |     +1 |     -3 |
+
+- **Damage Resistances** bludgeoning, piercing, slashing
+- **Condition Immunities** charmed, frightened, grappled, paralyzed, petrified, prone, restrained, stunned
+- **Senses** blindsight 60 ft., passive Perception 11
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Echolocation.**_ The swarm can't use its blindsight while deafened.
+
+_**Keen Hearing.**_ The swarm has advantage on Wisdom (Perception) checks that rely on hearing.
+
+_**Swarm.**_ The swarm can occupy another creature's space and vice versa, and the swarm can move through any opening large enough for a Tiny bat. The swarm can't regain hit points or gain temporary hit points.
+
+### Actions
+
+_**Bites.**_ _Melee Weapon Attack:_ +4 to hit, reach 0 ft., one creature in the swarm's space. _Hit:_ 5 (2d4) piercing damage, or 2 (1d4) piercing damage if the swarm has half of its hit points or fewer.
+
+## Swarm of Insects
+
+_Medium swarm of Tiny beasts, unaligned_
+
+- **Armor Class** 12 (natural armor)
+- **Hit Points** 22 (5d8)
+- **Speed** 20 ft., climb 20 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      3 |     13 |     10 |      1 |      7 |      1 |
+| **Modifier**     |     -4 |     +1 |     +0 |     -5 |     -2 |     -5 |
+| **Saving Throw** |     -4 |     +1 |     +0 |     -5 |     -2 |     -5 |
+
+- **Damage Resistances** bludgeoning, piercing, slashing
+- **Condition Immunities** charmed, frightened, grappled, paralyzed, petrified, prone, restrained, stunned
+- **Senses** blindsight 10 ft., passive Perception 8
+- **Languages** —
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Swarm.**_ The swarm can occupy another creature's space and vice versa, and the swarm can move through any opening large enough for a Tiny insect. The swarm can't regain hit points or gain temporary hit points.
+
+### Actions
+
+_**Bites.**_ _Melee Weapon Attack:_ +3 to hit, reach 0 ft., one target in the swarm's space. _Hit:_ 10 (4d4) piercing damage, or 5 (2d4) piercing damage if the swarm has half of its hit points or fewer.
+
+## Swarm of Poisonous Snakes
+
+_Medium swarm of Tiny beasts, unaligned_
+
+- **Armor Class** 14
+- **Hit Points** 36 (8d8)
+- **Speed** 30 ft., swim 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      8 |     18 |     11 |      1 |     10 |      3 |
+| **Modifier**     |     -1 |     +4 |     +0 |     -5 |     +0 |     -4 |
+| **Saving Throw** |     -1 |     +4 |     +0 |     -5 |     +0 |     -4 |
+
+- **Damage Resistances** bludgeoning, piercing, slashing
+- **Condition Immunities** charmed, frightened, grappled, paralyzed, petrified, prone, restrained, stunned
+- **Senses** blindsight 10 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Swarm.**_ The swarm can occupy another creature's space and vice versa, and the swarm can move through any opening large enough for a Tiny snake. The swarm can't regain hit points or gain temporary hit points.
+
+### Actions
+
+_**Bites.**_ _Melee Weapon Attack:_ +6 to hit, reach 0 ft., one creature in the swarm's space. _Hit:_ 7 (2d6) piercing damage, or 3 (1d6) piercing damage if the swarm has half of its hit points or fewer. The target must make a DC 10 Constitution saving throw, taking 14 (4d6) poison damage on a failed save, or half as much damage on a successful one.
+
+## Swarm of Quippers
+
+_Medium swarm of Tiny beasts, unaligned_
+
+- **Armor Class** 13
+- **Hit Points** 28 (8d8 - 8)
+- **Speed** 0 ft., swim 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     13 |     16 |      9 |      1 |      7 |      2 |
+| **Modifier**     |     +1 |     +3 |     -1 |     -5 |     -2 |     -4 |
+| **Saving Throw** |     +1 |     +3 |     -1 |     -5 |     -2 |     -4 |
+
+- **Damage Resistances** bludgeoning, piercing, slashing
+- **Condition Immunities** charmed, frightened, grappled, paralyzed, petrified, prone, restrained, stunned
+- **Senses** darkvision 60 ft., passive Perception 8
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Blood Frenzy.**_ The swarm has advantage on melee attack rolls against any creature that doesn't have all its hit points.
+
+_**Swarm.**_ The swarm can occupy another creature's space and vice versa, and the swarm can move through any opening large enough for a Tiny quipper. The swarm can't regain hit points or gain temporary hit points.
+
+_**Water Breathing.**_ The swarm can breathe only underwater.
+
+### Actions
+
+_**Bites.**_ _Melee Weapon Attack:_ +5 to hit, reach 0 ft., one creature in the swarm's space. _Hit:_ 14 (4d6) piercing damage, or 7 (2d6) piercing damage if the swarm has half of its hit points or fewer.
+
+## Swarm of Rats
+
+_Medium swarm of Tiny beasts, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 24 (7d8 - 7)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      9 |     11 |      9 |      2 |     10 |      3 |
+| **Modifier**     |     -1 |     +0 |     -1 |     -4 |     +0 |     -4 |
+| **Saving Throw** |     -1 |     +0 |     -1 |     -4 |     +0 |     -4 |
+
+- **Damage Resistances** bludgeoning, piercing, slashing
+- **Condition Immunities** charmed, frightened, grappled, paralyzed, petrified, prone, restrained, stunned
+- **Senses** darkvision 30 ft., passive Perception 10
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Keen Smell.**_ The swarm has advantage on Wisdom (Perception) checks that rely on smell.
+
+_**Swarm.**_ The swarm can occupy another creature's space and vice versa, and the swarm can move through any opening large enough for a Tiny rat. The swarm can't regain hit points or gain temporary hit points.
+
+### Actions
+
+_**Bites.**_ _Melee Weapon Attack:_ +2 to hit, reach 0 ft., one target in the swarm's space. _Hit:_ 7 (2d6) piercing damage, or 3 (1d6) piercing damage if the swarm has half of its hit points or fewer.
+
+## Swarm of Ravens
+
+_Medium swarm of Tiny beasts, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 24 (7d8 - 7)
+- **Speed** 10 ft., fly 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      6 |     14 |      8 |      3 |     12 |      6 |
+| **Modifier**     |     -2 |     +2 |     -1 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     -2 |     +2 |     -1 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +5
+- **Damage Resistances** bludgeoning, piercing, slashing
+- **Condition Immunities** charmed, frightened, grappled, paralyzed, petrified, prone, restrained, stunned
+- **Senses** passive Perception 15
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Swarm.**_ The swarm can occupy another creature's space and vice versa, and the swarm can move through any opening large enough for a Tiny raven. The swarm can't regain hit points or gain temporary hit points.
+
+### Actions
+
+_**Beaks.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target in the swarm's space. _Hit:_ 7 (2d6) piercing damage, or 3 (1d6) piercing damage if the swarm has half of its hit points or fewer.
+
+## Variant: Insect Swarms
+
+Different kinds of insects can gather in swarms, and each swarm has the special characteristics described below.
+
+_**Swarm of Beetles.**_ A swarm of beetles gains a burrowing speed of 5 feet.
+
+_**Swarm of Centipedes.**_ A creature reduced to 0 hit points by a swarm of centipedes is stable but poisoned for 1 hour, even after regaining hit points, and paralyzed while poisoned in this way.
+
+_**Swarm of Spiders.**_ A swarm of spiders has the following additional traits.
+
+_**Spider Climb.**_ The swarm can climb difficult surfaces, including upside down on ceilings, without needing to make an ability check.
+
+_**Web Sense.**_ While in contact with a web, the swarm knows the exact location of any other creature in contact with the same web.
+
+_**Web Walker.**_ The swarm ignores movement restrictions caused by webbing.
+
+_**Swarm of Wasps.**_ A swarm of wasps has a walking speed of 5 feet, a flying speed of 30 feet, and no climbing speed.
+
+## Tiger
+
+_Large beast, unaligned_
+
+- **Armor Class** 12
+- **Hit Points** 37 (5d10 + 10)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     17 |     15 |     14 |      3 |     12 |      8 |
+| **Modifier**     |     +3 |     +2 |     +2 |     -4 |     +1 |     -1 |
+| **Saving Throw** |     +3 |     +2 |     +2 |     -4 |     +1 |     -1 |
+
+- **Skills** Perception +3, Stealth +6
+- **Senses** darkvision 60 ft., passive Perception 13
+- **Languages** —
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Keen Smell.**_ The tiger has advantage on Wisdom (Perception) checks that rely on smell.
+
+_**Pounce.**_ If the tiger moves at least 20 feet straight toward a creature and then hits it with a claw attack on the same turn, that target must succeed on a DC 13 Strength saving throw or be knocked prone. If the target is prone, the tiger can make one bite attack against it as a bonus action.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 8 (1d10 + 3) piercing damage.
+
+_**Claw.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 7 (1d8 + 3) slashing damage.
+
+## Vulture
+
+_Medium beast, unaligned_
+
+- **Armor Class** 10
+- **Hit Points** 5 (1d8 + 1)
+- **Speed** 10 ft., fly 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      7 |     10 |     13 |      2 |     12 |      4 |
+| **Modifier**     |     -2 |     +0 |     +1 |     -4 |     +1 |     -3 |
+| **Saving Throw** |     -2 |     +0 |     +1 |     -4 |     +1 |     -3 |
+
+- **Skills** Perception +3
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Keen Sight and Smell.**_ The vulture has advantage on Wisdom (Perception) checks that rely on sight or smell.
+
+_**Pack Tactics.**_ The vulture has advantage on an attack roll against a creature if at least one of the vulture's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Beak.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one target. _Hit:_ 2 (1d4) piercing damage.
+
+## Warhorse
+
+_Large beast, unaligned_
+
+- **Armor Class** 11
+- **Hit Points** 19 (3d10 + 3)
+- **Speed** 60 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     18 |     12 |     13 |      2 |     12 |      7 |
+| **Modifier**     |     +4 |     +1 |     +1 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +4 |     +1 |     +1 |     -4 |     +1 |     -2 |
+
+- **Senses** passive Perception 11
+- **Languages** —
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Trampling Charge.**_ If the horse moves at least 20 feet straight toward a creature and then hits it with a hooves attack on the same turn, that target must succeed on a DC 14 Strength saving throw or be knocked prone. If the target is prone, the horse can make another attack with its hooves against it as a bonus action.
+
+### Actions
+
+_**Hooves.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one target. _Hit:_ 11 (2d6 + 4) bludgeoning damage.
+
+## Weasel
+
+_Tiny beast, unaligned_
+
+- **Armor Class** 13
+- **Hit Points** 1 (1d4 - 1)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      3 |     16 |      8 |      2 |     12 |      3 |
+| **Modifier**     |     -4 |     +3 |     -1 |     -4 |     +1 |     -4 |
+| **Saving Throw** |     -4 |     +3 |     -1 |     -4 |     +1 |     -4 |
+
+- **Skills** Perception +3, Stealth +5
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 0 (10 XP)
+
+### Traits
+
+_**Keen Hearing and Smell.**_ The weasel has advantage on Wisdom (Perception) checks that rely on hearing or smell.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 1 piercing damage.
+
+## Winter Wolf
+
+_Large monstrosity, neutral evil_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 75 (10d10 + 20)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     18 |     13 |     14 |      7 |     12 |      8 |
+| **Modifier**     |     +4 |     +1 |     +2 |     -2 |     +1 |     -1 |
+| **Saving Throw** |     +4 |     +1 |     +2 |     -2 |     +1 |     -1 |
+
+- **Skills** Perception +5, Stealth +3
+- **Damage Immunities** cold
+- **Senses** passive Perception 15
+- **Languages** Common, Giant, Winter Wolf
+- **Challenge** 3 (700 XP)
+
+### Traits
+
+_**Keen Hearing and Smell.**_ The wolf has advantage on Wisdom (Perception) checks that rely on hearing or smell.
+
+_**Pack Tactics.**_ The wolf has advantage on an attack roll against a creature if at least one of the wolf's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+_**Snow Camouflage.**_ The wolf has advantage on Dexterity (Stealth) checks made to hide in snowy terrain.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one target. _Hit:_ 11 (2d6 + 4) piercing damage. If the target is a creature, it must succeed on a DC 14 Strength saving throw or be knocked prone.
+
+_**Cold Breath (Recharge 5-6).**_ The wolf exhales a blast of freezing wind in a 15-foot cone. Each creature in that area must make a DC 12 Dexterity saving throw, taking 18 (4d8) cold damage on a failed save, or half as much damage on a successful one.
+
+The arctic-dwelling **winter wolf** is as large as a dire wolf but has snow-white fur and pale blue eyes. Frost giants use these evil creatures as guards and hunting companions, putting the wolves' deadly breath weapon to use against their foes. Winter wolves communicate with one another using growls and barks, but they speak Common and Giant well enough to follow simple conversations.
+
+## Wolf
+
+_Medium beast, unaligned_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 11 (2d8 + 2)
+- **Speed** 40 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     12 |     15 |     12 |      3 |     12 |      6 |
+| **Modifier**     |     +1 |     +2 |     +1 |     -4 |     +1 |     -2 |
+| **Saving Throw** |     +1 |     +2 |     +1 |     -4 |     +1 |     -2 |
+
+- **Skills** Perception +3, Stealth +4
+- **Senses** passive Perception 13
+- **Languages** —
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Keen Hearing and Smell.**_ The wolf has advantage on Wisdom (Perception) checks that rely on hearing or smell.
+
+_**Pack Tactics.**_ The wolf has advantage on attack rolls against a creature if at least one of the wolf's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 7 (2d4 + 2) piercing damage. If the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone.
+
+## Worg
+
+_Large monstrosity, neutral evil_
+
+- **Armor Class** 13 (natural armor)
+- **Hit Points** 26 (4d10 + 4)
+- **Speed** 50 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |     13 |     13 |      7 |     11 |      8 |
+| **Modifier**     |     +3 |     +1 |     +1 |     -2 |     +0 |     -1 |
+| **Saving Throw** |     +3 |     +1 |     +1 |     -2 |     +0 |     -1 |
+
+- **Skills** Perception +4
+- **Senses** darkvision 60 ft., passive Perception 14
+- **Languages** Goblin, Worg
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Keen Hearing and Smell.**_ The worg has advantage on Wisdom (Perception) checks that rely on hearing or smell.
+
+### Actions
+
+_**Bite.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 10 (2d6 + 3) piercing damage. If the target is a creature, it must succeed on a DC 13 Strength saving throw or be knocked prone.
+
+A **worg** is an evil predator that delights in hunting and devouring creatures weaker than itself. Cunning and malevolent, worgs roam across the remote wilderness or are raised by goblins and hobgoblins. Those creatures use worgs as mounts, but a worg will turn on its rider if it feels mistreated or malnourished. Worgs speak in their own language and Goblin, and a few learn to speak Common as well.
+
+# Appendix MM-B: Nonplayer Characters
+
+This appendix contains statistics for various humanoid nonplayer characters (NPCs) that adventurers might encounter during a campaign, including lowly commoners and mighty archmages. These stat blocks can be used to represent both human and nonhuman NPCs.
+
+## Customizing NPCs
+
+There are many easy ways to customize the NPCs in this appendix for your home campaign.
+
+_**Racial Traits.**_ You can add racial traits to an NPC. For example, a halfling druid might have a speed of 25 feet and the Lucky trait. Adding racial traits to an NPC doesn't alter its challenge rating. For more on racial traits, see the _Player's Handbook_.
+
+_**Spell Swaps.**_ One way to customize an NPC spellcaster is to replace one or more of its spells. You can substitute any spell on the NPC's spell list with a different spell of the same level from the same spell list. Swapping spells in this manner doesn't alter an NPC's challenge rating.
+
+_**Armor and Weapon Swaps.**_ You can upgrade or downgrade an NPC's armor, or add or switch weapons. Adjustments to Armor Class and damage can change an NPC's challenge rating.
+
+_**Magic Items.**_ The more powerful an NPC, the more likely it has one or more magic items in its possession. An archmage, for example, might have a magic staff or wand, as well as one or more potions and scrolls. Giving an NPC a potent damage-dealing magic item could alter its challenge rating.
+
+## Acolyte
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 10
+- **Hit Points** 9 (2d8)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     10 |     10 |     10 |     10 |     14 |     11 |
+| **Modifier**     |     +0 |     +0 |     +0 |     +0 |     +2 |     +0 |
+| **Saving Throw** |     +0 |     +0 |     +0 |     +0 |     +2 |     +0 |
+
+- **Skills** Medicine +4, Religion +2
+- **Senses** passive Perception 12
+- **Languages** any one language (usually Common)
+- **Challenge** 1/4 (50 XP)
+
+### Traits
+
+_**Spellcasting.**_ The acolyte is a 1st-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks). The acolyte has following cleric spells prepared:
+
+- Cantrips (at will): _Light_, _Sacred Flame_, _Thaumaturgy_
+- 1st level (3 slots): _Bless_, _Cure Wounds_, _Sanctuary_
+
+### Actions
+
+_**Club.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one target. _Hit:_ 2 (1d4) bludgeoning damage.
+
+**Acolytes** are junior members of a clergy, usually answerable to a priest. They perform a variety of functions in a temple and are granted minor spellcasting power by their deities.
+
+## Archmage
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 12 (15 with _Mage Armor_)
+- **Hit Points** 99 (18d8 + 18)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     10 |     14 |     12 |     20 |     15 |     16 |
+| **Modifier**     |     +0 |     +2 |     +1 |     +5 |     +2 |     +3 |
+| **Saving Throw** |     +0 |     +2 |     +1 |     +9 |     +6 |     +3 |
+
+- **Skills** Arcana +13, History +13
+- **Damage Resistance** damage from spells; nonmagical bludgeoning, piercing, and slashing (from _Stoneskin_)
+- **Senses** passive Perception 12
+- **Languages** any six languages
+- **Challenge** 12 (8,400 XP)
+
+### Traits
+
+_**Magic Resistance.**_ The archmage has advantage on saving throws against spells and other magical effects.
+
+_**Spellcasting.**_ The archmage is an 18th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 17, +9 to hit with spell attacks). The archmage can cast _Disguise Self_ and _Invisibility_ at will and has the following wizard spells prepared:
+
+- Cantrips (at will): _Fire Bolt_, _Light_, _Mage Hand_, _Prestidigitation_, _Shocking Grasp_
+- 1st level (4 slots): _Detect Magic_, _Identify_, _Mage Armor_,\* _Magic Missile_
+- 2nd level (3 slots): _Detect Thoughts_, _Mirror Image_, _Misty Step_
+- 3rd level (3 slots): _Counterspell_, _Fly_, _Lightning Bolt_
+- 4th level (3 slots): _Banishment_, _Fire Shield_, _Stoneskin_\*
+- 5th level (3 slots): _Cone of Cold_, _Scrying_, _Wall of Force_
+- 6th level (1 slot): _Globe of Invulnerability_
+- 7th level (1 slot): _Teleport_
+- 8th level (1 slot): _Mind Blank_\*
+- 9th level (1 slot): _Time Stop_
+
+\**The archmage casts these spells on itself before combat.*
+
+### Actions
+
+_**Dagger.**_ _Melee or Ranged Weapon Attack:_ +6 to hit, reach 5 ft. or range 20/60 ft., one target. _Hit:_ 4 (1d4 + 2) piercing damage.
+
+**Archmages** are powerful (and usually quite old) spellcasters dedicated to the study of the arcane arts. Benevolent ones counsel kings and queens, while evil ones rule as tyrants and pursue lichdom. Those who are neither good nor evil sequester themselves in remote towers to practice their magic without interruption.
+
+An archmage typically has one or more apprentice mages, and an archmage's abode has numerous magical wards and guardians to discourage interlopers.
+
+## Assassin
+
+_Medium humanoid (any race), any non-good alignment_
+
+- **Armor Class** 15 (studded leather)
+- **Hit Points** 78 (12d8 + 24)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     11 |     16 |     14 |     13 |     11 |     10 |
+| **Modifier**     |     +0 |     +3 |     +2 |     +1 |     +0 |     +0 |
+| **Saving Throw** |     +0 |     +6 |     +2 |     +4 |     +0 |     +0 |
+
+- **Skills** Acrobatics +6, Deception +3, Perception +3, Stealth +9
+- **Damage Resistances** poison
+- **Senses** passive Perception 13
+- **Languages** Thieves' cant plus any two languages
+- **Challenge** 8 (3,900 XP)
+
+### Traits
+
+_**Assassinate.**_ During its first turn, the assassin has advantage on attack rolls against any creature that hasn't taken a turn. Any hit the assassin scores against a surprised creature is a critical hit.
+
+_**Evasion.**_ If the assassin is subjected to an effect that allows it to make a Dexterity saving throw to take only half damage, the assassin instead takes no damage if it succeeds on the saving throw, and only half damage if it fails.
+
+_**Sneak Attack.**_ Once per turn, the assassin deals an extra 14 (4d6) damage when it hits a target with a weapon attack and has advantage on the attack roll, or when the target is within 5 feet of an ally of the assassin that isn't incapacitated and the assassin doesn't have disadvantage on the attack roll.
+
+### Actions
+
+_**Multiattack.**_ The assassin makes two shortsword attacks.
+
+_**Shortsword.**_ _Melee Weapon Attack:_ +6 to hit, reach 5 ft., one target. _Hit:_ 6 (1d6 + 3) piercing damage, and the target must make a DC 15 Constitution saving throw, taking 24 (7d6) poison damage on a failed save, or half as much damage on a successful one.
+
+_**Light Crossbow.**_ _Ranged Weapon Attack:_ +6 to hit, range 80/320 ft., one target. _Hit:_ 7 (1d8 + 3) piercing damage, and the target must make a DC 15 Constitution saving throw, taking 24 (7d6) poison damage on a failed save, or half as much damage on a successful one.
+
+Trained in the use of poison, **assassins** are remorseless killers who work for nobles, guildmasters, sovereigns, and anyone else who can afford them.
+
+## Bandit
+
+_Medium humanoid (any race), any non-lawful alignment_
+
+- **Armor Class** 12 (leather armor)
+- **Hit Points** 11 (2d8 + 2)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     11 |     12 |     12 |     10 |     10 |     10 |
+| **Modifier**     |     +0 |     +1 |     +1 |     +0 |     +0 |     +0 |
+| **Saving Throw** |     +0 |     +1 |     +1 |     +0 |     +0 |     +0 |
+
+- **Senses** passive Perception 10
+- **Languages** any one language (usually Common)
+- **Challenge** 1/8 (25 XP)
+
+### Actions
+
+_**Scimitar.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 4 (1d6 + 1) slashing damage.
+
+_**Light Crossbow.**_ _Ranged Weapon Attack:_ +3 to hit, range 80 ft./320 ft., one target. _Hit:_ 5 (1d8 + 1) piercing damage.
+
+**Bandits** rove in gangs and are sometimes led by thugs, veterans, or spellcasters. Not all bandits are evil. Oppression, drought, disease, or famine can often drive otherwise honest folk to a life of banditry.
+
+**Pirates** are bandits of the high seas. They might be freebooters interested only in treasure and murder, or they might be privateers sanctioned by the crown to attack and plunder an enemy nation's vessels.
+
+## Bandit Captain
+
+_Medium humanoid (any race), any non-lawful alignment_
+
+- **Armor Class** 15 (studded leather)
+- **Hit Points** 65 (10d8 + 20)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     16 |     14 |     14 |     11 |     14 |
+| **Modifier**     |     +2 |     +3 |     +2 |     +2 |     +0 |     +2 |
+| **Saving Throw** |     +4 |     +5 |     +2 |     +2 |     +2 |     +2 |
+
+- **Skills** Athletics +4, Deception +4
+- **Senses** passive Perception 10
+- **Languages** any two languages
+- **Challenge** 2 (450 XP)
+
+### Actions
+
+_**Multiattack.**_ The captain makes three melee attacks: two with its scimitar and one with its dagger. Or the captain makes two ranged attacks with its daggers.
+
+_**Scimitar.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 6 (1d6 + 3) slashing damage.
+
+_**Dagger.**_ _Melee or Ranged Weapon Attack:_ +5 to hit, reach 5 ft. or range 20/60 ft., one target. _Hit:_ 5 (1d4 + 3) piercing damage.
+
+### Reactions
+
+_**Parry.**_ The captain adds 2 to its AC against one melee attack that would hit it. To do so, the captain must see the attacker and be wielding a melee weapon.
+
+It takes a strong personality, ruthless cunning, and a silver tongue to keep a gang of bandits in line. The **bandit captain** has these qualities in spades.
+
+In addition to managing a crew of selfish malcontents, the **pirate captain** is a variation of the bandit captain, with a ship to protect and command. To keep the crew in line, the captain must mete out rewards and punishment on a regular basis.
+
+More than treasure, a bandit captain or pirate captain craves infamy. A prisoner who appeals to the captain's vanity or ego is more likely to be treated fairly than a prisoner who does not or claims not to know anything of the captain's colorful reputation.
+
+## Berserker
+
+_Medium humanoid (any race), any chaotic alignment_
+
+- **Armor Class** 13 (hide armor)
+- **Hit Points** 67 (9d8 + 27)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |     12 |     17 |      9 |     11 |      9 |
+| **Modifier**     |     +3 |     +1 |     +3 |     -1 |     +0 |     -1 |
+| **Saving Throw** |     +3 |     +1 |     +3 |     -1 |     +0 |     -1 |
+
+- **Senses** passive Perception 10
+- **Languages** any one language (usually Common)
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Reckless.**_ At the start of its turn, the berserker can gain advantage on all melee weapon attack rolls during that turn, but attack rolls against it have advantage until the start of its next turn.
+
+### Actions
+
+_**Greataxe.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 9 (1d12 + 3) slashing damage.
+
+Hailing from uncivilized lands, unpredictable **berserkers** come together in war parties and seek conflict wherever they can find it.
+
+## Commoner
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 10
+- **Hit Points** 4 (1d8)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     10 |     10 |     10 |     10 |     10 |     10 |
+| **Modifier**     |     +0 |     +0 |     +0 |     +0 |     +0 |     +0 |
+| **Saving Throw** |     +0 |     +0 |     +0 |     +0 |     +0 |     +0 |
+
+- **Senses** passive Perception 10
+- **Languages** any one language (usually Common)
+- **Challenge** 0 (10 XP)
+
+### Actions
+
+_**Club.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one target. _Hit:_ 2 (1d4) bludgeoning damage.
+
+**Commoners** include peasants, serfs, slaves, servants, pilgrims, merchants, artisans, and hermits.
+
+## Cultist
+
+_Medium humanoid (any race), any non-good alignment_
+
+- **Armor Class** 12 (leather armor)
+- **Hit Points** 9 (2d8)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     11 |     12 |     10 |     10 |     11 |     10 |
+| **Modifier**     |     +0 |     +1 |     +0 |     +0 |     +0 |     +0 |
+| **Saving Throw** |     +0 |     +1 |     +0 |     +0 |     +0 |     +0 |
+
+- **Skills** Deception +2, Religion +2
+- **Senses** passive Perception 10
+- **Languages** any one language (usually Common)
+- **Challenge** 1/8 (25 XP)
+
+### Traits
+
+_**Dark Devotion.**_ The cultist has advantage on saving throws against being charmed or frightened.
+
+### Actions
+
+_**Scimitar.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one creature. _Hit:_ 4 (1d6 + 1) slashing damage.
+
+**Cultists** swear allegiance to dark powers such as elemental princes, demon lords, or archdevils. Most conceal their loyalties to avoid being ostracized, imprisoned, or executed for their beliefs. Unlike evil acolytes, cultists often show signs of insanity in their beliefs and practices.
+
+## Cult Fanatic
+
+_Medium humanoid (any race), any non-good alignment_
+
+- **Armor Class** 13 (leather armor)
+- **Hit Points** 33 (6d8 + 6)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     11 |     14 |     12 |     10 |     13 |     14 |
+| **Modifier**     |     +0 |     +2 |     +1 |     +0 |     +1 |     +2 |
+| **Saving Throw** |     +0 |     +2 |     +1 |     +0 |     +1 |     +2 |
+
+- **Skills** Deception +4, Persuasion +4, Religion +2
+- **Senses** passive Perception 11
+- **Languages** any one language (usually Common)
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Dark Devotion.**_ The fanatic has advantage on saving throws against being charmed or frightened.
+
+_**Spellcasting.**_ The fanatic is a 4th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 11, +3 to hit with spell attacks). The fanatic has the following cleric spells prepared:
+
+- Cantrips (at will): _Light_, _Sacred Flame_, _Thaumaturgy_
+- 1st level (4 slots): _Command_, _Inflict Wounds_, _Shield of Faith_
+- 2nd level (3 slots): _Hold Person_, _Spiritual Weapon_
+
+### Actions
+
+_**Multiattack.**_ The fanatic makes two melee attacks.
+
+_**Dagger.**_ _Melee or Ranged Weapon Attack:_ +4 to hit, reach 5 ft. or range 20/60 ft., one creature. _Hit_: 4 (1d4 + 2) piercing damage.
+
+**Fanatics** are often part of a cult's leadership, using their charisma and dogma to influence and prey on those of weak will. Most are interested in personal power above all else.
+
+## Druid
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 11 (16 with _Barkskin_)
+- **Hit Points** 27 (5d8 + 5)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     10 |     12 |     13 |     12 |     15 |     11 |
+| **Modifier**     |     +0 |     +1 |     +1 |     +1 |     +2 |     +0 |
+| **Saving Throw** |     +0 |     +1 |     +1 |     +1 |     +2 |     +0 |
+
+- **Skills** Medicine +4, Nature +3, Perception +4
+- **Senses** passive Perception 14
+- **Languages** Druidic plus any two languages
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Spellcasting.**_ The druid is a 4th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks). It has the following druid spells prepared:
+
+- Cantrips (at will): _Druidcraft_, _Produce Flame_, _Shillelagh_
+- 1st level (4 slots): _Entangle_, _Longstrider_, _Speak with Animals_, _Thunderwave_
+- 2nd level (3 slots): _Animal Messenger_, _Barkskin_
+
+### Actions
+
+_**Quarterstaff.**_ _Melee Weapon Attack:_ +2 to hit (+4 to hit with _Shillelagh_), reach 5 ft., one target. _Hit:_ 3 (1d6) bludgeoning damage, 4 (1d8) bludgeoning damage if wielded with two hands, or 6 (1d8 + 2) bludgeoning damage with _Shillelagh_.
+
+**Druids** dwell in forests and other secluded wilderness locations, where they protect the natural world from monsters and the encroachment of civilization. Some are **tribal shamans** who heal the sick, pray to animal spirits, and provide spiritual guidance.
+
+## Gladiator
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 16 (studded leather, shield)
+- **Hit Points** 112 (15d8 + 45)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     18 |     15 |     16 |     10 |     12 |     15 |
+| **Modifier**     |     +4 |     +2 |     +3 |     +0 |     +1 |     +2 |
+| **Saving Throw** |     +7 |     +5 |     +6 |     +0 |     +1 |     +2 |
+
+- **Skills** Athletics +10, Intimidation +5
+- **Senses** passive Perception 11
+- **Languages** any one language (usually Common)
+- **Challenge** 5 (1,800 XP)
+
+### Traits
+
+_**Brave.**_ The gladiator has advantage on saving throws against being frightened.
+
+_**Brute.**_ A melee weapon deals one extra die of its damage when the gladiator hits with it (included in the attack).
+
+### Actions
+
+_**Multiattack.**_ The gladiator makes three melee attacks or two ranged attacks.
+
+_**Spear.**_ _Melee or Ranged Weapon Attack:_ +7 to hit, reach 5 ft. and range 20/60 ft., one target. _Hit:_ 11 (2d6 + 4) piercing damage, or 13 (2d8 + 4) piercing damage if used with two hands to make a melee attack.
+
+_**Shield Bash.**_ _Melee Weapon Attack:_ +7 to hit, reach 5 ft., one creature. _Hit:_ 9 (2d4 + 4) bludgeoning damage. If the target is a Medium or smaller creature, it must succeed on a DC 15 Strength saving throw or be knocked prone.
+
+### Reactions
+
+_**Parry.**_ The gladiator adds 3 to its AC against one melee attack that would hit it. To do so, the gladiator must see the attacker and be wielding a melee weapon.
+
+**Gladiators** battle for the entertainment of raucous crowds. Some gladiators are brutal pit fighters who treat each match as a life-or-death struggle, while others are professional duelists who command huge fees but rarely fight to the death.
+
+## Guard
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 16 (chain shirt, shield)
+- **Hit Points** 11 (2d8 + 2)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     13 |     12 |     12 |     10 |     11 |     10 |
+| **Modifier**     |     +1 |     +1 |     +1 |     +0 |     +0 |     +0 |
+| **Saving Throw** |     +1 |     +1 |     +1 |     +0 |     +0 |     +0 |
+
+- **Skills** Perception +2
+- **Senses** passive Perception 12
+- **Languages** any one language (usually Common)
+- **Challenge** 1/8 (25 XP)
+
+### Actions
+
+_**Spear.**_ _Melee or Ranged Weapon Attack:_ +3 to hit, reach 5 ft. or range 20/60 ft., one target. _Hit:_ 4 (1d6 + 1) piercing damage, or 5 (1d8 + 1) piercing damage if used with two hands to make a melee attack.
+
+**Guards** include members of a city watch, sentries in a citadel or fortified town, and the bodyguards of merchants and nobles.
+
+## Knight
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 18 (plate)
+- **Hit Points** 52 (8d8 + 16)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |     11 |     14 |     11 |     11 |     15 |
+| **Modifier**     |     +3 |     +0 |     +2 |     +0 |     +0 |     +2 |
+| **Saving Throw** |     +3 |     +0 |     +4 |     +0 |     +2 |     +2 |
+
+- **Senses** passive Perception 10
+- **Languages** any one language (usually Common)
+- **Challenge** 3 (700 XP)
+
+### Traits
+
+_**Brave.**_ The knight has advantage on saving throws against being frightened.
+
+### Actions
+
+_**Multiattack.**_ The knight makes two melee attacks.
+
+_**Greatsword.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 10 (2d6 + 3) slashing damage.
+
+_**Heavy Crossbow.**_ _Ranged Weapon Attack:_ +2 to hit, range 100/400 ft., one target. _Hit:_ 5 (1d10) piercing damage.
+
+_**Leadership (Recharges after a Short or Long Rest).**_ For 1 minute, the knight can utter a special command or warning whenever a nonhostile creature that it can see within 30 feet of it makes an attack roll or a saving throw. The creature can add a d4 to its roll provided it can hear and understand the knight. A creature can benefit from only one Leadership die at a time. This effect ends if the knight is incapacitated.
+
+### Reactions
+
+_**Parry.**_ The knight adds 2 to its AC against one melee attack that would hit it. To do so, the knight must see the attacker and be wielding a melee weapon.
+
+**Knights** are warriors who pledge service to rulers, religious orders, and noble causes. A knight's alignment determines the extent to which a pledge is honored. Whether undertaking a quest or patrolling a realm, a knight often travels with an entourage that includes squires and hirelings who are commoners.
+
+## Mage
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 12 (15 with _Mage Armor_)
+- **Hit Points** 40 (9d8)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |      9 |     14 |     11 |     17 |     12 |     11 |
+| **Modifier**     |     -1 |     +2 |     +0 |     +3 |     +1 |     +0 |
+| **Saving Throw** |     -1 |     +2 |     +0 |     +6 |     +4 |     +0 |
+
+- **Skills** Arcana +6, History +6
+- **Senses** passive Perception 11
+- **Languages** any four languages
+- **Challenge** 6 (2,300 XP)
+
+### Traits
+
+_**Spellcasting.**_ The mage is a 9th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 14, +6 to hit with spell attacks). The mage has the following wizard spells prepared:
+
+- Cantrips (at will): _Fire Bolt_, _Light_, _Mage Hand_, _Prestidigitation_
+- 1st level (4 slots): _Detect Magic_, _Mage Armor_, _Magic Missile_, _Shield_
+- 2nd level (3 slots): _Misty Step_, _Suggestion_
+- 3rd level (3 slots): _Counterspell_, _Fireball_, _Fly_
+- 4th level (3 slots): _Greater Invisibility_, _Ice Storm_
+- 5th level (1 slot): _Cone of Cold_
+
+### Actions
+
+_**Dagger.**_ _Melee or Ranged Weapon Attack:_ +5 to hit, reach 5 ft. or range 20/60 ft., one target. _Hit:_ 4 (1d4 + 2) piercing damage.
+
+**Mages** spend their lives in the study and practice of magic. Good-aligned mages offer counsel to nobles and others in power, while evil mages dwell in isolated sites to perform unspeakable experiments without interference.
+
+## Noble
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 15 (breastplate)
+- **Hit Points** 9 (2d8)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     11 |     12 |     11 |     12 |     14 |     16 |
+| **Modifier**     |     +0 |     +1 |     +0 |     +1 |     +2 |     +3 |
+| **Saving Throw** |     +0 |     +1 |     +0 |     +1 |     +2 |     +3 |
+
+- **Skills** Deception +5, Insight +4, Persuasion +5
+- **Senses** passive Perception 12
+- **Languages** any two languages
+- **Challenge** 1/8 (25 XP)
+
+### Actions
+
+_**Rapier.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 5 (1d8 + 1) piercing damage.
+
+### Reactions
+
+_**Parry.**_ The noble adds 2 to its AC against one melee attack that would hit it. To do so, the noble must see the attacker and be wielding a melee weapon.
+
+**Nobles** wield great authority and influence as members of the upper class, possessing wealth and connections that can make them as powerful as monarchs and generals. A noble often travels in the company of guards, as well as servants who are commoners.
+
+The noble's statistics can also be used to represent **courtiers** who aren't of noble birth.
+
+## Priest
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 13 (chain shirt)
+- **Hit Points** 27 (5d8 + 5)
+- **Speed** 25 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     10 |     10 |     12 |     13 |     16 |     13 |
+| **Modifier**     |     +0 |     +0 |     +1 |     +1 |     +3 |     +1 |
+| **Saving Throw** |     +0 |     +0 |     +1 |     +1 |     +3 |     +1 |
+
+- **Skills** Medicine +7, Persuasion +3, Religion +4
+- **Senses** passive Perception 13
+- **Languages** any two languages
+- **Challenge** 2 (450 XP)
+
+### Traits
+
+_**Divine Eminence.**_ As a bonus action, the priest can expend a spell slot to cause its melee weapon attacks to magically deal an extra 10 (3d6) radiant damage to a target on a hit. This benefit lasts until the end of the turn. If the priest expends a spell slot of 2nd level or higher, the extra damage increases by 1d6 for each level above 1st.
+
+_**Spellcasting.**_ The priest is a 5th-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 13, +5 to hit with spell attacks). The priest has the following cleric spells prepared:
+
+- Cantrips (at will): _Light_, _Sacred Flame_, _Thaumaturgy_
+- 1st level (4 slots): _Cure Wounds_, _Guiding Bolt_, _Sanctuary_
+- 2nd level (3 slots): _Lesser Restoration_, _Spiritual Weapon_
+- 3rd level (2 slots): _Dispel Magic_, _Spirit Guardians_
+
+### Actions
+
+_**Mace.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one target. _Hit:_ 3 (1d6) bludgeoning damage.
+
+**Priests** bring the teachings of their gods to the common folk. They are the spiritual leaders of temples and shrines and often hold positions of influence in their communities. Evil priests might work openly under a tyrant, or they might be the leaders of religious sects hidden in the shadows of good society, overseeing depraved rites.
+
+A priest typically has one or more acolytes to help with religious ceremonies and other sacred duties.
+
+## Scout
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 13 (leather armor)
+- **Hit Points** 16 (3d8 + 3)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     11 |     14 |     12 |     11 |     13 |     11 |
+| **Modifier**     |     +0 |     +2 |     +1 |     +0 |     +1 |     +0 |
+| **Saving Throw** |     +0 |     +2 |     +1 |     +0 |     +1 |     +0 |
+
+- **Skills** Nature +4, Perception +5, Stealth +6, Survival +5
+- **Senses** passive Perception 15
+- **Languages** any one language (usually Common)
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Keen Hearing and Sight.**_ The scout has advantage on Wisdom (Perception) checks that rely on hearing or sight.
+
+### Actions
+
+_**Multiattack.**_ The scout makes two melee attacks or two ranged attacks.
+
+_**Shortsword.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.
+
+_**Longbow.**_ _Ranged Weapon Attack:_ +4 to hit, ranged 150/600 ft., one target. _Hit:_ 6 (1d8 + 2) piercing damage.
+
+**Scouts** are skilled hunters and trackers who offer their services for a fee. Most hunt wild game, but a few work as bounty hunters, serve as guides, or provide military reconnaissance.
+
+## Spy
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 12
+- **Hit Points** 27 (6d8)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     10 |     15 |     10 |     12 |     14 |     16 |
+| **Modifier**     |     +0 |     +2 |     +0 |     +1 |     +2 |     +3 |
+| **Saving Throw** |     +0 |     +2 |     +0 |     +1 |     +2 |     +3 |
+
+- **Skills** Deception +5, Insight +4, Investigation +5, Perception +6, Persuasion +5, Sleight of Hand +4, Stealth +4
+- **Senses** passive Perception 16
+- **Languages** any two languages
+- **Challenge** 1 (200 XP)
+
+### Traits
+
+_**Cunning Action.**_ On each of its turns, the spy can use a bonus action to take the Dash, Disengage, or Hide action.
+
+_**Sneak Attack (1/Turn).**_ The spy deals an extra 7 (2d6) damage when it hits a target with a weapon attack and has advantage on the attack roll, or when the target is within 5 feet of an ally of the spy that isn't incapacitated and the spy doesn't have disadvantage on the attack roll.
+
+### Actions
+
+_**Multiattack.**_ The spy makes two melee attacks.
+
+_**Shortsword.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.
+
+_**Hand Crossbow.**_ _Ranged Weapon Attack:_ +4 to hit, range 30/120 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.
+
+Rulers, nobles, merchants, guildmasters, and other wealthy individuals use **spies** to gain the upper hand in a world of cutthroat politics. A spy is trained to secretly gather information. Loyal spies would rather die than divulge information that could compromise them or their employers.
+
+## Thug
+
+_Medium humanoid (any race), any non-good alignment_
+
+- **Armor Class** 11 (leather armor)
+- **Hit Points** 32 (5d8 + 10)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     15 |     11 |     14 |     10 |     10 |     11 |
+| **Modifier**     |     +2 |     +0 |     +2 |     +0 |     +0 |     +0 |
+| **Saving Throw** |     +2 |     +0 |     +2 |     +0 |     +0 |     +0 |
+
+- **Skills** Intimidation +2
+- **Senses** passive Perception 10
+- **Languages** any one language (usually Common)
+- **Challenge** 1/2 (100 XP)
+
+### Traits
+
+_**Pack Tactics.**_ The thug has advantage on an attack roll against a creature if at least one of the thug's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Multiattack.**_ The thug makes two melee attacks.
+
+_**Mace.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 5 (1d6 + 2) bludgeoning damage.
+
+_**Heavy Crossbow.**_ _Ranged Weapon Attack:_ +2 to hit, range 100/400 ft., one target. _Hit:_ 5 (1d10) piercing damage.
+
+**Thugs** are ruthless enforcers skilled at intimidation and violence. They work for money and have few scruples.
+
+## Tribal Warrior
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 12 (hide armor)
+- **Hit Points** 11 (2d8 + 2)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     13 |     11 |     12 |      8 |     11 |      8 |
+| **Modifier**     |     +1 |     +0 |     +1 |     -1 |     +0 |     -1 |
+| **Saving Throw** |     +1 |     +0 |     +1 |     -1 |     +0 |     -1 |
+
+- **Senses** passive Perception 10
+- **Languages** any one language
+- **Challenge** 1/8 (25 XP)
+
+### Traits
+
+_**Pack Tactics.**_ The warrior has advantage on an attack roll against a creature if at least one of the warrior's allies is within 5 feet of the creature and the ally isn't incapacitated.
+
+### Actions
+
+_**Spear.**_ _Melee or Ranged Weapon Attack:_ +3 to hit, reach 5 ft. or range 20/60 ft., one target. _Hit:_ 4 (1d6 + 1) piercing damage, or 5 (1d8 + 1) piercing damage if used with two hands to make a melee attack.
+
+**Tribal warriors** live beyond civilization, most often subsisting on fishing and hunting. Each tribe acts in accordance with the wishes of its chief, who is the greatest or oldest warrior of the tribe or a tribe member blessed by the gods.
+
+## Veteran
+
+_Medium humanoid (any race), any alignment_
+
+- **Armor Class** 17 (splint)
+- **Hit Points** 58 (9d8 + 18)
+- **Speed** 30 ft.
+
+|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |
+|------------------|--------|--------|--------|--------|--------|--------|
+| **Score**        |     16 |     13 |     14 |     10 |     11 |     10 |
+| **Modifier**     |     +3 |     +1 |     +2 |     +0 |     +0 |     +0 |
+| **Saving Throw** |     +3 |     +1 |     +2 |     +0 |     +0 |     +0 |
+
+- **Skills** Athletics +5, Perception +2
+- **Senses** passive Perception 12
+- **Languages** any one language (usually Common)
+- **Challenge** 3 (700 XP)
+
+### Actions
+
+_**Multiattack.**_ The veteran makes two longsword attacks. If it has a shortsword drawn, it can also make a shortsword attack.
+
+_**Longsword.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 7 (1d8 + 3) slashing damage, or 8 (1d10 + 3) slashing damage if used with two hands.
+
+_**Shortsword.**_ _Melee Weapon Attack:_ +5 to hit, reach 5 ft., one target. _Hit:_ 6 (1d6 + 3) piercing damage.
+
+_**Heavy Crossbow.**_ _Ranged Weapon Attack:_ +3 to hit, range 100/400 ft., one target. _Hit:_ 6 (1d10 + 1) piercing damage.
+
+**Veterans** are professional fighters that take up arms for pay or to protect something they believe in or value. Their ranks include soldiers retired from long service and warriors who never served anyone but themselves.

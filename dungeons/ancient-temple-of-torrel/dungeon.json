@@ -1,0 +1,643 @@
+{
+  "dungeon_name": "Ancient Temple of Torrel",
+  "party_level": 3,
+  "current_level": 2,
+  "party": {
+    "size": 4,
+    "characters": [
+      {
+        "name": "Thorin",
+        "darkvision": true,
+        "exhaustion": 0
+      },
+      {
+        "name": "Mira",
+        "darkvision": true,
+        "exhaustion": 0
+      },
+      {
+        "name": "Aldric",
+        "darkvision": false,
+        "exhaustion": 0
+      },
+      {
+        "name": "Sera",
+        "darkvision": false,
+        "exhaustion": 0
+      }
+    ]
+  },
+  "levels": [
+    {
+      "level_number": 1,
+      "display_name": "Level 1 \u2014 Entry Vaults",
+      "map_image": "level1.png",
+      "map_image_scale": 1.0,
+      "challenge_rating": "",
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wm_check_every_n_turns": 1,
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": "1d4 Skeletons"
+        },
+        {
+          "roll": 2,
+          "encounter": "Giant Rat"
+        },
+        {
+          "roll": 3,
+          "encounter": "Stirge"
+        }
+      ],
+      "rooms": [
+        {
+          "id": "R01",
+          "name": "R01 The Scorched Threshold",
+          "state": "unexplored",
+          "tags": [
+            "special",
+            "stairs_up"
+          ],
+          "reaction_required": false,
+          "notes": "The whirlwind is a residual elemental effect left by the Djinn's passage. Not dangerous. It drifts slowly toward the deeper levels \u2014 a subtle compass pointing downward. If players speak to it or cast magic near it, it spins faster briefly then resumes. Cannot be dispersed by mundane means. DC 12 Arcana or Religion reveals this is a trace manifestation of a powerful air elemental presence. The burn pattern on the threshold is roughly humanoid, approximately 12 feet tall. The missing doors were not broken \u2014 they were vaporized or taken. This room should generate questions the dungeon will not immediately answer.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "The entrance yawns open where stone doors once stood \u2014 they are gone, not broken, simply gone. The threshold is blackened in a shape that radiates outward like a sunburst, still faintly warm to the touch. Sand drifts in from outside but stops at the burn line, as if unwilling to cross. At the center of the room, a miniature whirlwind of fine golden sand spins slowly, knee-high, without any apparent source.\r\n",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                3300,
+                3007
+              ],
+              [
+                1736,
+                3007
+              ],
+              [
+                1721,
+                364
+              ],
+              [
+                3210,
+                327
+              ],
+              [
+                3300,
+                2985
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R02",
+          "name": "R02 The Warden's Descent",
+          "state": "unexplored",
+          "tags": [
+            "empty",
+            "stairs_down"
+          ],
+          "reaction_required": false,
+          "notes": "Western stairwell to Level 2. The dry rot smell comes from collapsed wooden furniture deeper on Level 2 \u2014 not an active threat. Stairs are structurally sound. DC 13 Perception on the way down reveals faint scratch marks at ankle height \u2014 old tripwire anchors, long stripped of their mechanisms.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "A narrow room, bare stone, with a single torch bracket long empty. The floor is gritty with blown sand. Stairs cut into the far wall descend steeply into darkness. The air from below is cooler and carries the faint smell of dry rot.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 210,
+            "y": 1474,
+            "width": 1474,
+            "height": 1868
+          }
+        },
+        {
+          "id": "R03",
+          "name": "R03 The Drill Chamber",
+          "state": "unexplored",
+          "tags": [
+            "encounter"
+          ],
+          "reaction_required": false,
+          "notes": "Former physical training room for cult initiates. Stone pegs were for climbing drills, floor scoring from blade practice. Skeletons are bound initiates \u2014 a cult death rite. No monetary treasure. Each skeleton wears a corroded bronze ring bearing a crescent moon and dagger \u2014 the cult's sigil. Worthless monetarily but a lore clue worth keeping.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "A long rectangular room with a low ceiling. Stone pegs protrude from the walls at irregular intervals \u2014 handholds, or obstacles. The floor is scored with countless shallow cuts. Three figures stand motionless against the far wall, wrapped in the remnants of dark linen, their heads bowed.",
+          "encounter_text": "3 Skeletons (MM p.272). Unaware \u2014 standing dormant in niches along the north wall. They animate as a group the moment any living creature crosses the midpoint of the room. Fight to the death, will not pursue beyond room exits. They spread to flank using the room's width. Stone pegs on the walls count as difficult terrain near the walls.",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "### Skeleton\n\n_Medium undead, lawful evil_\n\n- **Armor Class** 13 (armor scraps)\n- **Hit Points** 13 (2d8 + 4)\n- **Speed** 30 ft.\n\n|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |\n|------------------|--------|--------|--------|--------|--------|--------|\n| **Score**        |     10 |     14 |     15 |      6 |      8 |      5 |\n| **Modifier**     |     +0 |     +2 |     +2 |     -2 |     -1 |     -3 |\n| **Saving Throw** |     +0 |     +2 |     +2 |     -2 |     -1 |     -3 |\n\n- **Damage Vulnerabilities** bludgeoning\n- **Damage Immunities** poison\n- **Condition Immunities** exhaustion, poisoned\n- **Senses** darkvision 60 ft., passive Perception 9\n- **Languages** understands all languages it knew in life but can't speak\n- **Challenge** 1/4 (50 XP)\n\n#### Actions\n\n_**Shortsword.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.\n\n_**Shortbow.**_ _Ranged Weapon Attack:_ +4 to hit, range 80/320 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.",
+          "image_region": {
+            "kind": "rect",
+            "x": 1342,
+            "y": 3000,
+            "width": 1302,
+            "height": 1511
+          }
+        },
+        {
+          "id": "R04",
+          "name": "R04",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 2392,
+            "y": 4079,
+            "width": 2039,
+            "height": 1198
+          }
+        },
+        {
+          "id": "R05",
+          "name": "R05",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 4372,
+            "y": 3015,
+            "width": 1384,
+            "height": 1496
+          }
+        },
+        {
+          "id": "R06",
+          "name": "R06",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 3210,
+            "y": 305,
+            "width": 1220,
+            "height": 1206
+          }
+        },
+        {
+          "id": "R07",
+          "name": "R07",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 4201,
+            "y": 1310,
+            "width": 1317,
+            "height": 2002
+          }
+        },
+        {
+          "id": "R08",
+          "name": "R08",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 5503,
+            "y": 1474,
+            "width": 781,
+            "height": 1608
+          }
+        },
+        {
+          "id": "R09",
+          "name": "R09",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 3769,
+            "y": 1533,
+            "width": 588,
+            "height": 2501
+          }
+        },
+        {
+          "id": "R10",
+          "name": "R10",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 2607,
+            "y": 3015,
+            "width": 1079,
+            "height": 990
+          }
+        }
+      ],
+      "corridors": []
+    },
+    {
+      "level_number": 2,
+      "display_name": "Level 2 \u2014 Pilgrim's Halls",
+      "map_image": "level2.png",
+      "map_image_scale": 1.0,
+      "challenge_rating": "",
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wm_check_every_n_turns": 1,
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": "1d4 Skeletons"
+        },
+        {
+          "roll": 2,
+          "encounter": "Giant Rat"
+        },
+        {
+          "roll": 3,
+          "encounter": "Stirge"
+        }
+      ],
+      "rooms": [
+        {
+          "id": "R01",
+          "name": "R01",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                5507,
+                2898
+              ],
+              [
+                5975,
+                2916
+              ],
+              [
+                5984,
+                3746
+              ],
+              [
+                6585,
+                3746
+              ],
+              [
+                6629,
+                5037
+              ],
+              [
+                3244,
+                5001
+              ],
+              [
+                3271,
+                5779
+              ],
+              [
+                2741,
+                5788
+              ],
+              [
+                2749,
+                4939
+              ],
+              [
+                2184,
+                4922
+              ],
+              [
+                2228,
+                3932
+              ],
+              [
+                5542,
+                3897
+              ],
+              [
+                5507,
+                2907
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R02",
+          "name": "R02",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 4075,
+            "y": 1705,
+            "width": 1405,
+            "height": 2138
+          }
+        },
+        {
+          "id": "R03",
+          "name": "R03",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 2635,
+            "y": 397,
+            "width": 1369,
+            "height": 2014
+          }
+        },
+        {
+          "id": "R04",
+          "name": "R04",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 1477,
+            "y": 1466,
+            "width": 1175,
+            "height": 1519
+          }
+        },
+        {
+          "id": "R05",
+          "name": "R05",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                3925,
+                3852
+              ],
+              [
+                2228,
+                3799
+              ],
+              [
+                2255,
+                2986
+              ],
+              [
+                2652,
+                2978
+              ],
+              [
+                2661,
+                2421
+              ],
+              [
+                3960,
+                2412
+              ],
+              [
+                3925,
+                3852
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R06",
+          "name": "R06",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 169,
+            "y": 2969,
+            "width": 1997,
+            "height": 3022
+          }
+        },
+        {
+          "id": "R07",
+          "name": "R07",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 3253,
+            "y": 5001,
+            "width": 1290,
+            "height": 1449
+          }
+        },
+        {
+          "id": "R08",
+          "name": "R08",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 4534,
+            "y": 5019,
+            "width": 2041,
+            "height": 1528
+          }
+        }
+      ],
+      "corridors": []
+    },
+    {
+      "level_number": 3,
+      "display_name": "Level 3 \u2014 The Sanctum",
+      "map_image": "level3.png",
+      "map_image_scale": 1.0,
+      "challenge_rating": "",
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wm_check_every_n_turns": 1,
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": "1d4 Skeletons"
+        },
+        {
+          "roll": 2,
+          "encounter": "Giant Rat"
+        },
+        {
+          "roll": 3,
+          "encounter": "Stirge"
+        }
+      ],
+      "rooms": [],
+      "corridors": []
+    }
+  ]
+}

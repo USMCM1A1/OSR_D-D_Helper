@@ -59,12 +59,13 @@
             "empty"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "Players die horribly here: reroll new characters.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "An entrance",
-          "encounter_text": "",
-          "treasure_text": "",
+          "box_text": "An entrance.",
+          "encounter_text": "Just before you die, you see the fastest, most aggressive, and powerfully built goblins imaginable.",
+          "treasure_text": "If you would survived, lots, but unfortunately, total party wipe.",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 5384,
@@ -87,6 +88,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 4193,
@@ -109,6 +111,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 4372,
@@ -131,6 +134,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 2436,
@@ -153,6 +157,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 1334,
@@ -175,6 +180,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 2473,
@@ -197,6 +203,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 3851,
@@ -219,6 +226,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 3248,
@@ -241,6 +249,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 1640,
@@ -263,6 +272,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 300,
@@ -285,6 +295,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 769,
@@ -307,6 +318,7 @@
           "box_text": "",
           "encounter_text": "",
           "treasure_text": "",
+          "special_text": "",
           "image_region": {
             "kind": "rect",
             "x": 4588,

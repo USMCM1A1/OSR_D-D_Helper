@@ -285,10 +285,27 @@ class TestPartyValidation:
 # --- Loader-level errors -----------------------------------------------------
 
 
+class TestLevelChallengeRating:
+    """challenge_rating is a free-text DM-authored hint at the level scope.
+    Defaults to '' for legacy JSON; must round-trip through dump/load."""
+
+    def test_default_empty(self, base: dict) -> None:
+        d = _load_dict(base)
+        assert d.get_level(1).challenge_rating == ""
+
+    def test_round_trip(self, base: dict, tmp_path: Path) -> None:
+        base["levels"][0]["challenge_rating"] = "CR 1/4–1 (standard)"
+        d = _load_dict(base)
+        out = tmp_path / "rt.json"
+        dungeon.dump(d, out)
+        d2 = dungeon.load(out)
+        assert d2.get_level(1).challenge_rating == "CR 1/4–1 (standard)"
+
+
 class TestNarrativeFields:
-    """box_text / encounter_text / treasure_text — the per-room narrative
-    fields edited via the browser editor. Must round-trip through dump/load
-    and default to '' when absent (legacy JSON)."""
+    """box_text / encounter_text / treasure_text / special_text — the
+    per-room narrative fields edited via the browser editor. Must round-
+    trip through dump/load and default to '' when absent (legacy JSON)."""
 
     def test_defaults_are_empty(self, base: dict) -> None:
         d = _load_dict(base)
@@ -296,11 +313,13 @@ class TestNarrativeFields:
         assert room.box_text == ""
         assert room.encounter_text == ""
         assert room.treasure_text == ""
+        assert room.special_text == ""
 
     def test_round_trip(self, base: dict, tmp_path: Path) -> None:
         _level0(base)["rooms"][0]["box_text"] = "Read me aloud."
         _level0(base)["rooms"][0]["encounter_text"] = "1 ghoul"
         _level0(base)["rooms"][0]["treasure_text"] = "200 gp"
+        _level0(base)["rooms"][0]["special_text"] = "Pulsing rune on floor"
         d = _load_dict(base)
         out = tmp_path / "rt.json"
         dungeon.dump(d, out)
@@ -309,6 +328,7 @@ class TestNarrativeFields:
         assert room.box_text == "Read me aloud."
         assert room.encounter_text == "1 ghoul"
         assert room.treasure_text == "200 gp"
+        assert room.special_text == "Pulsing rune on floor"
 
 
 class TestLoaderErrors:

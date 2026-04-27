@@ -259,6 +259,89 @@ class TestContextManager:
             assert s2.tracker.turn == 1
 
 
+class TestSupplies:
+    """Pool-tracked supplies (torches, lanterns, oil, rations, water).
+    Seeded at session creation, mutable via consume_supply/set_supply_count,
+    journal entries on consumption, persist across resume."""
+
+    def test_create_seeds_default_supplies(self, db_path: Path,
+                                            example: dungeon.Dungeon) -> None:
+        from session import DEFAULT_SUPPLY_KINDS, DEFAULT_SUPPLY_COUNTS
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        try:
+            supplies = s.get_supplies()
+            for kind in DEFAULT_SUPPLY_KINDS:
+                assert supplies[kind] == DEFAULT_SUPPLY_COUNTS[kind]
+        finally:
+            s.close()
+
+    def test_consume_supply_decrements(self, db_path: Path,
+                                        example: dungeon.Dungeon) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        try:
+            before = s.get_supplies()["ration"]
+            new = s.consume_supply("ration", 4)
+            assert new == before - 4
+            assert s.get_supplies()["ration"] == before - 4
+        finally:
+            s.close()
+
+    def test_consume_clamps_at_zero(self, db_path: Path,
+                                    example: dungeon.Dungeon) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        try:
+            s.set_supply_count("torches", 2)
+            new = s.consume_supply("torches", 5)
+            assert new == 0
+        finally:
+            s.close()
+
+    def test_consume_writes_journal_entry(self, db_path: Path,
+                                           example: dungeon.Dungeon) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        try:
+            s.consume_supply("torches", 1)
+            from journal import KIND_NOTE
+            notes = s.tracker.journal.of_kind(KIND_NOTE)
+            assert any("torches" in e.message for e in notes)
+        finally:
+            s.close()
+
+    def test_consume_zero_is_noop(self, db_path: Path,
+                                   example: dungeon.Dungeon) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        try:
+            before_journal = len(s.tracker.journal)
+            s.consume_supply("ration", 0)
+            assert len(s.tracker.journal) == before_journal
+        finally:
+            s.close()
+
+    def test_supplies_persist_across_resume(self, db_path: Path,
+                                             example: dungeon.Dungeon) -> None:
+        s1 = Session.create(db_path, example, EXAMPLE_PATH)
+        s1.consume_supply("oil_flask", 1)
+        s1.consume_supply("ration", 4)
+        sid = s1.session_id
+        before = s1.get_supplies()
+        s1.close()
+        s2 = Session.resume(db_path, sid)
+        try:
+            after = s2.get_supplies()
+            assert after == before
+        finally:
+            s2.close()
+
+    def test_negative_count_raises(self, db_path: Path,
+                                    example: dungeon.Dungeon) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        try:
+            with pytest.raises(ValueError):
+                s.set_supply_count("torches", -1)
+        finally:
+            s.close()
+
+
 class TestLevelSwitching:
     def test_switch_descends_and_logs_transition(
         self, db_path: Path, example: dungeon.Dungeon
@@ -315,3 +398,275 @@ class TestLevelSwitching:
         assert s2.current_level == 2
         assert s2.dungeon.current_level == 2
         s2.close()
+
+
+# --- Dungeon-folder API (open_dungeon / reset_dungeon / list_dungeons) ------
+
+
+import shutil  # noqa: E402
+
+from session import (  # noqa: E402
+    DUNGEON_DB_NAME,
+    DUNGEON_JSON_NAME,
+    DungeonInfo,
+)
+
+
+@pytest.fixture
+def dungeon_folder(tmp_path: Path) -> Path:
+    """A self-contained dungeon folder with dungeon.json copied from the
+    example fixture. No PNGs — tests don't load images."""
+    folder = tmp_path / "test-dungeon"
+    folder.mkdir()
+    shutil.copy(EXAMPLE_PATH, folder / DUNGEON_JSON_NAME)
+    return folder
+
+
+class TestOpenDungeon:
+    def test_creates_session_when_none_exists(self, dungeon_folder: Path) -> None:
+        s = Session.open_dungeon(dungeon_folder, rng_seed=7)
+        try:
+            assert s.tracker.turn == 0
+            assert (dungeon_folder / DUNGEON_DB_NAME).exists()
+        finally:
+            s.close()
+
+    def test_resumes_existing_session(self, dungeon_folder: Path) -> None:
+        s1 = Session.open_dungeon(dungeon_folder, rng_seed=7)
+        s1.advance_turn()
+        s1.advance_turn()
+        s1.close()
+
+        s2 = Session.open_dungeon(dungeon_folder)
+        try:
+            assert s2.tracker.turn == 2  # picked up where we left off
+        finally:
+            s2.close()
+
+    def test_resumes_most_recent_when_multiple_rows(
+        self, dungeon_folder: Path
+    ) -> None:
+        # First session.
+        s1 = Session.open_dungeon(dungeon_folder, rng_seed=1)
+        s1.advance_turn()
+        s1.close()
+        # Force a second session in the same DB by calling Session.create
+        # directly (multiple sessions in one DB are legal but rare).
+        d = dungeon.load(dungeon_folder / DUNGEON_JSON_NAME)
+        db_path = dungeon_folder / DUNGEON_DB_NAME
+        s2 = Session.create(db_path, d, dungeon_folder / DUNGEON_JSON_NAME,
+                            rng_seed=2)
+        for _ in range(5):
+            s2.advance_turn()
+        s2.close()
+        # open_dungeon should pick up the most-recent (5-turn) session,
+        # not the older one.
+        s3 = Session.open_dungeon(dungeon_folder)
+        try:
+            assert s3.tracker.turn == 5
+        finally:
+            s3.close()
+
+    def test_raises_when_dungeon_json_missing(self, tmp_path: Path) -> None:
+        empty = tmp_path / "empty"
+        empty.mkdir()
+        with pytest.raises(FileNotFoundError):
+            Session.open_dungeon(empty)
+
+
+class TestResetDungeon:
+    def test_returns_false_when_no_db(self, dungeon_folder: Path) -> None:
+        assert Session.reset_dungeon(dungeon_folder) is False
+
+    def test_unlinks_existing_db(self, dungeon_folder: Path) -> None:
+        Session.open_dungeon(dungeon_folder).close()
+        assert (dungeon_folder / DUNGEON_DB_NAME).exists()
+        assert Session.reset_dungeon(dungeon_folder) is True
+        assert not (dungeon_folder / DUNGEON_DB_NAME).exists()
+        # JSON is preserved.
+        assert (dungeon_folder / DUNGEON_JSON_NAME).exists()
+
+    def test_reset_then_open_starts_fresh(self, dungeon_folder: Path) -> None:
+        s1 = Session.open_dungeon(dungeon_folder)
+        for _ in range(3):
+            s1.advance_turn()
+        s1.close()
+        Session.reset_dungeon(dungeon_folder)
+        s2 = Session.open_dungeon(dungeon_folder)
+        try:
+            assert s2.tracker.turn == 0
+        finally:
+            s2.close()
+
+
+class TestRestoreFogOfWar:
+    def test_resets_all_rooms_to_unexplored(
+        self, db_path: Path, example: dungeon.Dungeon
+    ) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        try:
+            # Reveal a few rooms across both levels.
+            l1 = s.dungeon.get_level(1)
+            l2 = s.dungeon.get_level(2)
+            s.update_room_state(l1.rooms[0].id, "known", level_number=1)
+            s.update_room_state(l2.rooms[0].id, "cleared", level_number=2)
+            assert l1.rooms[0].state == "known"
+            assert l2.rooms[0].state == "cleared"
+
+            n = s.restore_fog_of_war()
+            assert n >= 2  # at least the two we just changed
+            for level in s.dungeon.levels:
+                for room in level.rooms:
+                    assert room.state == "unexplored"
+        finally:
+            s.close()
+
+    def test_persists_across_resume(
+        self, db_path: Path, example: dungeon.Dungeon
+    ) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        s.update_room_state(s.dungeon.get_level(1).rooms[0].id, "known")
+        s.restore_fog_of_war()
+        sid = s.session_id
+        s.close()
+        s2 = Session.resume(db_path, sid)
+        try:
+            for level in s2.dungeon.levels:
+                for room in level.rooms:
+                    assert room.state == "unexplored"
+        finally:
+            s2.close()
+
+    def test_does_not_touch_turn_supplies_journal(
+        self, db_path: Path, example: dungeon.Dungeon
+    ) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH, rng_seed=1)
+        try:
+            s.advance_turn()
+            s.advance_turn()
+            turn_before = s.tracker.turn
+            supplies_before = dict(s.get_supplies())
+            journal_before_len = len(s.tracker.journal.entries)
+            s.update_room_state(s.dungeon.get_level(1).rooms[0].id, "known")
+
+            s.restore_fog_of_war()
+
+            assert s.tracker.turn == turn_before
+            assert dict(s.get_supplies()) == supplies_before
+            # Allowed: a single new "Fog restored" journal entry would be
+            # added by MapView.action_restore_fog, but Session.restore_fog_of_war
+            # itself does not write to the journal.
+            assert len(s.tracker.journal.entries) == journal_before_len
+        finally:
+            s.close()
+
+
+class TestFullReset:
+    def test_raises_when_dungeon_json_missing(self, tmp_path: Path) -> None:
+        empty = tmp_path / "empty"
+        empty.mkdir()
+        with pytest.raises(FileNotFoundError):
+            Session.full_reset(empty)
+
+    def test_writes_timestamped_backup(self, dungeon_folder: Path) -> None:
+        original = (dungeon_folder / DUNGEON_JSON_NAME).read_text()
+        backup = Session.full_reset(dungeon_folder)
+        assert backup.exists()
+        assert backup.parent == dungeon_folder
+        assert backup.name.startswith(DUNGEON_JSON_NAME + ".")
+        assert backup.name.endswith(".bak")
+        # Backup matches the pre-reset content byte-for-byte.
+        assert backup.read_text() == original
+
+    def test_clears_rooms_and_corridors_per_level(
+        self, dungeon_folder: Path
+    ) -> None:
+        # Sanity check the fixture has rooms before we wipe.
+        before = dungeon.load(dungeon_folder / DUNGEON_JSON_NAME)
+        assert any(lv.rooms for lv in before.levels)
+        Session.full_reset(dungeon_folder)
+        after = dungeon.load(dungeon_folder / DUNGEON_JSON_NAME)
+        for lv in after.levels:
+            assert lv.rooms == ()
+            assert lv.corridors == ()
+
+    def test_preserves_level_metadata_and_wm_table(
+        self, dungeon_folder: Path
+    ) -> None:
+        before = dungeon.load(dungeon_folder / DUNGEON_JSON_NAME)
+        Session.full_reset(dungeon_folder)
+        after = dungeon.load(dungeon_folder / DUNGEON_JSON_NAME)
+        assert after.name == before.name
+        assert len(after.levels) == len(before.levels)
+        for b, a in zip(before.levels, after.levels):
+            assert a.level_number == b.level_number
+            assert a.display_name == b.display_name
+            assert a.map_image == b.map_image
+            assert a.wm_check_method == b.wm_check_method
+            assert a.wm_check_threshold == b.wm_check_threshold
+            assert a.wandering_monster_table == b.wandering_monster_table
+
+    def test_deletes_session_db(self, dungeon_folder: Path) -> None:
+        Session.open_dungeon(dungeon_folder).close()
+        assert (dungeon_folder / DUNGEON_DB_NAME).exists()
+        Session.full_reset(dungeon_folder)
+        assert not (dungeon_folder / DUNGEON_DB_NAME).exists()
+
+    def test_no_session_db_is_fine(self, dungeon_folder: Path) -> None:
+        # full_reset must not error if there's nothing to delete.
+        assert not (dungeon_folder / DUNGEON_DB_NAME).exists()
+        Session.full_reset(dungeon_folder)  # no raise
+        assert not (dungeon_folder / DUNGEON_DB_NAME).exists()
+
+    def test_open_after_full_reset_starts_empty(
+        self, dungeon_folder: Path
+    ) -> None:
+        Session.full_reset(dungeon_folder)
+        s = Session.open_dungeon(dungeon_folder)
+        try:
+            assert s.tracker.turn == 0
+            for lv in s.dungeon.levels:
+                assert lv.rooms == ()
+        finally:
+            s.close()
+
+
+class TestListDungeons:
+    def test_empty_when_root_missing(self, tmp_path: Path) -> None:
+        assert Session.list_dungeons(tmp_path / "nope") == []
+
+    def test_skips_non_directories_and_invalid_folders(
+        self, tmp_path: Path, dungeon_folder: Path
+    ) -> None:
+        # tmp_path/test-dungeon is a valid dungeon (from fixture). Add noise.
+        (tmp_path / "loose-file.txt").write_text("ignored")
+        (tmp_path / "empty-folder").mkdir()  # no dungeon.json
+        bad = tmp_path / "broken"
+        bad.mkdir()
+        (bad / DUNGEON_JSON_NAME).write_text("{not json")
+        infos = Session.list_dungeons(tmp_path)
+        assert len(infos) == 1
+        assert infos[0].folder == dungeon_folder
+        assert isinstance(infos[0], DungeonInfo)
+
+    def test_no_session_branch(self, dungeon_folder: Path, tmp_path: Path) -> None:
+        infos = Session.list_dungeons(tmp_path)
+        info = infos[0]
+        assert info.has_session is False
+        assert info.current_turn == 0
+        assert info.last_saved_at == ""
+        assert info.n_levels >= 1
+        assert info.name  # non-empty
+
+    def test_with_session_reports_progress(
+        self, dungeon_folder: Path, tmp_path: Path
+    ) -> None:
+        s = Session.open_dungeon(dungeon_folder, rng_seed=1)
+        s.advance_turn()
+        s.advance_turn()
+        s.close()
+        infos = Session.list_dungeons(tmp_path)
+        info = infos[0]
+        assert info.has_session is True
+        assert info.current_turn == 2
+        assert info.last_saved_at  # ISO timestamp string

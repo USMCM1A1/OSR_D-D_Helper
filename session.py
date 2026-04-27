@@ -26,12 +26,28 @@ from pathlib import Path
 
 import config
 import journal as journal_mod
-from dungeon import Dungeon, load as load_dungeon
+from dungeon import Dungeon, DungeonValidationError, load as load_dungeon
 from journal import Journal, JournalEntry, format_entry
 from tracker import LightSource, Tracker
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
+
+
+# Pool-tracked supplies (per-session counts, not per-character). Defaults
+# tuned for a 4-PC delve: torches at 1/turn × 6 turns = enough for ~6 turn-
+# zones lit; 1 lantern + 3 oil flasks ≈ ~108 turns of light reserve;
+# rations at 1/PC/day × 4 PCs × 6 days; water at 1 gallon/day × 1.5 days
+# × 4 PCs (carry weight is the practical cap on water).
+DEFAULT_SUPPLY_KINDS = ("torches", "hooded_lantern", "oil_flask",
+                        "ration", "water_gallon")
+DEFAULT_SUPPLY_COUNTS: dict[str, int] = {
+    "torches": 4,
+    "hooded_lantern": 1,
+    "oil_flask": 3,
+    "ration": 24,
+    "water_gallon": 6,
+}
 
 
 SCHEMA_SQL = """
@@ -111,6 +127,14 @@ CREATE TABLE IF NOT EXISTS party_position (
     PRIMARY KEY (session_id, level_number),
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS supplies (
+    session_id INTEGER NOT NULL,
+    kind       TEXT NOT NULL,
+    count      INTEGER NOT NULL,
+    PRIMARY KEY (session_id, kind),
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+);
 """
 
 
@@ -128,6 +152,23 @@ class SessionInfo:
     last_saved_at: str
     current_turn: int
     current_level: int
+
+
+@dataclass(frozen=True)
+class DungeonInfo:
+    """Summary of a dungeon folder shown by --list and the in-app picker."""
+    folder: Path
+    name: str
+    n_levels: int
+    has_session: bool
+    current_turn: int   # 0 if no session
+    current_level: int  # 1 if no session
+    last_saved_at: str  # "" if no session
+
+
+# Filenames inside a dungeon folder.
+DUNGEON_JSON_NAME = "dungeon.json"
+DUNGEON_DB_NAME = "session.db"
 
 
 # --- Connection / schema -----------------------------------------------------
@@ -262,6 +303,12 @@ class Session:
                 "VALUES (?, ?, ?)",
                 party_rows,
             )
+        # Seed pool-tracked supplies with default starter counts.
+        conn.executemany(
+            "INSERT INTO supplies (session_id, kind, count) VALUES (?, ?, ?)",
+            [(sid, kind, DEFAULT_SUPPLY_COUNTS[kind])
+             for kind in DEFAULT_SUPPLY_KINDS],
+        )
         conn.commit()
 
         session = cls(conn, sid, dungeon, tracker)
@@ -333,6 +380,140 @@ class Session:
         session = cls(conn, session_id, dungeon, tracker)
         session._journal_offset = len(tracker.journal)
         return session
+
+    # --- Dungeon-folder API (preferred) ------------------------------------
+
+    @classmethod
+    def open_dungeon(
+        cls,
+        folder: str | Path,
+        *,
+        rng_seed: int | None = None,
+    ) -> "Session":
+        """Open the dungeon at `folder`. If `<folder>/session.db` already
+        has a session row, resume the most recent one; else create a fresh
+        session. The folder must contain `dungeon.json`."""
+        folder = Path(folder)
+        json_path = folder / DUNGEON_JSON_NAME
+        db_path = folder / DUNGEON_DB_NAME
+        if not json_path.exists():
+            raise FileNotFoundError(
+                f"Missing {DUNGEON_JSON_NAME} in {folder}"
+            )
+        # If a session.db already exists with at least one row, resume.
+        # Order by id DESC as a tiebreaker — last_saved_at is second-resolution,
+        # so two sessions saved in the same second tie on timestamp.
+        if db_path.exists():
+            conn = _open_db(db_path)
+            try:
+                row = conn.execute(
+                    "SELECT id FROM sessions "
+                    "ORDER BY last_saved_at DESC, id DESC LIMIT 1"
+                ).fetchone()
+            finally:
+                conn.close()
+            if row is not None:
+                return cls.resume(db_path, row[0])
+        # Otherwise create a new session in this folder.
+        dungeon = load_dungeon(json_path)
+        return cls.create(db_path, dungeon, json_path, rng_seed=rng_seed)
+
+    @staticmethod
+    def reset_dungeon(folder: str | Path) -> bool:
+        """Delete `<folder>/session.db` so the next open starts fresh.
+        Annotations + level metadata in dungeon.json are untouched.
+        Returns True if a DB existed and was removed."""
+        db = Path(folder) / DUNGEON_DB_NAME
+        if not db.exists():
+            return False
+        db.unlink()
+        return True
+
+    @staticmethod
+    def full_reset(folder: str | Path) -> Path:
+        """Wipe a dungeon down to its level skeleton:
+          - back up the current dungeon.json to a timestamped .bak
+          - rewrite dungeon.json with rooms[]=[] and corridors[]=[] for
+            every level (level metadata + WM tables preserved)
+          - delete session.db if it exists
+
+        The dungeon name, party config, level images, and WM tables are
+        preserved so the dungeon can be re-annotated from scratch. Returns
+        the path of the backup file written. Raises FileNotFoundError if
+        the folder has no dungeon.json."""
+        folder = Path(folder)
+        json_path = folder / DUNGEON_JSON_NAME
+        if not json_path.exists():
+            raise FileNotFoundError(
+                f"Missing {DUNGEON_JSON_NAME} in {folder}"
+            )
+        # Back up the current JSON before we touch it.
+        ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+        backup = folder / f"{DUNGEON_JSON_NAME}.{ts}.bak"
+        backup.write_bytes(json_path.read_bytes())
+        # Rewrite the JSON with empty rooms+corridors per level. We work
+        # on the raw dict (not the validated Dungeon) so we don't have to
+        # round-trip through the loader for fields the loader would reject.
+        raw = json.loads(json_path.read_text(encoding="utf-8"))
+        for lv in raw.get("levels", []):
+            lv["rooms"] = []
+            lv["corridors"] = []
+        json_path.write_text(json.dumps(raw, indent=2) + "\n",
+                             encoding="utf-8")
+        # Drop the session DB.
+        db = folder / DUNGEON_DB_NAME
+        if db.exists():
+            db.unlink()
+        return backup
+
+    @staticmethod
+    def list_dungeons(root: str | Path) -> list[DungeonInfo]:
+        """Walk `root` (typically PROJECT_ROOT/dungeons/) and return one
+        DungeonInfo per folder containing a valid dungeon.json."""
+        root = Path(root)
+        out: list[DungeonInfo] = []
+        if not root.exists() or not root.is_dir():
+            return out
+        for child in sorted(root.iterdir()):
+            if not child.is_dir():
+                continue
+            json_path = child / DUNGEON_JSON_NAME
+            if not json_path.exists():
+                continue
+            try:
+                d = load_dungeon(json_path)
+            except (DungeonValidationError, FileNotFoundError):
+                continue
+            db_path = child / DUNGEON_DB_NAME
+            current_turn = 0
+            current_level = d.current_level
+            last_saved = ""
+            has_session = False
+            if db_path.exists():
+                conn = _open_db(db_path)
+                try:
+                    row = conn.execute(
+                        "SELECT current_turn, current_level, last_saved_at "
+                        "FROM sessions "
+                        "ORDER BY last_saved_at DESC, id DESC LIMIT 1"
+                    ).fetchone()
+                finally:
+                    conn.close()
+                if row is not None:
+                    has_session = True
+                    current_turn, current_level, last_saved = row
+            out.append(DungeonInfo(
+                folder=child,
+                name=d.name,
+                n_levels=len(d.levels),
+                has_session=has_session,
+                current_turn=int(current_turn),
+                current_level=int(current_level),
+                last_saved_at=last_saved or "",
+            ))
+        return out
+
+    # --- Legacy session-DB introspection -----------------------------------
 
     @staticmethod
     def list_sessions(db_path: str | Path) -> list[SessionInfo]:
@@ -460,6 +641,27 @@ class Session:
                 (state, self.session_id, ln, room_id),
             )
 
+    def restore_fog_of_war(self) -> int:
+        """Reset every room on every level to 'unexplored'. Turn count,
+        supplies, journal, party position, character exhaustion, and
+        active effects are all preserved — this is a pure visual reset
+        of the fog mask. Returns the number of rooms updated."""
+        # In-memory: walk every level's rooms.
+        n = 0
+        for level in self.dungeon.levels:
+            for room in level.rooms:
+                if room.state != "unexplored":
+                    n += 1
+                room.state = "unexplored"
+        # Persist: one UPDATE for the whole session.
+        with self.conn:
+            self.conn.execute(
+                "UPDATE room_state SET state = 'unexplored' "
+                "WHERE session_id = ?",
+                (self.session_id,),
+            )
+        return n
+
     def update_room_position(self, room_id: str, x: float, y: float, *,
                              level_number: int | None = None) -> None:
         ln = self._level_or_current(level_number)
@@ -565,6 +767,46 @@ class Session:
 
     def can_descend(self) -> bool:
         return self.current_level < self.dungeon.deepest_level_number
+
+    # --- Pool-tracked supplies ----------------------------------------------
+
+    def get_supplies(self) -> dict[str, int]:
+        """Current count of every pool-tracked supply for this session."""
+        cur = self.conn.execute(
+            "SELECT kind, count FROM supplies WHERE session_id = ?",
+            (self.session_id,),
+        )
+        return {kind: int(count) for kind, count in cur.fetchall()}
+
+    def set_supply_count(self, kind: str, count: int) -> None:
+        """Replace the running count for `kind`. Use for one-off corrections
+        (typo, found-loot adjustments). Routine consumption goes through
+        consume_supply so it ends up in the journal."""
+        if count < 0:
+            raise ValueError(f"supply count cannot be negative: {count}")
+        with self.conn:
+            self.conn.execute(
+                "INSERT OR REPLACE INTO supplies (session_id, kind, count) "
+                "VALUES (?, ?, ?)",
+                (self.session_id, kind, int(count)),
+            )
+
+    def consume_supply(self, kind: str, n: int = 1) -> int:
+        """Decrement `kind` by `n`, clamping at 0. Returns the new count.
+        Logs a journal entry so the DM can scroll back through usage."""
+        if n < 0:
+            raise ValueError(f"consume_supply n must be ≥ 0, got {n}")
+        current = self.get_supplies().get(kind, 0)
+        new_count = max(0, current - n)
+        self.set_supply_count(kind, new_count)
+        if n > 0:
+            self.tracker.journal.record(
+                self.tracker.turn, journal_mod.KIND_NOTE,
+                f"Consumed {n}× {kind} (now {new_count})",
+            )
+            # Persist the journal entry.
+            self.save()
+        return new_count
 
     # --- Lifecycle -----------------------------------------------------------
 

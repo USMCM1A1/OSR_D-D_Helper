@@ -1,0 +1,26 @@
+Special features are the most memorable rooms in old-school dungeons — they're not fights and not traps, but things that require the players to think, experiment, or make decisions. They're what people remember years later. Here are examples across a few categories:
+Magical Phenomena
+
+A stone fountain whose water glows faintly blue. Drinking it restores 1d4 HP but causes vivid, disorienting dreams on the next long rest. No label, no explanation — players have to decide whether to risk it.
+A circle of runes on the floor that teleports anyone who steps in it to a random room on the same level. The runes are clearly deliberate but their purpose is not obvious.
+A mirror that shows the viewer as they will look in 10 years — aged, scarred, or in one case simply not there.
+
+Environmental Puzzles
+
+A room with four stone levers and a locked iron door. Three of the levers do nothing visible. One opens the door but also opens a grate in the ceiling. Players have to decide if the unknown consequence of that grate is worth the exit.
+A corridor that slopes almost imperceptibly downward. Players who aren't tracking carefully end up one level deeper than they think they are.
+A room that is completely silent — not quiet, physically silent. Spells with verbal components fail. The party cannot hear each other. The exit is on the far side.
+
+Faction and Social Features
+
+A goblin sitting alone eating a rat, clearly as lost as the party. Not hostile. Has partial information about the level below but wants an escort out.
+A shrine tended by a skeleton that is not attacking — it is slowly, methodically cleaning the altar. It will defend the shrine if touched but otherwise ignores the party completely.
+A merchant's camp — improbably — in a large chamber. He sells torches, rations, and rope at triple price and refuses to explain how he got there.
+
+Moral Dilemmas
+
+A prisoner chained to a wall, alive, who claims to be an innocent traveler. He is telling the truth, but freeing him costs the party a torch and 2 turns, and he is too weak to fight. He becomes a liability.
+A cache of obviously stolen goods — church icons, a child's toys, a ledger with names — clearly looted from somewhere above. Worth good money. Clearly someone's loss.
+A wounded monster — an owlbear with a broken leg — that is not attacking because it cannot stand. It watches the party with obvious fear.
+
+The common thread is that none of these have a correct answer. They reward curiosity and punish passivity, but they don't punish any particular choice. That's what distinguishes them from traps, which have a right answer (detect and avoid), and encounters, which have a default answer (fight or flee).

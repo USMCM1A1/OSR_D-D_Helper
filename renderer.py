@@ -35,9 +35,12 @@ import numpy as np
 import pygame
 from PIL import Image, ImageDraw
 
+import config
 import dungeon as dungeon_mod
+import journal as journal_mod
 from dungeon import Dungeon, ImageRegion, Level, Room
-from session import Session
+from session import DungeonInfo, Session
+from tracker import LightSource
 
 
 # How often to check the dungeon JSON mtime for external edits.
@@ -71,7 +74,40 @@ ZOOM_STEP = 1.15
 
 MAX_UNDO_DEPTH = 50
 
+# --- Bottom strip (always-visible turn / resources / actions) ---------------
+STATUS_BAR_HEIGHT       = 22
+ACTION_BUTTON_HEIGHT    = 30
+ACTION_BUTTON_WIDTH     = 130
+ACTION_BUTTON_GAP       = 6
+STRIP_PAD_BOTTOM        = 30  # leave room for the existing help line below
+STATUS_INK              = (40, 40, 40)
+STATUS_PLATE            = (244, 228, 193, 230)
+STATUS_PLATE_NOISY      = (224, 184, 120, 240)  # warm tan when Noisy is on
+STATUS_LOW_INK          = (168, 32, 26)         # red — torch <= 2 turns
+
+# Single-letter labels used in the resource summary so the strip stays compact.
+SUPPLY_ABBREV = {
+    "torches":        "T",
+    "hooded_lantern": "L",
+    "oil_flask":      "O",
+    "ration":         "R",
+    "water_gallon":   "W",
+}
+# Order of supplies in the strip; matches DEFAULT_SUPPLY_KINDS in session.py.
+SUPPLY_DISPLAY_ORDER = ("torches", "hooded_lantern", "oil_flask",
+                        "ration", "water_gallon")
+
 STATE_CYCLE = ("unexplored", "known", "cleared")
+
+
+@dataclass(frozen=True)
+class ReloadRequest:
+    """Signal from the renderer back to main.py: tear down the editor
+    server + session and re-enter run() pointed at `folder`. If
+    `do_full_reset` is True, run Session.full_reset(folder) before
+    reopening so the dungeon is wiped to its level skeleton."""
+    folder: Path
+    do_full_reset: bool = False
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 RENDER_OUTPUT = PROJECT_ROOT / "render_output"
@@ -117,19 +153,37 @@ class Camera:
 # --- Asset loading -----------------------------------------------------------
 
 
-def _resolve_image_path(level: Level) -> Path:
-    """Resolve the level's map_image path against the project root."""
+def _resolve_image_path(level: Level,
+                        dungeon_dir: Path | None = None) -> Path:
+    """Resolve the level's map_image path.
+
+    Resolution order:
+      1. If `level.map_image` is absolute → use as-is.
+      2. If `dungeon_dir` is given and `<dungeon_dir>/map_image` exists →
+         use that (preferred — keeps a dungeon folder portable).
+      3. Else fall back to `PROJECT_ROOT / map_image` (legacy layout
+         where map_image was relative to the project root).
+    """
     p = Path(level.map_image)
-    if not p.is_absolute():
-        p = PROJECT_ROOT / p
-    return p
+    if p.is_absolute():
+        return p
+    if dungeon_dir is not None:
+        candidate = Path(dungeon_dir) / p
+        if candidate.exists():
+            return candidate
+    return PROJECT_ROOT / p
 
 
-def _load_level_image(level: Level) -> pygame.Surface:
+def _load_level_image(level: Level,
+                      dungeon_dir: Path | None = None) -> pygame.Surface:
     """Load the PNG for `level`. Returns the raw pygame Surface (callers
     can call .convert() once a display mode is set; we don't here so the
-    loader works headless for tests)."""
-    img_path = _resolve_image_path(level)
+    loader works headless for tests).
+
+    `dungeon_dir` is the directory containing the dungeon JSON. When set,
+    `level.map_image` is resolved relative to that folder first (the
+    portable / per-dungeon layout)."""
+    img_path = _resolve_image_path(level, dungeon_dir)
     if not img_path.exists():
         raise FileNotFoundError(f"Map image missing: {img_path}")
     image = pygame.image.load(str(img_path))
@@ -250,11 +304,15 @@ class MapView:
         session: Session,
         *,
         dungeon_path: Path | None = None,
+        dungeons_dir: Path | None = None,
         on_change: Callable[[], None] | None = None,
     ) -> None:
         self.session = session
         self.dungeon: Dungeon = session.dungeon
         self._dungeon_path = dungeon_path  # used by annotation mode to persist
+        # Root directory enumerated by the in-app dungeon picker. None disables
+        # the "Open Different Dungeon…" menu row.
+        self._dungeons_dir = Path(dungeons_dir) if dungeons_dir else None
         self._on_change = on_change
 
         self.camera = Camera()
@@ -295,6 +353,35 @@ class MapView:
         self._options_button_rects: list[tuple[pygame.Rect,
                                                Callable[[], None],
                                                bool]] = []
+        # When True the options modal swaps its contents for the dungeon
+        # picker (list of folders under self._dungeons_dir).
+        self._picker_open: bool = False
+        self._picker_rows: list[tuple[pygame.Rect, Path]] = []
+        # Full-reset confirmation: when open, the modal shows a destructive
+        # confirm dialog. Click rects are populated each draw.
+        self._reset_confirm_open: bool = False
+        self._reset_confirm_rects: list[tuple[pygame.Rect,
+                                              Callable[[], None]]] = []
+        # Set when the user asks to switch dungeons or full-reset. The run()
+        # loop exits cleanly when this is non-None and returns it to main.py.
+        self._pending_reload: ReloadRequest | None = None
+        # Bottom-strip action buttons. Same recompute-each-frame pattern.
+        self._action_button_rects: list[tuple[pygame.Rect,
+                                              Callable[[], None],
+                                              bool]] = []
+        # Room-info modal: right-click a room to inspect its JSON metadata
+        # (box text, encounter, treasure, special, DM notes). Click-rects are
+        # recomputed each draw so window resize stays in sync.
+        self._room_info_open: bool = False
+        self._room_info_room_id: str | None = None
+        self._room_info_close_rect: pygame.Rect | None = None
+        self._room_info_panel_rect: pygame.Rect | None = None
+        # Scroll state: y-offset in pixels into the body (clamped to
+        # [0, max_scroll]); max_scroll is updated each draw so resizing the
+        # window or switching rooms with longer notes stays consistent.
+        self._room_info_scroll_y: float = 0.0
+        self._room_info_max_scroll: float = 0.0
+        self._room_info_body_rect: pygame.Rect | None = None
         # Filled in by set_menu_actions(); see run().
         self._action_open_editor: Callable[[], None] | None = None
         self._action_open_player: Callable[[], None] | None = None
@@ -314,7 +401,9 @@ class MapView:
         return self.dungeon.current
 
     def _load_current_level(self) -> None:
-        self.image = _load_level_image(self.level)
+        dungeon_dir = (Path(self._dungeon_path).parent
+                       if self._dungeon_path is not None else None)
+        self.image = _load_level_image(self.level, dungeon_dir)
         self._invalidate_fog()
         self._fit_to_window()
 
@@ -400,6 +489,42 @@ class MapView:
             if event.button == 1:
                 if self._handle_options_click(event.pos):
                     return
+        # Room-info modal intercepts clicks the same way: a left-click on
+        # the close button or outside the panel dismisses; clicks inside
+        # the panel are swallowed so the map underneath doesn't see them.
+        # Mouse wheel events scroll the modal body when the cursor is
+        # over it, otherwise fall through to map zoom.
+        if self._room_info_open:
+            if event.type == pygame.MOUSEWHEEL:
+                mx, my = pygame.mouse.get_pos()
+                if (self._room_info_panel_rect is not None
+                        and self._room_info_panel_rect.collidepoint(mx, my)):
+                    # 60 px per wheel notch — feels right with macOS trackpad
+                    # natural-scroll on (event.y is positive going up).
+                    self._room_info_scroll_y = max(
+                        0.0,
+                        min(self._room_info_max_scroll,
+                            self._room_info_scroll_y - event.y * 60),
+                    )
+                    return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self._handle_room_info_click(event.pos)
+                    return
+                if event.button == 3:
+                    # Right-clicking again over a different room re-targets
+                    # the modal; otherwise just swallow.
+                    room = self._room_at_screen(event.pos)
+                    if room is not None and room.id != self._room_info_room_id:
+                        self._room_info_room_id = room.id
+                        self._room_info_scroll_y = 0.0
+                    return
+        # Bottom-strip action buttons intercept too (otherwise clicking
+        # "Advance Turn" would also click-through to a room behind it).
+        if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+                and not self._annot_mode):
+            if self._handle_action_button_click(event.pos):
+                return
         if self._annot_mode:
             self._handle_annotation_event(event)
             return
@@ -409,9 +534,21 @@ class MapView:
             elif event.button == 2:
                 self._panning = True
                 self._pan_anchor = event.pos
+            elif event.button == 3:
+                # Right-click → open the room-info modal for the room
+                # under the cursor (DM-only — pygame window is DM view).
+                room = self._room_at_screen(event.pos)
+                if room is not None:
+                    self._room_info_open = True
+                    self._room_info_room_id = room.id
+                    self._room_info_scroll_y = 0.0
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
-                if self._mouse_down_pos is not None and not self._is_meaningful_drag(event.pos):
+                if self._panning:
+                    # Left-drag was promoted to a pan — swallow the click.
+                    self._panning = False
+                    self._pan_anchor = None
+                elif self._mouse_down_pos is not None and not self._is_meaningful_drag(event.pos):
                     room = self._room_at_screen(event.pos)
                     if room is not None:
                         self.cycle_room_state(room.id)
@@ -424,6 +561,12 @@ class MapView:
                 dx = event.pos[0] - self._pan_anchor[0]
                 dy = event.pos[1] - self._pan_anchor[1]
                 self.camera.pan(dx, dy)
+                self._pan_anchor = event.pos
+            elif (self._mouse_down_pos is not None
+                  and self._is_meaningful_drag(event.pos)):
+                # Promote a left-drag past the click threshold to a pan
+                # (Macs without a middle mouse button can't use button 2).
+                self._panning = True
                 self._pan_anchor = event.pos
         elif event.type == pygame.MOUSEWHEEL:
             mx, my = pygame.mouse.get_pos()
@@ -456,6 +599,10 @@ class MapView:
         self._draw_chrome(surface)
         # Options panel renders last so it sits above everything else.
         self._draw_options_menu(surface)
+        # Room-info modal renders even later so it can stack above the
+        # options panel if the DM ever opens both (we don't expect this,
+        # but the ordering is unambiguous).
+        self._draw_room_info_modal(surface)
 
     def _draw_image(self, surface: pygame.Surface, fog: pygame.Surface | None) -> None:
         """Composite image (+ optional fog) at the camera's zoom."""
@@ -472,16 +619,19 @@ class MapView:
         surface.blit(scaled, (int(self.camera.offset_x), int(self.camera.offset_y)))
 
     def _draw_room_markers(self, surface: pygame.Surface) -> None:
-        """Per-room state dot at each annotated region's centroid."""
+        """Per-room state dot at each annotated region's centroid. Sized to
+        match the party marker so a non-party room reads at the same scale
+        as the party room (otherwise the party dot draws on top of the
+        smaller state dot and the party room looks bigger than the rest)."""
         zoom = self.camera.zoom
+        radius = max(6, int((MARKER_RADIUS + 4) * zoom))
+        ring = max(1, int(MARKER_RING * zoom))
         for r in self.level.rooms:
             wx, wy = self._room_centroid_world(r)
             if wx is None:
                 continue
             sx, sy = self.camera.world_to_screen(wx, wy)
             color = STATE_COLORS.get(r.state, STATE_COLORS["unexplored"])
-            radius = max(4, int(MARKER_RADIUS * zoom))
-            ring = max(1, int(MARKER_RING * zoom))
             pygame.draw.circle(surface, color[:3], (int(sx), int(sy)), radius)
             border = ALERT_RED if "encounter" in r.tags else (0, 0, 0)
             pygame.draw.circle(surface, border, (int(sx), int(sy)), radius, ring)
@@ -569,11 +719,12 @@ class MapView:
         pygame.draw.circle(surface, PARTY_DOT_RING, (int(sx), int(sy)), radius, 3)
 
     def _draw_chrome(self, surface: pygame.Surface) -> None:
+        # Compact level label — full display_name + ascend/descend hints
+        # are reachable through the options menu (O), so the on-map chrome
+        # stays out of the way.
         lv = self.level
-        ascend = "⌘↑ ascend" if self.session.can_ascend() else "—"
-        descend = "⌘↓ descend" if self.session.can_descend() else "—"
-        mode = f"  [ANNOTATION · {self._annot_tool}]" if self._annot_mode else ""
-        title = f"L{lv.level_number}  {lv.display_name}    [{ascend} | {descend}]{mode}"
+        mode = f"  ·  ANNOTATING ({self._annot_tool})" if self._annot_mode else ""
+        title = f"Lvl {lv.level_number}{mode}"
         text = self.title_font.render(title, True, LABEL_INK)
         pad = 4
         plate = pygame.Surface(
@@ -586,12 +737,126 @@ class MapView:
 
         if self._annot_mode:
             msg = ("A: exit · drag: rect · P: polygon · click+Del: remove · "
-                   "Enter: close poly · ⌘Z: undo · ⌘+/⌘-: zoom · ⌘0: fit · Esc: cancel/exit")
+                   "Enter: close poly · ⌥-drag: pan · ⌘Z: undo · ⌘+/⌘-: zoom · ⌘0: fit · Esc: cancel/exit")
         else:
-            msg = ("O: options menu · click room: cycle state · middle-drag: pan · "
-                   "scroll or ⌘+/⌘-: zoom · ⌘0: fit · Esc: quit")
+            msg = ("O: options · click: cycle state · right-click: notes · "
+                   "drag: pan · scroll or ⌘+/⌘-: zoom · ⌘0: fit · Esc: quit")
         help_text = self.help_font.render(msg, True, HELP_INK)
         surface.blit(help_text, (8, surface.get_height() - help_text.get_height() - 6))
+
+        # Bottom strip lives only outside annotation mode (annotation has
+        # its own dedicated chrome above, and drawing actions over the map
+        # when the DM is sketching room outlines would just be clutter).
+        if not self._annot_mode:
+            self._draw_status_strip(surface)
+            self._draw_action_buttons(surface)
+
+    # -- Bottom strip drawing -----------------------------------------------
+
+    def _draw_status_strip(self, surface: pygame.Surface) -> None:
+        """Single-line text summary above the action buttons: turn,
+        elapsed time, light sources, supply pool, last WM, Noisy."""
+        tracker = self.session.tracker
+        turn = tracker.turn
+        h, m = tracker.elapsed_hm
+        # Light source summary: count active + flag any with ≤ 2 turns.
+        actives = list(tracker.light_sources)
+        if actives:
+            lights_str = " ".join(
+                f"{ls.label.split()[0]}{ls.turns_remaining}t"
+                + ("⚠" if ls.turns_remaining <= config.LIGHT_LOW_WARNING_TURNS else "")
+                for ls in actives
+            )
+        else:
+            lights_str = "—"
+        # Compact supply abbreviations (T:4 L:1 O:3 R:24 W:6).
+        supplies = self.session.get_supplies()
+        sup_str = " ".join(
+            f"{SUPPLY_ABBREV[k]}:{supplies.get(k, 0)}"
+            for k in SUPPLY_DISPLAY_ORDER
+        )
+        wm = tracker.last_wm
+        if wm is None:
+            wm_str = "—"
+        else:
+            mark = "✗" if wm.triggered else "✓"
+            wm_str = f"{wm.method}={wm.roll}{mark}"
+            if wm.triggered and wm.encounter:
+                wm_str += f" {wm.encounter}"
+        noisy_str = "  · NOISY" if tracker.noisy else ""
+
+        text = (f"Turn {turn}  {h}h{m:02d}m"
+                f"  ·  Lights: {lights_str}"
+                f"  ·  Stash: {sup_str}"
+                f"  ·  WM: {wm_str}{noisy_str}")
+        surf = self.help_font.render(text, True, STATUS_INK)
+        # Plate underneath so the strip stays readable over the PNG.
+        bar_y = (surface.get_height() - STRIP_PAD_BOTTOM
+                 - ACTION_BUTTON_HEIGHT - STATUS_BAR_HEIGHT - 8)
+        plate_color = STATUS_PLATE_NOISY if tracker.noisy else STATUS_PLATE
+        plate = pygame.Surface((surface.get_width(), STATUS_BAR_HEIGHT),
+                               pygame.SRCALPHA)
+        plate.fill(plate_color)
+        surface.blit(plate, (0, bar_y))
+        surface.blit(surf, (10, bar_y + (STATUS_BAR_HEIGHT - surf.get_height()) // 2))
+
+    def _action_buttons(self) -> list[tuple[str, Callable[[], None], bool]]:
+        """List of (label, action, enabled) tuples shown in the bottom row."""
+        return [
+            ("Advance Turn", self.action_advance_turn, True),
+            ("Roll WM",      self.action_manual_wm_roll, True),
+            ("+ Torch",      self.action_light_torch,
+             self._can_light_torch()),
+            ("+ Lantern",    self.action_light_lantern,
+             self._can_light_lantern()),
+            ("Refill",       self.action_refill_lantern,
+             self._can_refill_lantern()),
+            ("Noisy",        self.action_toggle_noisy, True),
+        ]
+
+    def _draw_action_buttons(self, surface: pygame.Surface) -> None:
+        """Row of clickable buttons. Recomputes hit-test rects each frame
+        so window resizes don't desync clicks."""
+        self._action_button_rects = []
+        items = self._action_buttons()
+        total_w = (len(items) * ACTION_BUTTON_WIDTH
+                   + (len(items) - 1) * ACTION_BUTTON_GAP)
+        # Centered horizontally, just above the help line.
+        x = max(10, (surface.get_width() - total_w) // 2)
+        y = surface.get_height() - STRIP_PAD_BOTTOM - ACTION_BUTTON_HEIGHT
+        for label, action, enabled in items:
+            rect = pygame.Rect(x, y, ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT)
+            # Highlight Noisy button when active.
+            is_noisy_active = (label == "Noisy" and self.session.tracker.noisy)
+            if is_noisy_active:
+                fill = (200, 100, 60)
+                edge = (120, 50, 20)
+                ink = (255, 250, 240)
+            elif enabled:
+                fill = (252, 252, 250)
+                edge = (26, 26, 26)
+                ink = (26, 26, 26)
+            else:
+                fill = (220, 215, 200)
+                edge = (130, 110, 80)
+                ink = (130, 110, 80)
+            pygame.draw.rect(surface, fill, rect, border_radius=4)
+            pygame.draw.rect(surface, edge, rect, 2, border_radius=4)
+            text = self.help_font.render(label, True, ink)
+            surface.blit(text, (rect.x + (rect.w - text.get_width()) // 2,
+                                rect.y + (rect.h - text.get_height()) // 2))
+            self._action_button_rects.append((rect, action, enabled))
+            x += ACTION_BUTTON_WIDTH + ACTION_BUTTON_GAP
+
+    def _handle_action_button_click(self, pos: tuple[int, int]) -> bool:
+        """If `pos` lands on an enabled action button, run it. Returns True
+        if the click was consumed (caller skips room hit-test)."""
+        for rect, action, enabled in self._action_button_rects:
+            if rect.collidepoint(pos):
+                if enabled:
+                    action()
+                return True
+        return False
 
     # -- Annotation mode -----------------------------------------------------
 
@@ -608,17 +873,27 @@ class MapView:
         self._annot_selected_room_id = None
 
     def _handle_annotation_event(self, event: pygame.event.Event) -> None:
-        # Pan + zoom still work in annotation mode (middle-drag, scroll).
+        # Pan + zoom still work in annotation mode. Middle-drag pans on a
+        # 3-button mouse; option/alt + left-drag pans on Macs without one
+        # (left-drag alone is reserved for sketching room rectangles).
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 2:
                 self._panning = True
                 self._pan_anchor = event.pos
                 return
             if event.button == 1:
+                if pygame.key.get_mods() & pygame.KMOD_ALT:
+                    self._panning = True
+                    self._pan_anchor = event.pos
+                    return
                 self._annot_mouse_down(event.pos)
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
-                self._annot_mouse_up(event.pos)
+                if self._panning:
+                    self._panning = False
+                    self._pan_anchor = None
+                else:
+                    self._annot_mouse_up(event.pos)
             elif event.button == 2:
                 self._panning = False
                 self._pan_anchor = None
@@ -815,6 +1090,95 @@ class MapView:
         except OSError:
             pass
 
+    # -- Session actions (bottom strip + keyboard shortcuts) ----------------
+
+    def action_advance_turn(self) -> None:
+        """Tick the turn counter, light timers, and (per level cadence)
+        roll a wandering monster check."""
+        self.session.advance_turn()
+
+    def action_manual_wm_roll(self) -> None:
+        """Roll a wandering monster check WITHOUT advancing the turn."""
+        self.session.tracker.roll_wm()
+        self.session.save()
+
+    def _can_light_torch(self) -> bool:
+        return self.session.get_supplies().get("torches", 0) > 0
+
+    def action_light_torch(self) -> None:
+        if not self._can_light_torch():
+            return
+        self.session.add_light_source("torch")
+        self.session.consume_supply("torches", 1)
+
+    def _active_lantern_count(self) -> int:
+        return sum(1 for ls in self.session.tracker.light_sources
+                   if ls.kind in ("hooded_lantern", "bullseye_lantern"))
+
+    def _can_light_lantern(self) -> bool:
+        """A lantern is a *permanent object*: you can light one only if you
+        have a lantern not already lit AND have oil to fuel it."""
+        s = self.session.get_supplies()
+        total_lanterns = s.get("hooded_lantern", 0)
+        return (total_lanterns > self._active_lantern_count()
+                and s.get("oil_flask", 0) > 0)
+
+    def action_light_lantern(self) -> None:
+        if not self._can_light_lantern():
+            return
+        self.session.add_light_source("hooded_lantern")
+        # The lantern itself is not consumed — only the oil is. The stash
+        # count `L:N` reflects total lanterns owned; whether one is lit is
+        # tracked in tracker.light_sources.
+        self.session.consume_supply("oil_flask", 1)
+
+    def _active_lantern(self) -> "LightSource | None":
+        """The active lantern with the LEAST turns remaining — refilling
+        the dimmest one is what a DM almost always wants."""
+        lanterns = [ls for ls in self.session.tracker.light_sources
+                    if ls.kind in ("hooded_lantern", "bullseye_lantern")]
+        if not lanterns:
+            return None
+        return min(lanterns, key=lambda ls: ls.turns_remaining)
+
+    def _can_refill_lantern(self) -> bool:
+        return (self._active_lantern() is not None
+                and self.session.get_supplies().get("oil_flask", 0) > 0)
+
+    def action_refill_lantern(self) -> None:
+        lantern = self._active_lantern()
+        if lantern is None:
+            return
+        if self.session.get_supplies().get("oil_flask", 0) <= 0:
+            return
+        # Reset to a full flask's duration.
+        lantern.turns_remaining = config.LIGHT_DURATIONS_TURNS[lantern.kind]
+        self.session.consume_supply("oil_flask", 1)
+        self.session.tracker.journal.record(
+            self.session.tracker.turn, journal_mod.KIND_NOTE,
+            f"{lantern.label}: refilled "
+            f"({lantern.turns_remaining} turns)",
+        )
+        self.session.save()
+
+    def action_toggle_noisy(self) -> None:
+        self.session.tracker.set_noisy(not self.session.tracker.noisy)
+        self.session.save()
+
+    def action_restore_fog(self) -> None:
+        """Re-fog every room on every level back to 'unexplored'. Pure
+        visual reset — turn / supplies / journal / party position survive.
+        Forces a fog rebuild and a snapshot so the browser tabs refresh."""
+        n = self.session.restore_fog_of_war()
+        self.session.tracker.journal.record(
+            self.session.tracker.turn, journal_mod.KIND_NOTE,
+            f"Fog of war restored ({n} rooms re-hidden).",
+        )
+        self.session.save()
+        self._invalidate_fog()
+        if self._on_change is not None:
+            self._on_change()
+
     # -- Options menu --------------------------------------------------------
 
     def set_menu_actions(
@@ -841,6 +1205,9 @@ class MapView:
     def _options_items(self) -> list[tuple[str, str, Callable[[], None] | None, bool]]:
         """Return the menu rows: (label, key_hint, action, enabled)."""
         return [
+            ("Open Different Dungeon…", "",
+             self.open_dungeon_picker,
+             self._dungeons_dir is not None),
             ("Annotation mode", "A",
              self.toggle_annotation_mode, True),
             ("Open Room Editor", "E",
@@ -855,15 +1222,63 @@ class MapView:
             ("Descend Level", "⌘↓",
              self._action_descend,
              self.session.can_descend() and self._action_descend is not None),
+            ("Restore Fog of War", "",
+             self.action_restore_fog, True),
+            ("Reset Dungeon…", "",
+             self.open_reset_confirm,
+             self._dungeon_path is not None),
             ("Quit", "Esc",
              self._action_quit,
              self._action_quit is not None),
         ]
 
+    def open_reset_confirm(self) -> None:
+        """Switch the options modal into reset-confirm mode. Caller is the
+        menu row handler — the menu must already be open."""
+        if self._dungeon_path is None:
+            return
+        self._reset_confirm_open = True
+        self._options_open = True
+
+    def close_reset_confirm(self) -> None:
+        self._reset_confirm_open = False
+
+    def _do_full_reset(self) -> None:
+        """Signal main.py to wipe the current dungeon and reopen it. The
+        actual full_reset runs in main.py once the run loop has exited so
+        the SQLite handle is closed and the editor server stops before we
+        rewrite the JSON."""
+        assert self._dungeon_path is not None
+        folder = Path(self._dungeon_path).parent
+        self._pending_reload = ReloadRequest(folder=folder,
+                                             do_full_reset=True)
+
+    def open_dungeon_picker(self) -> None:
+        """Switch the options modal into picker mode. The menu must already
+        be open (this is invoked from a menu row) — we just flip the flag."""
+        if self._dungeons_dir is None:
+            return
+        self._picker_open = True
+        self._options_open = True
+
+    def close_dungeon_picker(self) -> None:
+        self._picker_open = False
+
+    def _switch_to_dungeon(self, folder: Path) -> None:
+        """Signal main.py to reload into `folder`. The pygame run loop
+        catches the request, returns it, and main.py rebuilds the session
+        and editor server in-process — the SDL window stays alive (an
+        os.execv here breaks the macOS WindowServer attachment)."""
+        self.session.save()
+        self._pending_reload = ReloadRequest(folder=folder,
+                                             do_full_reset=False)
+
     def _draw_options_menu(self, surface: pygame.Surface) -> None:
         """Draw the modal options panel. Recomputes button rects so the
         click handler stays accurate after window resizes."""
         self._options_button_rects = []
+        self._picker_rows = []
+        self._reset_confirm_rects = []
         if not self._options_open:
             return
 
@@ -871,6 +1286,13 @@ class MapView:
         backdrop = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
         backdrop.fill((0, 0, 0, 130))
         surface.blit(backdrop, (0, 0))
+
+        if self._picker_open:
+            self._draw_dungeon_picker(surface)
+            return
+        if self._reset_confirm_open:
+            self._draw_reset_confirm(surface)
+            return
 
         items = self._options_items()
         panel_w = 380
@@ -920,10 +1342,176 @@ class MapView:
             self._options_button_rects.append((rect, action, enabled))
             btn_y += btn_h + btn_gap
 
+    def _draw_dungeon_picker(self, surface: pygame.Surface) -> None:
+        """Inside the options modal: list of dungeon folders. Click → switch.
+        Caller (_draw_options_menu) has already drawn the dim backdrop."""
+        try:
+            infos = (Session.list_dungeons(self._dungeons_dir)
+                     if self._dungeons_dir is not None else [])
+        except Exception:
+            infos = []
+
+        current_folder: Path | None = None
+        if self._dungeon_path is not None:
+            current_folder = Path(self._dungeon_path).parent.resolve()
+
+        panel_w = 520
+        row_h = 56
+        row_gap = 6
+        title_h = 56
+        panel_pad = 22
+        n_rows = max(1, len(infos))
+        panel_h = (title_h + panel_pad
+                   + n_rows * (row_h + row_gap) + panel_pad)
+        panel_x = (surface.get_width() - panel_w) // 2
+        panel_y = max(40, (surface.get_height() - panel_h) // 2)
+
+        panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
+        panel_bg = pygame.Surface(panel_rect.size, pygame.SRCALPHA)
+        panel_bg.fill((244, 228, 193, 250))
+        surface.blit(panel_bg, panel_rect.topleft)
+        pygame.draw.rect(surface, (26, 26, 26), panel_rect, 3,
+                         border_radius=6)
+
+        title = self.title_font.render("OPEN DUNGEON", True, (26, 26, 26))
+        surface.blit(title, (panel_x + (panel_w - title.get_width()) // 2,
+                             panel_y + 16))
+
+        row_x = panel_x + 20
+        row_w = panel_w - 40
+        row_y = panel_y + title_h + panel_pad
+
+        if not infos:
+            msg = self.help_font.render(
+                f"No dungeons found in {self._dungeons_dir}.",
+                True, (60, 50, 30),
+            )
+            surface.blit(msg, (row_x, row_y + 8))
+            return
+
+        for info in infos:
+            rect = pygame.Rect(row_x, row_y, row_w, row_h)
+            is_current = (current_folder is not None
+                          and info.folder.resolve() == current_folder)
+            if is_current:
+                fill = (220, 215, 200)
+                edge = (130, 110, 80)
+                ink = (130, 110, 80)
+            else:
+                fill = (252, 252, 250)
+                edge = (26, 26, 26)
+                ink = (26, 26, 26)
+            pygame.draw.rect(surface, fill, rect, border_radius=4)
+            pygame.draw.rect(surface, edge, rect, 2, border_radius=4)
+
+            top = self.title_font.render(info.name, True, ink)
+            surface.blit(top, (rect.x + 14, rect.y + 6))
+
+            if info.has_session:
+                stats = (f"L{info.current_level} of {info.n_levels}"
+                         f" · turn {info.current_turn}"
+                         f" · saved {info.last_saved_at[:19]}")
+            else:
+                stats = f"{info.n_levels} levels · no progress yet"
+            if is_current:
+                stats = f"(current) · {stats}"
+            sub = self.help_font.render(stats, True, ink)
+            surface.blit(sub, (rect.x + 14, rect.y + 30))
+
+            # Only enqueue clickable rows for non-current entries.
+            if not is_current:
+                self._picker_rows.append((rect, info.folder))
+
+            row_y += row_h + row_gap
+
+    def _draw_reset_confirm(self, surface: pygame.Surface) -> None:
+        """Inside the options modal: destructive confirm for full reset."""
+        panel_w = 540
+        title_h = 56
+        panel_pad = 22
+        body_h = 180
+        btn_h = 46
+        btn_gap = 12
+        panel_h = title_h + panel_pad + body_h + btn_h + panel_pad
+        panel_x = (surface.get_width() - panel_w) // 2
+        panel_y = max(40, (surface.get_height() - panel_h) // 2)
+
+        panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
+        panel_bg = pygame.Surface(panel_rect.size, pygame.SRCALPHA)
+        panel_bg.fill((244, 228, 193, 250))
+        surface.blit(panel_bg, panel_rect.topleft)
+        pygame.draw.rect(surface, ALERT_RED, panel_rect, 3, border_radius=6)
+
+        title = self.title_font.render("RESET DUNGEON", True, ALERT_RED)
+        surface.blit(title, (panel_x + (panel_w - title.get_width()) // 2,
+                             panel_y + 16))
+
+        body_lines = [
+            "This will delete every annotated room and corridor on every level,",
+            "and reset turn / fog / supplies. Level metadata and wandering monster",
+            "tables are preserved.",
+            "",
+            "A timestamped .bak of the current dungeon.json is saved next to it",
+            "before anything is overwritten.",
+        ]
+        ty = panel_y + title_h + panel_pad - 6
+        for line in body_lines:
+            surf = self.help_font.render(line, True, (40, 30, 20))
+            surface.blit(surf, (panel_x + 24, ty))
+            ty += surf.get_height() + 4
+
+        # Two side-by-side buttons: Cancel (neutral) | Wipe (destructive red).
+        btn_total_w = panel_w - 48
+        each_w = (btn_total_w - btn_gap) // 2
+        btn_y = panel_y + panel_h - panel_pad - btn_h
+        cancel_rect = pygame.Rect(panel_x + 24, btn_y, each_w, btn_h)
+        wipe_rect = pygame.Rect(panel_x + 24 + each_w + btn_gap, btn_y,
+                                each_w, btn_h)
+
+        # Cancel button (parchment fill, black ink).
+        pygame.draw.rect(surface, (252, 252, 250), cancel_rect, border_radius=4)
+        pygame.draw.rect(surface, (26, 26, 26), cancel_rect, 2, border_radius=4)
+        cancel_label = self.title_font.render("Cancel", True, (26, 26, 26))
+        surface.blit(cancel_label,
+                     (cancel_rect.x + (cancel_rect.width - cancel_label.get_width()) // 2,
+                      cancel_rect.y + (btn_h - cancel_label.get_height()) // 2))
+
+        # Wipe button (red fill, white ink — destructive emphasis).
+        pygame.draw.rect(surface, ALERT_RED, wipe_rect, border_radius=4)
+        pygame.draw.rect(surface, (26, 26, 26), wipe_rect, 2, border_radius=4)
+        wipe_label = self.title_font.render("Wipe annotations + session",
+                                            True, (255, 255, 255))
+        surface.blit(wipe_label,
+                     (wipe_rect.x + (wipe_rect.width - wipe_label.get_width()) // 2,
+                      wipe_rect.y + (btn_h - wipe_label.get_height()) // 2))
+
+        self._reset_confirm_rects = [
+            (cancel_rect, self.close_reset_confirm),
+            (wipe_rect, self._do_full_reset),
+        ]
+
     def _handle_options_click(self, pos: tuple[int, int]) -> bool:
         """Return True if the click was consumed by the options menu."""
         if not self._options_open:
             return False
+        if self._reset_confirm_open:
+            for rect, action in self._reset_confirm_rects:
+                if rect.collidepoint(pos):
+                    action()
+                    return True
+            # Click outside the dialog cancels.
+            self._reset_confirm_open = False
+            self._options_open = False
+            return True
+        if self._picker_open:
+            for rect, folder in self._picker_rows:
+                if rect.collidepoint(pos):
+                    self._switch_to_dungeon(folder)
+                    return True  # unreachable — execv replaces process
+            # Click outside a row closes the picker AND the menu.
+            self._picker_open = False
+            self._options_open = False
+            return True
         for rect, action, enabled in self._options_button_rects:
             if rect.collidepoint(pos):
                 if enabled and action is not None:
@@ -933,6 +1521,242 @@ class MapView:
         # Click outside any button (and the menu is open) → close.
         self._options_open = False
         return True
+
+    # -- Room-info modal -----------------------------------------------------
+
+    def _wrap_text(self, text: str, font: pygame.font.Font,
+                   max_width: int) -> list[str]:
+        """Greedy word-wrap honouring explicit \\n breaks. Empty string
+        returns []; pure-whitespace lines are preserved as blank lines so
+        paragraph breaks survive."""
+        out: list[str] = []
+        for raw_line in text.split("\n"):
+            if raw_line == "":
+                out.append("")
+                continue
+            words = raw_line.split(" ")
+            current = ""
+            for w in words:
+                trial = w if current == "" else current + " " + w
+                if font.size(trial)[0] <= max_width:
+                    current = trial
+                else:
+                    if current:
+                        out.append(current)
+                    current = w
+            if current:
+                out.append(current)
+        return out
+
+    def _draw_room_info_modal(self, surface: pygame.Surface) -> None:
+        """Modal overlay listing the JSON-side room metadata (box text,
+        encounter, treasure, special, DM notes). Opened via right-click on
+        a room; closed by Esc, the [×] button, or click outside the panel."""
+        self._room_info_close_rect = None
+        self._room_info_panel_rect = None
+        if not self._room_info_open or self._room_info_room_id is None:
+            return
+        room = self.level.rooms_by_id.get(self._room_info_room_id)
+        if room is None:
+            self._room_info_open = False
+            return
+
+        # Dim backdrop (consistent with options menu).
+        backdrop = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+        backdrop.fill((0, 0, 0, 130))
+        surface.blit(backdrop, (0, 0))
+
+        ink = (26, 26, 26)
+        muted = (130, 110, 80)
+        body_font = pygame.font.SysFont("georgia,serif", 14)
+        header_font = pygame.font.SysFont("georgia,serif", 13, bold=True)
+        meta_font = self.help_font
+
+        # Build the section list — only non-empty fields appear.
+        sections: list[tuple[str, str]] = []
+        if room.box_text.strip():
+            sections.append(("Box text (read aloud)", room.box_text))
+        enc_parts: list[str] = []
+        if room.encounter_text.strip():
+            enc_parts.append(room.encounter_text)
+        if room.encounter_ref:
+            enc_parts.append(f"D&D Beyond: {room.encounter_ref}")
+        if enc_parts:
+            sections.append(("Encounter", "\n\n".join(enc_parts)))
+        if room.statblocks.strip():
+            sections.append(("SRD stat blocks", room.statblocks))
+        trsr_parts: list[str] = []
+        if room.treasure_text.strip():
+            trsr_parts.append(room.treasure_text)
+        if room.treasure_tier:
+            trsr_parts.append(f"Tier: {room.treasure_tier}")
+        if trsr_parts:
+            sections.append(("Treasure", "\n\n".join(trsr_parts)))
+        if room.special_text.strip():
+            sections.append(("Special", room.special_text))
+        if room.notes.strip():
+            sections.append(("DM notes", room.notes))
+
+        # Lay out the panel — width fixed, height grows with content (capped
+        # at 80% of the window so very long notes still fit).
+        sw, sh = surface.get_size()
+        panel_w = min(620, sw - 40)
+        text_max_w = panel_w - 48  # inner padding both sides
+        title_h = 56
+        section_gap = 14
+        section_pad = 6
+        line_h = body_font.get_linesize()
+        header_h = header_font.get_linesize()
+
+        wrapped: list[tuple[str, list[str]]] = []
+        body_h = 0
+        for header, text in sections:
+            lines = self._wrap_text(text, body_font, text_max_w)
+            wrapped.append((header, lines))
+            body_h += header_h + section_pad + line_h * max(1, len(lines)) + section_gap
+
+        # Tag chips and reaction-required indicator add a small meta row
+        # under the title.
+        meta_h = meta_font.get_linesize() + 6
+        if room.reaction_required:
+            meta_h += meta_font.get_linesize() + 4
+
+        # If no sections, show a placeholder so the modal isn't empty.
+        if not wrapped:
+            placeholder = (
+                "(No notes for this room yet — open the editor with E to add "
+                "box text, encounter, treasure, special, or DM notes.)"
+            )
+            placeholder_lines = self._wrap_text(placeholder, body_font, text_max_w)
+            body_h = line_h * len(placeholder_lines) + section_gap
+
+        # Panel height: prefer enough room for the content, but cap at 85%
+        # of the window. When the content is taller than the cap, the body
+        # area scrolls (mouse wheel / arrow keys); a thin scrollbar on the
+        # right edge of the body shows the visible window.
+        chrome_h = title_h + meta_h + 16 + 24  # title + divider + meta + bottom pad
+        max_h = int(sh * 0.85)
+        panel_h = min(max_h, chrome_h + body_h)
+        panel_x = (sw - panel_w) // 2
+        panel_y = max(40, (sh - panel_h) // 2)
+        panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
+
+        panel_bg = pygame.Surface(panel_rect.size, pygame.SRCALPHA)
+        panel_bg.fill((244, 228, 193, 250))
+        surface.blit(panel_bg, panel_rect.topleft)
+        pygame.draw.rect(surface, ink, panel_rect, 3, border_radius=6)
+        self._room_info_panel_rect = panel_rect
+
+        # Title: "R02 — Guard Room"   [×]
+        title_text = f"{room.id} — {room.name}" if room.name else room.id
+        title_surf = self.title_font.render(title_text, True, ink)
+        surface.blit(title_surf, (panel_x + 24, panel_y + 18))
+
+        # Close button [×] in the top-right corner of the panel.
+        close_rect = pygame.Rect(panel_x + panel_w - 38, panel_y + 14, 24, 24)
+        pygame.draw.rect(surface, ink, close_rect, 2, border_radius=3)
+        x_label = self.title_font.render("×", True, ink)
+        surface.blit(x_label,
+                     (close_rect.x + (close_rect.width - x_label.get_width()) // 2 + 1,
+                      close_rect.y + (close_rect.height - x_label.get_height()) // 2 - 2))
+        self._room_info_close_rect = close_rect
+
+        # Divider under title.
+        sep_y = panel_y + title_h
+        pygame.draw.line(surface, ink,
+                         (panel_x + 16, sep_y), (panel_x + panel_w - 16, sep_y), 1)
+
+        # Meta row: tags + reaction-required badge.
+        meta_y = sep_y + 8
+        tag_str = "Tags: " + (", ".join(room.tags) if room.tags else "—")
+        meta_surf = meta_font.render(tag_str, True, muted)
+        surface.blit(meta_surf, (panel_x + 24, meta_y))
+        if room.reaction_required:
+            rr_y = meta_y + meta_font.get_linesize() + 2
+            rr_surf = meta_font.render("REACTION REQUIRED on first entry",
+                                       True, ALERT_RED)
+            surface.blit(rr_surf, (panel_x + 24, rr_y))
+
+        # Body region: clipped + scrollable. Reserve a small right-margin
+        # for the scrollbar so text never sits under it.
+        body_top = sep_y + 8 + meta_h + 8
+        body_bottom = panel_y + panel_h - 16
+        body_view_h = max(0, body_bottom - body_top)
+        body_rect = pygame.Rect(panel_x + 16, body_top,
+                                panel_w - 32, body_view_h)
+        self._room_info_body_rect = body_rect
+
+        # Compute total body content height (placeholder vs sections).
+        if not wrapped:
+            content_h = line_h * len(placeholder_lines) + section_gap
+        else:
+            content_h = body_h
+
+        # Clamp scroll within bounds (handles content shrinking after a
+        # mtime-poll merge or window enlargement).
+        self._room_info_max_scroll = max(0.0, content_h - body_view_h)
+        self._room_info_scroll_y = max(
+            0.0, min(self._room_info_max_scroll, self._room_info_scroll_y),
+        )
+
+        # Set a clip so nothing draws outside the body region.
+        prior_clip = surface.get_clip()
+        surface.set_clip(body_rect)
+        try:
+            y = body_top - int(self._room_info_scroll_y)
+            text_x = panel_x + 24
+            if not wrapped:
+                for line in placeholder_lines:
+                    ls = body_font.render(line, True, muted)
+                    surface.blit(ls, (text_x, y))
+                    y += line_h
+            else:
+                for header, lines in wrapped:
+                    hs = header_font.render(header, True, ink)
+                    surface.blit(hs, (text_x, y))
+                    y += header_h + section_pad
+                    for line in lines:
+                        ls = body_font.render(line, True, ink)
+                        surface.blit(ls, (text_x, y))
+                        y += line_h
+                    y += section_gap
+        finally:
+            surface.set_clip(prior_clip)
+
+        # Scrollbar (right edge of the body) when content overflows. Track
+        # is muted; thumb is ink. Sized proportionally to view/content.
+        if self._room_info_max_scroll > 0:
+            track_w = 6
+            track_x = body_rect.right - track_w - 2
+            track_rect = pygame.Rect(track_x, body_top, track_w, body_view_h)
+            pygame.draw.rect(surface, (214, 202, 168), track_rect,
+                             border_radius=3)
+            thumb_h = max(28, int(body_view_h * body_view_h / content_h))
+            travel = body_view_h - thumb_h
+            thumb_y = body_top + int(travel * (
+                self._room_info_scroll_y / self._room_info_max_scroll
+            ))
+            thumb_rect = pygame.Rect(track_x, thumb_y, track_w, thumb_h)
+            pygame.draw.rect(surface, ink, thumb_rect, border_radius=3)
+
+    def _handle_room_info_click(self, pos: tuple[int, int]) -> None:
+        """Close-button / outside-panel click handling. Always swallows the
+        click — the caller has already gated on _room_info_open."""
+        if (self._room_info_close_rect is not None
+                and self._room_info_close_rect.collidepoint(pos)):
+            self.close_room_info()
+            return
+        if (self._room_info_panel_rect is not None
+                and not self._room_info_panel_rect.collidepoint(pos)):
+            self.close_room_info()
+            return
+        # Click inside the panel (but not on [×]) — keep it open.
+
+    def close_room_info(self) -> None:
+        self._room_info_open = False
+        self._room_info_room_id = None
+        self._room_info_scroll_y = 0.0
+        self._room_info_max_scroll = 0.0
 
     # -- External-edit detection (mtime poll → metadata merge) ---------------
 
@@ -980,6 +1804,8 @@ class MapView:
                 live_r.box_text = fresh_r.box_text
                 live_r.encounter_text = fresh_r.encounter_text
                 live_r.treasure_text = fresh_r.treasure_text
+                live_r.special_text = fresh_r.special_text
+                live_r.statblocks = fresh_r.statblocks
                 # Deliberately NOT copied: state, image_region.
         self._invalidate_fog()
         if self._on_change is not None:
@@ -1007,15 +1833,24 @@ def run(
     session: Session,
     *,
     dungeon_path: Path | None = None,
+    dungeons_dir: Path | None = None,
     window_size: tuple[int, int] = (1280, 800),
     on_change: Callable[[], None] | None = None,
     on_open_browser: Callable[[], None] | None = None,
     on_open_editor: Callable[[], None] | None = None,
     on_open_player: Callable[[], None] | None = None,
-) -> None:
+) -> ReloadRequest | None:
     """Run the pygame event loop. on_change fires after any state change.
     The on_open_* hooks are individual tab openers used by the options
-    menu; on_open_browser is the legacy "open all tabs" shortcut for V."""
+    menu; on_open_browser is the legacy "open all tabs" shortcut for V.
+
+    Return value: None on a clean quit; a ReloadRequest if the user
+    asked to switch dungeons or full-reset. main.py is expected to
+    handle the reload (rebuild session + editor server, optionally run
+    Session.full_reset) and call run() again with the new session. We
+    deliberately do NOT pygame.quit() in the reload path so the SDL
+    window survives across the reload — a fresh pygame init after
+    quit() on macOS often fails to reattach to the WindowServer."""
     pygame.init()
     pygame.font.init()
     surface = pygame.display.set_mode(window_size, pygame.RESIZABLE)
@@ -1027,7 +1862,10 @@ def run(
         if on_change is not None:
             on_change()
 
-    view = MapView(session, dungeon_path=dungeon_path, on_change=_on_change)
+    view = MapView(session,
+                   dungeon_path=dungeon_path,
+                   dungeons_dir=dungeons_dir,
+                   on_change=_on_change)
     view.snapshot_to_disk()
 
     # Closures for the options-menu actions. We keep them here so they can
@@ -1069,7 +1907,13 @@ def run(
             elif event.type == pygame.KEYDOWN:
                 cmd = bool(event.mod & cmd_mask)
                 if event.key == pygame.K_ESCAPE:
-                    if view._options_open:
+                    if view._room_info_open:
+                        view.close_room_info()
+                    elif view._reset_confirm_open:
+                        view._reset_confirm_open = False
+                    elif view._picker_open:
+                        view._picker_open = False
+                    elif view._options_open:
                         view._options_open = False
                     elif view._annot_mode and (
                         view._annot_drag_start_world is not None
@@ -1118,6 +1962,23 @@ def run(
                     _ascend()
                 elif cmd and event.key == pygame.K_DOWN:
                     _descend()
+                # --- Session action shortcuts (turn / resources) ---
+                elif (event.key in (pygame.K_SPACE, pygame.K_RETURN)
+                      and not view._annot_mode):
+                    view.action_advance_turn()
+                elif event.key == pygame.K_r and not cmd and not view._annot_mode:
+                    view.action_manual_wm_roll()
+                elif event.key == pygame.K_t and not cmd and not view._annot_mode:
+                    view.action_light_torch()
+                elif (event.key == pygame.K_l and not cmd
+                      and not view._annot_mode):
+                    shift = bool(event.mod & pygame.KMOD_SHIFT)
+                    if shift:
+                        view.action_refill_lantern()
+                    else:
+                        view.action_light_lantern()
+                elif event.key == pygame.K_n and not cmd and not view._annot_mode:
+                    view.action_toggle_noisy()
                 else:
                     view.handle_event(event)
             else:
@@ -1125,6 +1986,14 @@ def run(
         view.draw(surface)
         pygame.display.flip()
         clock.tick(60)
+        # If a click handler queued a reload (switch dungeon / full reset),
+        # exit cleanly so main.py can rebuild the world. Save first so the
+        # next session sees up-to-date state.
+        if view._pending_reload is not None:
+            session.save()
+            session.close()
+            return view._pending_reload
 
     session.close()
     pygame.quit()
+    return None

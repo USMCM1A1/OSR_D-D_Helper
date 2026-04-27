@@ -75,6 +75,13 @@ class Tracker:
         self.journal = journal if journal is not None else Journal()
         self.turn = 0
         self.light_sources: list[LightSource] = []
+        # Phase-8d Noisy flag — set after combat / failed stealth / etc.
+        # The threshold inflation behaviour is deferred (planned in CLAUDE.md
+        # Phase 8d); for now this is a journaled flag the renderer can show.
+        self.noisy: bool = False
+        # Most recent WM roll result — cached for the status-strip UI; the
+        # journal remains the source of truth across save/resume.
+        self.last_wm: WMResult | None = None
 
     # --- Properties ----------------------------------------------------------
 
@@ -108,9 +115,10 @@ class Tracker:
     # --- Turn advance --------------------------------------------------------
 
     def advance_turn(self) -> list[JournalEntry]:
-        """Advance one turn: increment counter, tick lights, roll WM.
+        """Advance one turn: increment counter, tick lights, maybe roll WM.
 
-        Returns the entries emitted to the journal during this turn.
+        WM rolls only fire on turns that are a multiple of the current
+        level's wm_check_every_n_turns (default 1 = every turn).
         """
         start = len(self.journal)
         self.turn += 1
@@ -120,8 +128,22 @@ class Tracker:
             f"Elapsed: {h}h{m:02d}m",
         )
         self._tick_light_sources()
-        self.roll_wm()
+        every_n = max(1, self.dungeon.current.wm_check_every_n_turns)
+        if self.turn % every_n == 0:
+            self.roll_wm()
         return self.journal.since(start)
+
+    # -- Noisy flag ----------------------------------------------------------
+
+    def set_noisy(self, noisy: bool) -> None:
+        """Toggle the Noisy state and journal the change. The threshold
+        inflation behaviour is deferred (CLAUDE.md Phase 8d) — at the moment
+        this is purely a log + UI signal."""
+        if self.noisy == noisy:
+            return
+        self.noisy = noisy
+        msg = "Party becomes Noisy." if noisy else "Party Noisy flag cleared."
+        self.journal.record(self.turn, journal_mod.KIND_NOTE, msg)
 
     def _tick_light_sources(self) -> None:
         expired: list[LightSource] = []
@@ -164,7 +186,9 @@ class Tracker:
                 self.turn, journal_mod.KIND_WM_CHECK,
                 f"WM Check: rolled {roll} — No encounter",
             )
-        return WMResult(method=method, roll=roll, triggered=triggered, encounter=encounter)
+        result = WMResult(method=method, roll=roll, triggered=triggered, encounter=encounter)
+        self.last_wm = result
+        return result
 
     def _roll_wm_table(self) -> str:
         table = self.dungeon.current.wandering_monster_table

@@ -12,114 +12,28 @@ This is a **Dungeon Master tool**, not a player-facing VTT. Character management
 
 ---
 
-## Dungeon Creation — Two Modes
+## Dungeon Authoring
 
-### Mode 1: Hand-Authored JSON
-The DM writes a dungeon definition file by hand in a text editor before the session. Full creative control over every room, corridor, and encounter. See Dungeon Definition File section for the full schema.
+A dungeon is a self-contained folder under `dungeons/`:
 
-### Mode 2: Procedural Generator
-The app includes a procedural dungeon generator that produces a populated dungeon JSON using the **TSR B-series population formula**, adapted for 5E. The DM provides parameters, the generator produces a complete dungeon JSON, and the DM can edit that file before play to customize any room.
-
-The generator is a pre-session tool, not a mid-session one. It outputs a standard dungeon JSON file identical in format to a hand-authored dungeon.
-
-#### B-Series Population Formula
-For a dungeon of N rooms, rooms are assigned types in the following proportions:
-
-| Type | Proportion | Subtype | Proportion of type |
-|---|---|---|---|
-| Monster only | 1/6 of N | — | — |
-| Monster + treasure | 1/6 of N | — | — |
-| Trap only | 2/18 of N | — | — |
-| Trap + treasure | 1/18 of N | — | — |
-| Special feature | 1/6 of N | — | — |
-| Empty | 1/3 of N | Hidden treasure | 1/6 of empty rooms |
-| Empty | 1/3 of N | Truly empty | 5/6 of empty rooms |
-
-For a 36-room dungeon this produces: 6 monster+treasure, 6 monster, 4 traps, 2 trap+treasure, 6 specials, 2 hidden treasure, 10 empty. Approximately 10 treasures total, concentrated rather than scattered.
-
-#### Reaction Roll Prompting
-The generator flags all monster rooms for a **reaction roll** at runtime. When the party enters a monster room, the app displays a prompt reminding the DM to roll a reaction check before assuming hostility. Per DMG guidance, this uses a Charisma (Persuasion) check or a simple 2d6 roll against the monster's disposition. The app does not resolve the roll — it prompts and logs the result the DM enters. Roughly half of monster encounters will not be immediately hostile, which is intentional.
-
-#### Generator Parameters
-The DM provides at session creation:
-- Number of rooms (recommended 12-36 for a single session)
-- Party level (determines CR range and treasure tier)
-- Dungeon theme (e.g., "undead crypt", "goblin warren", "ancient ruins") — used to filter the monster roster
-- Connectivity style: `linear` (mostly a main path with branches), `web` (many loops and connections), `sparse` (fewer corridors, more isolated rooms)
-
-#### Graph Generation
-- Rooms are generated as nodes; corridors are edges
-- At least one valid path exists from entrance to every room
-- No isolated nodes
-- Corridors are tagged procedurally: approximately 1 in 8 corridors is `locked`, 1 in 10 is `trapped`, 1 in 12 is `secret`
-- DM can reposition nodes visually after generation (cosmetic only)
-
----
-
-## Monster Roster File
-
-A separate `monsters.json` file defines the pool of monsters the procedural generator draws from. The DM maintains this file and updates it as new sourcebooks are added to the campaign.
-
-```json
-{
-  "monsters": [
-    {
-      "name": "Skeleton",
-      "cr": 0.25,
-      "tags": ["undead", "crypt", "ruins"],
-      "source": "MM p. 272",
-      "dndbeyond_ref": "Skeleton"
-    },
-    {
-      "name": "Ghoul",
-      "cr": 1,
-      "tags": ["undead", "crypt"],
-      "source": "MM p. 148",
-      "dndbeyond_ref": "Ghoul"
-    },
-    {
-      "name": "Gelatinous Cube",
-      "cr": 2,
-      "tags": ["ooze", "ruins", "dungeon"],
-      "source": "MM p. 242",
-      "dndbeyond_ref": "Gelatinous Cube"
-    }
-  ]
-}
+```
+dungeons/<name>/
+├── dungeon.json    # metadata + levels + rooms + WM tables
+├── level1.png      # one PNG per level; map_image paths are relative
+├── level2.png
+└── session.db      # per-dungeon SQLite — fog, turn, supplies, journal
 ```
 
-The generator filters this list by dungeon theme tags and party-level-appropriate CR range (see Scaling section), then randomly selects monsters for each room. The `dndbeyond_ref` field is the exact name of the monster as it appears in D&D Beyond, for easy lookup when running the encounter.
+The folder is the unit of work. Copy it, zip it, hand it to a friend — the JSON, the level PNGs, and the in-progress session state all travel together. To switch dungeons, point the app at a different folder. To start a fresh playthrough, delete `session.db` (the JSON + PNGs are preserved).
 
----
+The **map images are the ground truth**. Workflow:
 
-## Party Level Scaling
+1. Find or draw a set of map PNGs (one per level) and drop them in `dungeons/<name>/`.
+2. Write a starter `dungeon.json` next to them — top-level metadata (`dungeon_name`, `current_level`, `party`) plus one entry in `levels[]` per PNG. Each level needs a `level_number`, a `map_image` (bare filename, e.g. `level1.png`), and a `wandering_monster_table`. Rooms can start as `[]` — they're added in the editor.
+3. Open the dungeon in the app (`python main.py dungeons/<name>`). Use **annotation mode** (`A`) to draw rectangles over the map image for each room; each rectangle becomes a `Room` with an `image_region`. Use the browser-tab editor (`E`) to fill in box text, encounters, treasure, and notes per room. Edits autosave to `dungeon.json`.
+4. Play. Click rooms to cycle reveal state — the per-room rectangles drive the fog-of-war mask painted over the PNG.
 
-### What Scales
-When the DM updates the party level (at session start or mid-campaign), the following change for **newly generated dungeons**:
-
-- **CR range**: The generator selects monsters within an appropriate CR band for the party level:
-
-| Party Level | Standard CR Range | Deadly Room CR |
-|---|---|---|
-| 1-2 | 1/8 – 1/2 | 1 |
-| 3-4 | 1/4 – 1 | 2-3 |
-| 5-6 | 1/2 – 2 | 4-5 |
-| 7-8 | 1 – 3 | 6-7 |
-| 9-10 | 2 – 5 | 8-10 |
-| 11+ | 4 – 8 | 10+ |
-
-- **Treasure tier**: Generator pulls from the DMG individual treasure table appropriate to the CR of the monster in that room (DMG p. 136-137: CR 0-4 table, CR 5-10 table, etc.). Treasure is described as a text label (e.g., "Roll DMG CR 0-4 Individual Treasure") in the room notes — the DM rolls the actual result at the table.
-
-- **Wandering monster table**: The dungeon JSON includes a level-appropriate wandering monster table drawn from the same CR range.
-
-### What Does Not Scale
-- **Existing dungeons** are not modified when the party levels up. A dungeon generated at party level 2 stays as generated. This is intentional — a dungeon that was deadly at level 2 should feel more manageable at level 5. That's a reward for survival, not a bug.
-- **Hand-authored dungeons** are never modified by the scaling system.
-
-### Updating Party Level
-- DM updates party level in the app's session settings at any time
-- Level change is logged in the session journal
-- Only affects future procedural generation runs
+There is no procedural generator. Every room exists because the DM drew it. The schema's `treasure_tier` field survives as a free-text label (e.g. `"DMG CR 0-4 individual"`) for the DM's own reference.
 
 ---
 
@@ -198,7 +112,7 @@ Per DMG encounter frequency guidance:
   - `reaction_required`: boolean — if true, app prompts reaction roll on entry
   - Notes field (DM only)
   - `encounter_ref`: name of pre-built D&D Beyond encounter (optional)
-  - `treasure_tier`: CR tier for treasure table reference (optional)
+  - `treasure_tier`: free-text label for the DM's treasure-table reference (optional)
 - **Corridors** = edges:
   - Distance in feet
   - Tags: `secret`, `locked`, `trapped`, `one-way`
@@ -228,7 +142,7 @@ A dungeon is a stack of self-contained levels. Each level has its own map image,
 
 - **`current_level`** at the top of the JSON selects which level is active when the session opens.
 - **`levels[]`** is an ordered array, indexed by `level_number` (1 = surface entry, increasing values = deeper). The party config (`party`, `party_level`) and dungeon-level metadata stay at the top of the JSON.
-- **Map image per level**: each level supplies a `map_image` path (relative to `target_dungeon_maps/` at the project root) and a `map_image_scale`. Images are loaded on demand — the previous level's image is released when the new one is loaded so memory stays low.
+- **Map image per level**: each level supplies a `map_image` path (resolved relative to the dungeon folder, so a portable dungeon directory carries its own PNGs) and a `map_image_scale`. Images are loaded on demand — the previous level's image is released when the new one is loaded so memory stays low.
 - **Level switching**: the DM ascends with `Ctrl+Up` / `[▲ Ascend]` and descends with `Ctrl+Down` / `[▼ Descend]`. On switch:
   1. Current level state (room reveals, party position, active effects) is flushed to SQLite immediately.
   2. The new level's image and graph are loaded.
@@ -259,7 +173,7 @@ A dungeon is a stack of self-contained levels. Each level has its own map image,
     {
       "level_number": 1,
       "display_name": "Level 1 — The Entry Vaults",
-      "map_image": "target_dungeon_maps/level1.png",
+      "map_image": "level1.png",
       "map_image_scale": 1.0,
       "wm_check_method": "d20",
       "wm_check_threshold": 18,
@@ -312,7 +226,7 @@ A dungeon is a stack of self-contained levels. Each level has its own map image,
     {
       "level_number": 2,
       "display_name": "Level 2 — The Burial Halls",
-      "map_image": "target_dungeon_maps/level2.png",
+      "map_image": "level2.png",
       "map_image_scale": 1.0,
       "wm_check_method": "d20",
       "wm_check_threshold": 18,
@@ -446,7 +360,6 @@ The **LEVEL** panel at the top of the side rail shows the current level's number
 | `Middle drag` | Pan map |
 | `Ctrl+S` | Force save to SQLite |
 | `Ctrl+L` | Load dungeon JSON |
-| `Ctrl+G` | Open procedural generator dialog |
 | `Ctrl+Up` / `[▲ Ascend]` | Ascend one level (disabled on level 1) |
 | `Ctrl+Down` / `[▼ Descend]` | Descend one level (disabled on deepest level) |
 | `Ctrl+A` | Enter node-alignment mode for the current level |
@@ -483,7 +396,7 @@ This replaces the prior "war room / dark background / amber + sans-serif" direct
 - **Python 3.11+**
 - **pygame** for rendering and input
 - **SQLite** via `sqlite3` stdlib for persistence
-- **JSON** for dungeon definition and monster roster files
+- **JSON** for dungeon definition files
 - Fully local, no network required
 - Target OS: macOS (cross-platform compatible)
 
@@ -494,22 +407,24 @@ This replaces the prior "war room / dark background / amber + sans-serif" direct
 ```
 dungeon-tracker/
 ├── CLAUDE.md
-├── main.py                    ← entry point, pygame loop
-├── dungeon.py                 ← graph data model, JSON loader
-├── generator.py               ← procedural dungeon generator
-├── session.py                 ← SQLite session state manager
-├── tracker.py                 ← turn engine, resource timers, WM rolls
-├── renderer.py                ← pygame map and UI rendering
-├── journal.py                 ← session log management
-├── config.py                  ← constants (turn duration, CR ranges, defaults)
+├── main.py                       ← entry point: open / list / reset a dungeon
+├── dungeon.py                    ← graph data model, JSON loader
+├── session.py                    ← SQLite session state manager
+├── tracker.py                    ← turn engine, resource timers, WM rolls
+├── renderer.py                   ← pygame map + UI rendering, annotation mode
+├── editor_server.py              ← localhost browser-tab room/level editor
+├── journal.py                    ← session log management
+├── config.py                     ← constants (turn duration, light durations)
 ├── data/
-│   ├── example_dungeon.json   ← hand-authored example
-│   └── monsters.json          ← monster roster for generator
-├── target_dungeon_maps/       ← per-level map images (PNG); loaded on demand
-│   ├── level1.png
-│   └── level2.png
-├── saves/
-│   └── session.db
+│   └── example_dungeon.json      ← synthetic test fixture (no PNGs)
+├── dungeons/                     ← one folder per dungeon (the unit of work)
+│   └── ancient-temple-of-torrel/
+│       ├── dungeon.json          ← metadata + levels + rooms + WM tables
+│       ├── level1.png            ← map_image paths are bare filenames
+│       ├── level2.png
+│       ├── level3.png
+│       └── session.db            ← per-dungeon SQLite (fog/turn/supplies)
+├── render_output/                ← snapshot PNGs for the browser tabs
 └── assets/
     └── fonts/
 ```
@@ -533,7 +448,7 @@ dungeon-tracker/
 Each phase ends at a test gate and is independently runnable before proceeding. **pytest** for logic, **manual smoke** for visual/UX work.
 
 ### Phase 1 — Foundations & Data Model
-- **Ships**: `dungeon.py` (graph data model, JSON loader, validator), `config.py` (turn duration, light durations, CR ranges), `data/example_dungeon.json`.
+- **Ships**: `dungeon.py` (graph data model, JSON loader, validator), `config.py` (turn duration, light durations, tag/state vocabularies), `data/example_dungeon.json`.
 - **pytest**: JSON parses; graph is connected (no orphan rooms, every edge endpoint exists); invalid JSON is rejected with a clear error.
 - **Gate**: `pytest -k dungeon` green; `python -c "from dungeon import load; load('data/example_dungeon.json')"` succeeds.
 
@@ -575,8 +490,3 @@ Each phase ends at a test gate and is independently runnable before proceeding. 
 - **8e Lantern + oil tracking** — flask burns down; refill from supplies. *pytest*: 36-turn lantern duration; oil decrement on refill.
 - **8f Reaction-roll prompt** — modal on entering `reaction_required` rooms; logs DM-entered result. *manual*: prompt appears, journal entry recorded.
 - **8g WM table rolls** — on encounter trigger, auto-roll on dungeon's WM table and display. *pytest*: roll picks correct table row.
-
-### Phase 9 — Procedural Generator
-- **Ships**: `generator.py` (B-series population formula, monster filtering by theme tags + party-level CR band, treasure tier labels, connectivity styles linear/web/sparse), `data/monsters.json` starter roster, `Ctrl+G` dialog.
-- **pytest**: population proportions correct for N ∈ {12, 18, 24, 36}; CR filter respects party-level bands; generated graph is fully connected; corridor tag rates within ±1 of expected (locked 1/8, trapped 1/10, secret 1/12).
-- **Gate**: generate → save → load via `Ctrl+L` → play 10 turns without errors.

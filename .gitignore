@@ -18,6 +18,10 @@ saves/*.db
 saves/*.db-journal
 render_output/dm_map.png
 render_output/player_map.png
+# Per-dungeon SQLite session state + dungeon.json auto-backups
+dungeons/**/session.db
+dungeons/**/session.db-journal
+dungeons/**/*.bak
 
 # Editor
 .idea/

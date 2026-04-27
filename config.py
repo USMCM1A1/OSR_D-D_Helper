@@ -50,32 +50,6 @@ EXHAUSTION_MIN = 0
 EXHAUSTION_MAX = 6
 EXHAUSTION_DANGER = 3  # red highlight at this level or higher.
 
-# --- Party-level CR scaling (CLAUDE.md "Party Level Scaling") ---------------
-
-# (low_cr, high_cr) inclusive band of standard-encounter CRs by party level.
-# Use float for fractional CRs (1/8, 1/4, 1/2 → 0.125, 0.25, 0.5).
-CR_BANDS_BY_PARTY_LEVEL: dict[tuple[int, int], tuple[float, float]] = {
-    (1, 2):  (0.125, 0.5),
-    (3, 4):  (0.25,  1.0),
-    (5, 6):  (0.5,   2.0),
-    (7, 8):  (1.0,   3.0),
-    (9, 10): (2.0,   5.0),
-    (11, 99):(4.0,   8.0),
-}
-
-# (low_cr, high_cr) inclusive band of "deadly room" CRs by party level.
-DEADLY_CR_BANDS_BY_PARTY_LEVEL: dict[tuple[int, int], tuple[float, float]] = {
-    (1, 2):  (1.0,  1.0),
-    (3, 4):  (2.0,  3.0),
-    (5, 6):  (4.0,  5.0),
-    (7, 8):  (6.0,  7.0),
-    (9, 10): (8.0,  10.0),
-    (11, 99):(10.0, 99.0),
-}
-
-# DMG individual treasure tier labels — referenced by room.treasure_tier.
-TREASURE_TIERS = ("cr0-4", "cr5-10", "cr11-16", "cr17+")
-
 # --- Schema-valid value sets -------------------------------------------------
 
 ROOM_STATES = ("unexplored", "known", "cleared")
@@ -86,19 +60,3 @@ ROOM_TAGS = ("encounter", "trap", "treasure", "special", "empty",
 CORRIDOR_TAGS = ("secret", "locked", "trapped", "one-way")
 
 WM_FREQUENCIES = ("every_turn",)  # extension point; only one for now.
-
-
-def cr_band_for_party_level(party_level: int) -> tuple[float, float]:
-    """Return the (low, high) standard CR band for a given party level."""
-    for (lo, hi), band in CR_BANDS_BY_PARTY_LEVEL.items():
-        if lo <= party_level <= hi:
-            return band
-    raise ValueError(f"party_level {party_level} out of range")
-
-
-def deadly_cr_band_for_party_level(party_level: int) -> tuple[float, float]:
-    """Return the (low, high) deadly-room CR band for a given party level."""
-    for (lo, hi), band in DEADLY_CR_BANDS_BY_PARTY_LEVEL.items():
-        if lo <= party_level <= hi:
-            return band
-    raise ValueError(f"party_level {party_level} out of range")

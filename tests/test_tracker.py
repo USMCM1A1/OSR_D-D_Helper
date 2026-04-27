@@ -218,6 +218,77 @@ class TestShortRest:
         assert kinds[-1] == jmod.KIND_SHORT_REST_END
 
 
+class TestEveryNTurns:
+    """`wm_check_every_n_turns` controls how often advance_turn rolls a
+    WM check. n=1 (default) → every turn; n=3 → only on turns divisible
+    by 3. Lights still tick every turn regardless."""
+
+    def test_every_n_3_skips_in_between(self, base_dict: dict) -> None:
+        base_dict["levels"][0]["wm_check_every_n_turns"] = 3
+        d = dungeon._from_dict(base_dict, source="<test>")
+        t = _tracker(d)
+        for _ in range(6):
+            t.advance_turn()
+        wm_entries = t.journal.of_kind(jmod.KIND_WM_CHECK)
+        # 6 turns / every 3rd → exactly 2 WM checks (turns 3 and 6).
+        assert len(wm_entries) == 2
+        assert wm_entries[0].turn == 3
+        assert wm_entries[1].turn == 6
+
+    def test_every_1_is_default(self, base_dict: dict) -> None:
+        # No key set → defaults to 1 → WM every turn (existing behaviour).
+        d = dungeon._from_dict(base_dict, source="<test>")
+        t = _tracker(d)
+        for _ in range(5):
+            t.advance_turn()
+        assert len(t.journal.of_kind(jmod.KIND_WM_CHECK)) == 5
+
+    def test_lights_tick_regardless_of_wm_cadence(self, base_dict: dict) -> None:
+        base_dict["levels"][0]["wm_check_every_n_turns"] = 4
+        d = dungeon._from_dict(base_dict, source="<test>")
+        t = _tracker(d)
+        t.add_light_source("torch")
+        for _ in range(6):
+            t.advance_turn()
+        # Torch is 6 turns; should be EXTINGUISHED on turn 6 even though
+        # WM only rolled on turn 4.
+        assert t.light_sources == []
+        outs = t.journal.of_kind(jmod.KIND_LIGHT_OUT)
+        assert len(outs) == 1
+        assert outs[0].turn == 6
+
+
+class TestNoisy:
+    def test_noisy_starts_false(self, d20_dungeon: dungeon.Dungeon) -> None:
+        t = _tracker(d20_dungeon)
+        assert t.noisy is False
+
+    def test_set_noisy_journals_change(self, d20_dungeon: dungeon.Dungeon) -> None:
+        t = _tracker(d20_dungeon)
+        t.set_noisy(True)
+        assert t.noisy is True
+        notes = [e for e in t.journal if "Noisy" in e.message]
+        assert any("becomes Noisy" in e.message for e in notes)
+
+    def test_set_noisy_idempotent(self, d20_dungeon: dungeon.Dungeon) -> None:
+        t = _tracker(d20_dungeon)
+        t.set_noisy(True)
+        before = len(t.journal)
+        t.set_noisy(True)  # already noisy → no extra entry
+        assert len(t.journal) == before
+
+
+class TestLastWm:
+    def test_last_wm_caches_most_recent_roll(self, d20_dungeon: dungeon.Dungeon) -> None:
+        t = _tracker(d20_dungeon, seed=42)
+        assert t.last_wm is None
+        first = t.roll_wm()
+        assert t.last_wm is not None
+        assert t.last_wm.roll == first.roll
+        second = t.roll_wm()
+        assert t.last_wm.roll == second.roll
+
+
 class TestLongRest:
     def test_long_rest_advances_48_turns(self, d20_dungeon: dungeon.Dungeon) -> None:
         t = _tracker(d20_dungeon)

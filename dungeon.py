@@ -107,6 +107,12 @@ class Room:
     box_text: str = ""             # read aloud to players
     encounter_text: str = ""       # encounter / monsters / tactics
     treasure_text: str = ""        # treasure / loot details
+    special_text: str = ""         # special features (paired with `special` tag)
+    # Auto-populated by the editor's Enrich button — concatenated SRD stat
+    # blocks for creatures named in encounter_text / encounter_ref. Stored
+    # so the DM can read them in the pygame modal without an internet
+    # round-trip; replaced wholesale on each Enrich.
+    statblocks: str = ""
 
 
 @dataclass(frozen=True)
@@ -131,6 +137,13 @@ class Level:
     rooms: tuple[Room, ...]
     corridors: tuple[Corridor, ...]
     rooms_by_id: dict[str, Room] = field(default_factory=dict)
+    # How often the WM check fires when turns advance; 1 = every turn,
+    # 2 = every other turn, etc. Defaults to 1 if absent in legacy JSON.
+    wm_check_every_n_turns: int = 1
+    # Free-text challenge-rating label for this level (e.g.
+    # "CR 1/4–1 (standard) · CR 2 (deadly)"). Used as a DM authoring
+    # reminder; not consumed by the runtime tracker today.
+    challenge_rating: str = ""
 
     def __post_init__(self) -> None:
         if not self.rooms_by_id:
@@ -237,9 +250,11 @@ def _level_to_dict(lv: Level) -> dict:
         "display_name": lv.display_name,
         "map_image": lv.map_image,
         "map_image_scale": lv.map_image_scale,
+        "challenge_rating": lv.challenge_rating,
         "wm_check_method": lv.wm_check_method,
         "wm_check_threshold": lv.wm_check_threshold,
         "wm_check_frequency": lv.wm_check_frequency,
+        "wm_check_every_n_turns": lv.wm_check_every_n_turns,
         "wandering_monster_table": [
             {"roll": e.roll, "encounter": e.encounter}
             for e in lv.wandering_monster_table
@@ -266,6 +281,8 @@ def _room_to_dict(r: Room) -> dict:
         "box_text": r.box_text,
         "encounter_text": r.encounter_text,
         "treasure_text": r.treasure_text,
+        "special_text": r.special_text,
+        "statblocks": r.statblocks,
     }
     if r.image_region is not None:
         out["image_region"] = r.image_region.to_dict()
@@ -365,6 +382,13 @@ def _parse_level(raw: Any, idx: int, source: str) -> Level:
     corridors = _parse_corridors(raw["corridors"], rooms, f"levels[{idx}]", source)
     _validate_graph(rooms, corridors, f"{source} levels[{idx}]")
 
+    every_n = raw.get("wm_check_every_n_turns", 1)
+    if isinstance(every_n, bool) or not isinstance(every_n, int) or every_n < 1:
+        raise DungeonValidationError(
+            f"{source}: levels[{idx}].wm_check_every_n_turns must be an "
+            f"integer >= 1, got {every_n!r}"
+        )
+
     return Level(
         level_number=level_number,
         display_name=display_name,
@@ -376,6 +400,8 @@ def _parse_level(raw: Any, idx: int, source: str) -> Level:
         wandering_monster_table=wm_table,
         rooms=rooms,
         corridors=corridors,
+        wm_check_every_n_turns=every_n,
+        challenge_rating=str(raw.get("challenge_rating", "")),
     )
 
 
@@ -485,6 +511,8 @@ def _parse_rooms(raw: Any, prefix: str, source: str) -> tuple[Room, ...]:
             box_text=str(r.get("box_text", "")),
             encounter_text=str(r.get("encounter_text", "")),
             treasure_text=str(r.get("treasure_text", "")),
+            special_text=str(r.get("special_text", "")),
+            statblocks=str(r.get("statblocks", "")),
         ))
     return tuple(rooms)
 

@@ -22,6 +22,7 @@ from renderer import (
     _alpha_to_fog_surface,
     _build_fog_alpha,
     _point_in_polygon,
+    _resolve_image_path,
     _topmost_room_at,
     build_revealed_mask,
 )
@@ -240,6 +241,47 @@ class TestFog:
         assert surf.get_flags() & pygame.SRCALPHA
 
 
+# --- Image path resolution ---------------------------------------------------
+
+
+class TestResolveImagePath:
+    """`_resolve_image_path` keeps a dungeon folder portable: a level's
+    `map_image` is first looked up next to the dungeon JSON, then falls
+    back to PROJECT_ROOT for the legacy in-repo layout."""
+
+    def _level(self, map_image: str):
+        from dungeon import Level
+        return Level(
+            level_number=1, display_name="L1",
+            map_image=map_image, map_image_scale=1.0,
+            wm_check_method="d20", wm_check_threshold=18,
+            wm_check_frequency="every_turn",
+            wandering_monster_table=(),
+            rooms=(), corridors=(),
+        )
+
+    def test_dungeon_dir_takes_precedence(self, tmp_path):
+        # Create the file inside dungeon_dir so the JSON-relative branch hits.
+        (tmp_path / "level1.png").write_bytes(b"fake")
+        path = _resolve_image_path(self._level("level1.png"), tmp_path)
+        assert path == tmp_path / "level1.png"
+
+    def test_falls_back_to_project_root_when_missing_in_dungeon_dir(self, tmp_path):
+        # No file in tmp_path → resolver returns PROJECT_ROOT/<path> as fallback.
+        path = _resolve_image_path(self._level("legacy/foo.png"), tmp_path)
+        assert path == PROJECT_ROOT / "legacy" / "foo.png"
+
+    def test_absolute_path_passes_through(self, tmp_path):
+        abs_png = tmp_path / "abs.png"
+        abs_png.write_bytes(b"fake")
+        path = _resolve_image_path(self._level(str(abs_png)), tmp_path / "other")
+        assert path == abs_png
+
+    def test_no_dungeon_dir_uses_project_root(self):
+        path = _resolve_image_path(self._level("data/x.png"), None)
+        assert path == PROJECT_ROOT / "data" / "x.png"
+
+
 # --- MapView smoke ------------------------------------------------------------
 
 
@@ -329,6 +371,88 @@ class TestExternalReload:
         view._reload_dungeon_metadata()
         for r in view.level.rooms:
             assert r.state == "known"
+
+
+class TestActionButtons:
+    """Bottom-strip session actions exposed via MapView. Verify
+    pre/postconditions are wired correctly so the buttons match what the
+    user sees in the strip."""
+
+    def test_advance_turn_increments(self, session):
+        view = MapView(session)
+        before = session.tracker.turn
+        view.action_advance_turn()
+        assert session.tracker.turn == before + 1
+
+    def test_light_torch_consumes_supply_and_adds_source(self, session):
+        view = MapView(session)
+        before_torches = session.get_supplies()["torches"]
+        before_lights = len(session.tracker.light_sources)
+        view.action_light_torch()
+        assert session.get_supplies()["torches"] == before_torches - 1
+        assert len(session.tracker.light_sources) == before_lights + 1
+        assert session.tracker.light_sources[-1].kind == "torch"
+
+    def test_light_torch_disabled_when_stash_empty(self, session):
+        view = MapView(session)
+        session.set_supply_count("torches", 0)
+        assert view._can_light_torch() is False
+        view.action_light_torch()
+        assert len(session.tracker.light_sources) == 0  # no-op
+
+    def test_refill_lantern_when_no_lantern_disabled(self, session):
+        view = MapView(session)
+        # Fresh session has 0 active lanterns.
+        assert view._can_refill_lantern() is False
+
+    def test_refill_lantern_resets_to_full_duration(self, session):
+        view = MapView(session)
+        view.action_light_lantern()
+        ls = view._active_lantern()
+        # Burn it down a bit by simulating turns.
+        ls.turns_remaining = 5
+        before_oil = session.get_supplies()["oil_flask"]
+        view.action_refill_lantern()
+        # 36 turns is the hooded_lantern duration in config.LIGHT_DURATIONS_TURNS.
+        assert ls.turns_remaining == 36
+        assert session.get_supplies()["oil_flask"] == before_oil - 1
+
+    def test_lighting_lantern_does_not_consume_lantern(self, session):
+        """Regression: the lantern is a permanent object. Lighting it
+        consumes oil, not the lantern itself."""
+        view = MapView(session)
+        before = session.get_supplies()
+        before_l = before["hooded_lantern"]
+        before_o = before["oil_flask"]
+        view.action_light_lantern()
+        after = session.get_supplies()
+        assert after["hooded_lantern"] == before_l       # lantern preserved
+        assert after["oil_flask"] == before_o - 1        # oil consumed
+
+    def test_cannot_light_second_lantern_when_only_one_owned(self, session):
+        """L:1 + 1 active lantern means we can't light another (you'd be
+        lighting the same physical lantern twice)."""
+        view = MapView(session)
+        view.action_light_lantern()  # 1 active
+        assert view._can_light_lantern() is False
+        view.action_light_lantern()  # no-op
+        assert sum(1 for ls in session.tracker.light_sources
+                   if ls.kind == "hooded_lantern") == 1
+
+    def test_toggle_noisy_flips(self, session):
+        view = MapView(session)
+        assert session.tracker.noisy is False
+        view.action_toggle_noisy()
+        assert session.tracker.noisy is True
+        view.action_toggle_noisy()
+        assert session.tracker.noisy is False
+
+    def test_manual_wm_roll_does_not_advance_turn(self, session):
+        view = MapView(session)
+        before = session.tracker.turn
+        view.action_manual_wm_roll()
+        assert session.tracker.turn == before
+        assert session.tracker.last_wm is not None
 
 
 class TestUndo:
