@@ -347,3 +347,144 @@ class TestLoaderErrors:
         bad.write_text("[]")
         with pytest.raises(DungeonValidationError, match="top level"):
             dungeon.load(bad)
+
+
+class TestBackupRotation:
+    """Phase 4: backup_dungeon_json copies dungeon.json to a timestamped
+    .bak next to it and prunes all but the N most-recent siblings."""
+
+    def test_creates_bak_with_same_content(
+        self, base: dict, tmp_path: Path
+    ) -> None:
+        target = tmp_path / "dungeon.json"
+        d = _load_dict(base)
+        dungeon.dump(d, target)
+        backup = dungeon.backup_dungeon_json(target)
+        assert backup is not None
+        assert backup.exists()
+        assert backup.read_text() == target.read_text()
+        assert backup.suffix == ".bak"
+
+    def test_returns_none_when_source_missing(self, tmp_path: Path) -> None:
+        assert dungeon.backup_dungeon_json(tmp_path / "missing.json") is None
+
+    def test_rotates_to_keep_last_n(
+        self, base: dict, tmp_path: Path
+    ) -> None:
+        target = tmp_path / "dungeon.json"
+        d = _load_dict(base)
+        dungeon.dump(d, target)
+        # Pre-seed five fake older backups, oldest first by mtime.
+        import os as _os
+        import time as _time
+        for i in range(5):
+            stale = tmp_path / f"dungeon.json.fake-{i}.bak"
+            stale.write_text(f"stale-{i}")
+            ts = _time.time() - (5 - i)  # older for smaller i
+            _os.utime(stale, (ts, ts))
+        # Take a fresh backup with keep_last=3. Should keep only the 3
+        # most-recent siblings (the new one + the 2 newest stale ones).
+        new_backup = dungeon.backup_dungeon_json(target, keep_last=3)
+        survivors = sorted(tmp_path.glob("dungeon.json.*.bak"))
+        assert len(survivors) == 3
+        assert new_backup in survivors
+    """Phase 2: dungeon.load() should refuse to load a dungeon whose
+    level map_image references a non-existent PNG, but only when the
+    JSON sits in a real dungeon folder (auto-detected). Headless
+    fixtures pointing at images outside the source tree still load."""
+
+    def test_missing_image_raises_when_others_present(
+        self, base: dict, tmp_path: Path
+    ) -> None:
+        # Two levels, only one PNG present. The other should trigger an
+        # error since the auto-check kicks in once any image exists in
+        # the folder.
+        base["levels"].append({
+            "level_number": 2,
+            "display_name": "Level 2",
+            "map_image": "level2.png",
+            "map_image_scale": 1.0,
+            "wm_check_method": "d20",
+            "wm_check_threshold": 18,
+            "wm_check_frequency": "every_turn",
+            "wandering_monster_table": [
+                {"roll": 1, "encounter": "Goblin"},
+            ],
+            "rooms": [],
+            "corridors": [],
+        })
+        # Replace the level1 path so it lives next to a real PNG.
+        base["levels"][0]["map_image"] = "level1.png"
+
+        json_path = tmp_path / "dungeon.json"
+        # Write JSON via dump so we exercise the real loader/dumper.
+        d = _load_dict(base)
+        dungeon.dump(d, json_path)
+        (tmp_path / "level1.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+        # level2.png is intentionally absent.
+
+        with pytest.raises(DungeonValidationError, match="level2.png"):
+            dungeon.load(json_path)
+
+    def test_explicit_skip_check_loads(self, base: dict, tmp_path: Path) -> None:
+        json_path = tmp_path / "dungeon.json"
+        d = _load_dict(base)
+        dungeon.dump(d, json_path)
+        # No PNGs anywhere. Explicit skip should still load.
+        loaded = dungeon.load(json_path, check_image_files=False)
+        assert loaded.name == "Test Dungeon"
+
+    def test_auto_skips_when_no_images_present(
+        self, base: dict, tmp_path: Path
+    ) -> None:
+        # Auto mode treats "zero referenced images on disk" as a fixture
+        # and skips the check (legacy data/example_dungeon.json behaviour).
+        json_path = tmp_path / "dungeon.json"
+        d = _load_dict(base)
+        dungeon.dump(d, json_path)
+        loaded = dungeon.load(json_path)  # auto, no PNGs in tmp_path
+        assert loaded.name == "Test Dungeon"
+
+
+class TestAtomicWrite:
+    """Phase 1: dump() must never leave a half-written file behind on
+    crash. The .tmp file is only renamed over the destination after the
+    full payload is on disk."""
+
+    def test_existing_file_intact_when_replace_fails(
+        self, base: dict, tmp_path: Path, monkeypatch
+    ) -> None:
+        # Write a known-good baseline.
+        d = _load_dict(base)
+        target = tmp_path / "rt.json"
+        dungeon.dump(d, target)
+        baseline = target.read_text()
+
+        # Now patch os.replace to simulate a crash mid-rename. A real
+        # crash on a real OS would leave the destination either fully old
+        # (rename hadn't started) or fully new (rename completed); never
+        # half-written.
+        import os
+        real_replace = os.replace
+        def boom(*a, **kw):
+            raise RuntimeError("simulated power loss")
+        monkeypatch.setattr(os, "replace", boom)
+
+        # Mutate the dungeon and try to dump. The replace blows up.
+        d.levels[0].rooms[0].name = "MUTATED"
+        with pytest.raises(RuntimeError, match="simulated power loss"):
+            dungeon.dump(d, target)
+
+        # The original file is untouched. The temp file may exist but
+        # the destination is exactly the baseline.
+        monkeypatch.setattr(os, "replace", real_replace)
+        assert target.read_text() == baseline
+
+    def test_writes_to_same_directory(self, base: dict, tmp_path: Path) -> None:
+        # The temp file lives next to the destination so os.replace can
+        # be atomic (cross-fs renames can't be atomic).
+        d = _load_dict(base)
+        target = tmp_path / "subdir" / "rt.json"
+        dungeon.dump(d, target)
+        assert target.exists()
+        assert (target.parent / "rt.json.tmp").exists() is False

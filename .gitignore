@@ -18,9 +18,13 @@ saves/*.db
 saves/*.db-journal
 render_output/dm_map.png
 render_output/player_map.png
-# Per-dungeon SQLite session state + dungeon.json auto-backups
+# Per-dungeon SQLite session state + dungeon.json auto-backups.
+# `-shm` / `-wal` are SQLite's WAL-mode companion files (created as soon
+# as the connection opens); transient like `session.db` itself.
 dungeons/**/session.db
 dungeons/**/session.db-journal
+dungeons/**/session.db-shm
+dungeons/**/session.db-wal
 dungeons/**/*.bak
 
 # Editor

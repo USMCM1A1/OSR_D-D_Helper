@@ -26,12 +26,20 @@ from pathlib import Path
 
 import config
 import journal as journal_mod
+import dungeon as dungeon_mod
 from dungeon import Dungeon, DungeonValidationError, load as load_dungeon
 from journal import Journal, JournalEntry, format_entry
 from tracker import LightSource, Tracker
 
 
 SCHEMA_VERSION = 3
+
+
+class SchemaVersionMismatch(RuntimeError):
+    """Raised when a session.db has a schema version this build can't
+    read. The user-facing remedy is `python main.py --reset <folder>`,
+    which deletes the session.db (annotations + dungeon.json preserved).
+    main.py catches this and prints the message without a traceback."""
 
 
 # Pool-tracked supplies (per-session counts, not per-character). Defaults
@@ -179,11 +187,26 @@ def _open_db(path: str | Path) -> sqlite3.Connection:
     p.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(p)
     conn.execute("PRAGMA foreign_keys = ON")
+    # WAL allows concurrent readers (e.g. an external sqlite3 CLI) without
+    # blocking writes from the renderer, and is more resilient to crashes
+    # than the default rollback journal.
+    conn.execute("PRAGMA journal_mode = WAL")
     conn.executescript(SCHEMA_SQL)
     cur = conn.execute("SELECT version FROM schema_version LIMIT 1")
-    if cur.fetchone() is None:
-        conn.execute("INSERT INTO schema_version (version) VALUES (?)", (SCHEMA_VERSION,))
+    row = cur.fetchone()
+    if row is None:
+        conn.execute("INSERT INTO schema_version (version) VALUES (?)",
+                     (SCHEMA_VERSION,))
         conn.commit()
+    elif row[0] != SCHEMA_VERSION:
+        existing = row[0]
+        conn.close()
+        raise SchemaVersionMismatch(
+            f"session.db at {p} has schema version {existing}, this build "
+            f"expects {SCHEMA_VERSION}. Run "
+            f"`python main.py --reset {p.parent}` to start a fresh "
+            f"session (annotations and dungeon.json are preserved)."
+        )
     return conn
 
 
@@ -458,8 +481,9 @@ class Session:
         for lv in raw.get("levels", []):
             lv["rooms"] = []
             lv["corridors"] = []
-        json_path.write_text(json.dumps(raw, indent=2) + "\n",
-                             encoding="utf-8")
+        dungeon_mod.atomic_write_text(
+            json_path, json.dumps(raw, indent=2) + "\n"
+        )
         # Drop the session DB.
         db = folder / DUNGEON_DB_NAME
         if db.exists():
@@ -641,11 +665,76 @@ class Session:
                 (state, self.session_id, ln, room_id),
             )
 
+    def reset_progress(self) -> None:
+        """Wipe runtime/play state back to a fresh-session baseline:
+          - turn counter → 0
+          - all rooms → 'unexplored' (fog restored)
+          - supplies → DEFAULT_SUPPLY_COUNTS
+          - characters' exhaustion → 0
+          - light sources extinguished, journal cleared, active effects
+            cleared, party position back to the first room of each
+            populated level
+          - current_level → the shallowest level in the dungeon
+          - RNG re-seeded (so encounters aren't deterministic from the
+            previous run)
+
+        Annotations, level metadata, room metadata (notes, box text,
+        encounter, treasure, special, statblocks), and the dungeon JSON
+        on disk are all preserved. The Session connection stays open;
+        callers should refresh any cached level state afterward
+        (renderer.MapView.switch_to_current_level)."""
+        sid = self.session_id
+        # In-memory: re-fog every room (drives the renderer's fog mask).
+        for level in self.dungeon.levels:
+            for room in level.rooms:
+                room.state = "unexplored"
+        # Reset which level is "current" to the dungeon's shallowest —
+        # the equivalent of starting fresh at the entry.
+        new_current = self.dungeon.shallowest_level_number
+        self.dungeon.current_level = new_current
+        # Persist all the per-session table resets in one transaction.
+        with self.conn:
+            self.conn.execute(
+                "UPDATE room_state SET state = 'unexplored' "
+                "WHERE session_id = ?", (sid,))
+            for kind in DEFAULT_SUPPLY_KINDS:
+                self.conn.execute(
+                    "UPDATE supplies SET count = ? "
+                    "WHERE session_id = ? AND kind = ?",
+                    (DEFAULT_SUPPLY_COUNTS[kind], sid, kind))
+            self.conn.execute(
+                "UPDATE characters SET exhaustion = 0 "
+                "WHERE session_id = ?", (sid,))
+            self.conn.execute(
+                "DELETE FROM turn_log WHERE session_id = ?", (sid,))
+            self.conn.execute(
+                "DELETE FROM active_effects WHERE session_id = ?", (sid,))
+            self.conn.execute(
+                "DELETE FROM resources WHERE session_id = ?", (sid,))
+            self.conn.execute(
+                "DELETE FROM party_position WHERE session_id = ?", (sid,))
+            for level in self.dungeon.levels:
+                if level.rooms:
+                    self.conn.execute(
+                        "INSERT INTO party_position "
+                        "(session_id, level_number, room_id) "
+                        "VALUES (?, ?, ?)",
+                        (sid, level.level_number, level.rooms[0].id))
+            self.conn.execute(
+                "UPDATE sessions SET current_turn = 0, current_level = ? "
+                "WHERE id = ?", (new_current, sid))
+        # In-memory tracker rebuild (fresh RNG, empty journal, turn=0).
+        self.tracker = Tracker(self.dungeon, rng=random.Random())
+        self._journal_offset = 0
+
     def restore_fog_of_war(self) -> int:
         """Reset every room on every level to 'unexplored'. Turn count,
         supplies, journal, party position, character exhaustion, and
         active effects are all preserved — this is a pure visual reset
-        of the fog mask. Returns the number of rooms updated."""
+        of the fog mask. Returns the number of rooms updated.
+
+        Kept for callers that want fog-only behaviour; the menu now
+        offers full reset_progress() as the primary action."""
         # In-memory: walk every level's rooms.
         n = 0
         for level in self.dungeon.levels:

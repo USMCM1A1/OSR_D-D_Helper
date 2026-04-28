@@ -10,9 +10,11 @@ import pytest
 import dungeon
 from session import (
     SCHEMA_SQL,
+    SCHEMA_VERSION,
     Session,
     SessionInfo,
     SessionNotFound,
+    SchemaVersionMismatch,
     _serialize_rng,
     _deserialize_rng,
 )
@@ -40,6 +42,40 @@ def fresh(db_path: Path, example: dungeon.Dungeon) -> Session:
 
 
 # --- Schema / construction --------------------------------------------------
+
+
+class TestSchemaVersionGuard:
+    """Phase 3: opening a session.db with an unfamiliar schema_version
+    must raise a clear error pointing at the recovery command, instead
+    of silently lying about state."""
+
+    def test_mismatch_raises(self, tmp_path: Path) -> None:
+        # Need a real dungeon folder layout for open_dungeon to find
+        # dungeon.json (the schema check fires inside _open_db, but
+        # open_dungeon validates the JSON presence before that).
+        import shutil
+        folder = tmp_path / "test-dungeon"
+        folder.mkdir()
+        shutil.copy(EXAMPLE_PATH, folder / "dungeon.json")
+        # Open + close to materialise session.db at the right schema.
+        Session.open_dungeon(folder).close()
+        # Tamper with the schema_version row to simulate a future build's db.
+        db = folder / "session.db"
+        conn = sqlite3.connect(db)
+        conn.execute("UPDATE schema_version SET version = ?",
+                     (SCHEMA_VERSION + 999,))
+        conn.commit()
+        conn.close()
+        with pytest.raises(SchemaVersionMismatch, match="--reset"):
+            Session.open_dungeon(folder)
+
+    def test_same_version_loads(self, db_path: Path, example: dungeon.Dungeon) -> None:
+        # Sanity check: matching version still opens cleanly.
+        Session.create(db_path, example, EXAMPLE_PATH).close()
+        conn = sqlite3.connect(db_path)
+        row = conn.execute("SELECT version FROM schema_version").fetchone()
+        conn.close()
+        assert row[0] == SCHEMA_VERSION
 
 
 class TestSchema:
@@ -559,6 +595,98 @@ class TestRestoreFogOfWar:
             assert len(s.tracker.journal.entries) == journal_before_len
         finally:
             s.close()
+
+
+class TestResetProgress:
+    """Phase: Reset Dungeon Progress wipes runtime state to a fresh-
+    session baseline (turn=0, fog, supplies, exhaustion, journal,
+    party position, current_level) while preserving annotations and
+    dungeon metadata. Lighter than full_reset (which also wipes the
+    JSON's rooms/corridors)."""
+
+    def test_resets_turn_and_journal(
+        self, db_path: Path, example: dungeon.Dungeon
+    ) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH, rng_seed=1)
+        try:
+            s.advance_turn()
+            s.advance_turn()
+            s.advance_turn()
+            assert s.tracker.turn == 3
+            assert len(s.tracker.journal.entries) > 0
+            s.reset_progress()
+            assert s.tracker.turn == 0
+            assert s.tracker.journal.entries == []
+            assert s.tracker.light_sources == []
+            assert s.tracker.noisy is False
+            assert s.tracker.last_wm is None
+        finally:
+            s.close()
+
+    def test_refogs_and_refills_supplies(
+        self, db_path: Path, example: dungeon.Dungeon
+    ) -> None:
+        from session import DEFAULT_SUPPLY_KINDS, DEFAULT_SUPPLY_COUNTS
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        try:
+            # Reveal something and burn some supplies.
+            l1 = s.dungeon.get_level(1)
+            s.update_room_state(l1.rooms[0].id, "cleared")
+            s.consume_supply("torches", 2)
+            s.consume_supply("oil_flask", 1)
+            assert s.get_supplies()["torches"] < DEFAULT_SUPPLY_COUNTS["torches"]
+
+            s.reset_progress()
+
+            # Fog restored.
+            for level in s.dungeon.levels:
+                for room in level.rooms:
+                    assert room.state == "unexplored"
+            # Supplies back to defaults for every kind.
+            after = s.get_supplies()
+            for kind in DEFAULT_SUPPLY_KINDS:
+                assert after[kind] == DEFAULT_SUPPLY_COUNTS[kind]
+        finally:
+            s.close()
+
+    def test_returns_party_to_shallowest_level(
+        self, db_path: Path, example: dungeon.Dungeon
+    ) -> None:
+        s = Session.create(db_path, example, EXAMPLE_PATH)
+        try:
+            # Ascend/descend to anywhere other than the start.
+            shallowest = s.dungeon.shallowest_level_number
+            if len(s.dungeon.levels) > 1:
+                s.switch_level(1)  # descend
+                assert s.dungeon.current_level != shallowest
+            s.reset_progress()
+            assert s.dungeon.current_level == shallowest
+        finally:
+            s.close()
+
+    def test_persists_across_resume(
+        self, db_path: Path, example: dungeon.Dungeon
+    ) -> None:
+        # After reset_progress, closing and resuming should still see a
+        # fresh baseline (no leftover turn / journal / fog from before).
+        s = Session.create(db_path, example, EXAMPLE_PATH, rng_seed=2)
+        try:
+            s.advance_turn()
+            s.update_room_state(s.dungeon.get_level(1).rooms[0].id, "known")
+            s.reset_progress()
+            sid = s.session_id
+        finally:
+            s.close()
+
+        s2 = Session.resume(db_path, sid)
+        try:
+            assert s2.tracker.turn == 0
+            assert s2.tracker.journal.entries == []
+            for level in s2.dungeon.levels:
+                for room in level.rooms:
+                    assert room.state == "unexplored"
+        finally:
+            s2.close()
 
 
 class TestFullReset:

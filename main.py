@@ -26,7 +26,12 @@ import time
 import webbrowser
 from pathlib import Path
 
-from session import DUNGEON_JSON_NAME, Session
+from session import (
+    DUNGEON_DB_NAME,
+    DUNGEON_JSON_NAME,
+    Session,
+    SchemaVersionMismatch,
+)
 
 
 PROJECT_ROOT = Path(__file__).parent
@@ -90,6 +95,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                    help="Seed RNG when creating a new session.")
     p.add_argument("--no-open", action="store_true",
                    help="Don't open the browser tabs at startup.")
+    p.add_argument("--play", action="store_true",
+                   help="Play mode: skip the localhost editor server and "
+                        "the browser tabs. Annotation mode (A) still works "
+                        "in-pygame for mid-session room sketches; the "
+                        "browser room editor is disabled.")
     p.add_argument("--dungeons-dir", type=Path, default=DEFAULT_DUNGEONS_DIR,
                    help="Override the dungeons/ root directory used by --list.")
     return p.parse_args(argv)
@@ -125,6 +135,41 @@ def _reset_dungeon(folder: Path) -> int:
 
 def _ensure_render_output_exists() -> None:
     RENDER_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _print_startup_summary(session, folder: Path) -> list[str]:
+    """Print a multi-line summary of what was opened. Returns a list of
+    user-visible warning strings (empty when everything looks normal),
+    so the renderer can surface them as an in-window overlay too."""
+    d = session.dungeon
+    total_rooms = sum(len(lv.rooms) for lv in d.levels)
+    per_level = " + ".join(str(len(lv.rooms)) for lv in d.levels)
+    is_fresh = session.tracker.turn == 0
+    db_path = folder / DUNGEON_DB_NAME
+    json_path = folder / DUNGEON_JSON_NAME
+
+    warnings: list[str] = []
+    # If the dungeon.json was edited externally after the last session
+    # save, the player view may not reflect those edits until they hit
+    # something that triggers a reload. Worth a heads-up.
+    if (not is_fresh and db_path.exists() and json_path.exists()
+            and json_path.stat().st_mtime > db_path.stat().st_mtime + 1):
+        warnings.append(
+            "dungeon.json was modified after the last session save — "
+            "your in-progress run may be missing recent edits."
+        )
+
+    print(f"Opened: {d.name}")
+    print(f"  Levels: {len(d.levels)} (current: {d.current_level})")
+    print(f"  Rooms:  {total_rooms} total ({per_level})")
+    if is_fresh:
+        print("  Session: fresh, turn 0")
+    else:
+        print(f"  Session: resuming, turn {session.tracker.turn} "
+              f"(level {d.current_level} of {len(d.levels)})")
+    for w in warnings:
+        print(f"  ⚠ {w}")
+    return warnings
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -169,31 +214,51 @@ def main(argv: list[str] | None = None) -> int:
             first_iteration = False
         else:
             print(f"Reloading into {folder}…")
-        session = Session.open_dungeon(folder, rng_seed=args.seed)
-        print(f"Opened dungeon {session.dungeon.name!r} "
-              f"(turn {session.tracker.turn}, "
-              f"level {session.dungeon.current_level} "
-              f"of {len(session.dungeon.levels)}).")
+        try:
+            session = Session.open_dungeon(folder, rng_seed=args.seed)
+        except SchemaVersionMismatch as e:
+            # User-facing error — no traceback. The exception message
+            # already tells them exactly what to run to recover.
+            print(f"error: {e}", file=sys.stderr)
+            return 2
 
-        server, _thread = editor_server.start_editor_server(
-            json_path, port=DEFAULT_EDITOR_PORT,
-        )
-        bound_port = server.server_address[1]
-        editor_url = f"http://127.0.0.1:{bound_port}/"
-        print(f"Room editor: {editor_url}")
+        warnings = _print_startup_summary(session, folder)
+
+        # In --play mode the localhost editor server and the auto-opened
+        # browser tabs are skipped: the DM is running the session, not
+        # editing dungeon content. Annotation mode (A) inside pygame is
+        # still available for mid-session sketches.
+        server = None
+        editor_url = None
+        if not args.play:
+            server, _thread = editor_server.start_editor_server(
+                json_path, port=DEFAULT_EDITOR_PORT,
+            )
+            bound_port = server.server_address[1]
+            editor_url = f"http://127.0.0.1:{bound_port}/"
+            print(f"Room editor: {editor_url}")
+        else:
+            print("Play mode: editor server disabled, browser tabs skipped.")
 
         def open_all(_url=editor_url) -> None:
+            if args.play:
+                return
             opener.open(DM_HTML.resolve().as_uri(), label="DM map")
             opener.open(PLAYER_HTML.resolve().as_uri(), label="Player map")
-            opener.open(_url, label="editor")
+            if _url is not None:
+                opener.open(_url, label="editor")
 
         def open_player_tab() -> None:
+            if args.play:
+                return
             opener.open(PLAYER_HTML.resolve().as_uri(), label="Player map")
 
         def open_editor_tab(_url=editor_url) -> None:
+            if args.play or _url is None:
+                return
             opener.open(_url, label="editor")
 
-        if not args.no_open:
+        if not args.no_open and not args.play:
             open_all()
 
         try:
@@ -204,9 +269,22 @@ def main(argv: list[str] | None = None) -> int:
                 on_open_browser=open_all,
                 on_open_editor=open_editor_tab,
                 on_open_player=open_player_tab,
+                startup_warnings=warnings,
             )
         finally:
-            server.shutdown()
+            if server is not None:
+                server.shutdown()
+            # Explicit close: the renderer's run-loop also calls
+            # session.close() on normal exit, but that path can be
+            # missed if run() raises. Calling close() unconditionally
+            # here flushes any pending state to SQLite and releases
+            # the connection before we open the next dungeon.
+            try:
+                session.close()
+            except Exception:
+                # Already-closed sessions raise; that's fine — the
+                # renderer just got there first.
+                pass
 
         if request is None:
             return 0

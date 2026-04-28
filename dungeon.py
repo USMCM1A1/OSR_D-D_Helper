@@ -206,8 +206,18 @@ class Dungeon:
 # --- Loader ------------------------------------------------------------------
 
 
-def load(path: str | Path) -> Dungeon:
-    """Load a dungeon JSON file, validate, and return a Dungeon."""
+def load(path: str | Path, *, check_image_files: bool | None = None) -> Dungeon:
+    """Load a dungeon JSON file, validate, and return a Dungeon.
+
+    `check_image_files` controls the per-level `map_image` existence check:
+        None (default) — auto: enabled when the JSON sits in a folder that
+            has at least one of its referenced images present, disabled
+            for ad-hoc fixtures (e.g. data/example_dungeon.json) that
+            point at images outside the source tree.
+        True  — always check; raise DungeonValidationError on the first
+            missing PNG.
+        False — skip the check entirely (useful for tests).
+    """
     p = Path(path)
     try:
         text = p.read_text(encoding="utf-8")
@@ -217,15 +227,91 @@ def load(path: str | Path) -> Dungeon:
         raw = json.loads(text)
     except json.JSONDecodeError as e:
         raise DungeonValidationError(f"{p}: invalid JSON: {e.msg} (line {e.lineno})") from e
-    return _from_dict(raw, source=str(p))
+    d = _from_dict(raw, source=str(p))
+    do_check = check_image_files
+    if do_check is None:
+        # Auto: only check when it looks like a real dungeon folder layout
+        # (`dungeons/<name>/dungeon.json` next to its level PNGs). The
+        # heuristic: skip if zero of the referenced images exist — likely
+        # a fixture pointing elsewhere; warn loudly via raise if some
+        # exist and others don't.
+        do_check = any(
+            (p.parent / lv.map_image).exists() for lv in d.levels
+        )
+    if do_check:
+        _check_image_files_exist(d, p.parent, source=str(p))
+    return d
+
+
+def _check_image_files_exist(d: Dungeon, dungeon_dir: Path, *,
+                             source: str) -> None:
+    """Raise DungeonValidationError if any level's map_image is missing
+    from `dungeon_dir`. Reports the first missing path so the user can
+    fix one issue at a time."""
+    for idx, lv in enumerate(d.levels):
+        target = dungeon_dir / lv.map_image
+        if not target.exists():
+            raise DungeonValidationError(
+                f"{source}: levels[{idx}].map_image: file not found at {target}"
+            )
 
 
 def dump(dungeon: Dungeon, path: str | Path) -> None:
     """Serialize a Dungeon back to JSON. Used by the annotation editor to
-    persist drawn room regions to disk so they survive across sessions."""
+    persist drawn room regions to disk so they survive across sessions.
+    Writes atomically: any reader pre/post the call sees a complete file,
+    never a half-written one (crash-safe via .tmp + os.replace)."""
+    payload = json.dumps(_to_dict(dungeon), indent=2) + "\n"
+    atomic_write_text(path, payload)
+
+
+def backup_dungeon_json(dungeon_path: str | Path,
+                        keep_last: int = 3) -> Path | None:
+    """Copy `dungeon_path` to `<path>.<YYYY-MM-DDTHH-MM>.bak` next to it,
+    then prune all but the most recent `keep_last` siblings. Returns the
+    backup path written, or None if the source file does not exist
+    (caller can decide whether that's an error).
+
+    Used before any mutating endpoint (Enrich, full reset, future LLM
+    rewrites) so an unexpected outcome can be reverted by hand."""
+    from datetime import datetime as _dt
+    p = Path(dungeon_path)
+    if not p.exists():
+        return None
+    ts = _dt.now().strftime("%Y-%m-%dT%H-%M")
+    backup = p.with_name(f"{p.name}.{ts}.bak")
+    backup.write_bytes(p.read_bytes())
+    # Rotate: list every .bak sibling (matching this dungeon.json), sort
+    # by mtime newest-first, drop everything beyond `keep_last`. Per
+    # dungeon folder, not global.
+    pattern = f"{p.name}.*.bak"
+    siblings = sorted(p.parent.glob(pattern),
+                      key=lambda q: q.stat().st_mtime,
+                      reverse=True)
+    for old in siblings[keep_last:]:
+        try:
+            old.unlink()
+        except OSError:
+            pass  # best-effort; never fail the write because cleanup did
+    return backup
+
+
+def atomic_write_text(path: str | Path, text: str,
+                      encoding: str = "utf-8") -> None:
+    """Write `text` to `path` atomically. Writes to `<path>.tmp` in the
+    same directory, fsyncs, then renames over the destination. The same
+    directory matters — os.replace is only atomic within a single
+    filesystem. Used by dump() and any other writer that must not leave
+    a half-written file behind on crash."""
+    import os as _os
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(_to_dict(dungeon), indent=2) + "\n")
+    tmp = p.with_name(p.name + ".tmp")
+    with open(tmp, "w", encoding=encoding) as f:
+        f.write(text)
+        f.flush()
+        _os.fsync(f.fileno())
+    _os.replace(tmp, p)
 
 
 def _to_dict(d: Dungeon) -> dict:

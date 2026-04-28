@@ -26,6 +26,7 @@ Public API:
 from __future__ import annotations
 
 import os
+import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -325,6 +326,11 @@ class MapView:
         self._mouse_down_pos: tuple[int, int] | None = None
         self._panning = False
         self._pan_anchor: tuple[int, int] | None = None
+        # Most recent room the cursor was over, in either play or
+        # annotation mode. Used for keyboard parity: pressing Enter
+        # cycles the hovered room's state and I opens its info modal,
+        # so the DM doesn't have to mouse-target every action.
+        self._hovered_room_id: str | None = None
 
         # Annotation mode state.
         self._annot_mode = False
@@ -362,6 +368,12 @@ class MapView:
         self._reset_confirm_open: bool = False
         self._reset_confirm_rects: list[tuple[pygame.Rect,
                                               Callable[[], None]]] = []
+        # Reset-progress confirmation (lighter than full reset — keeps
+        # annotations, just wipes runtime state). Separate flag so the
+        # two confirm flows don't share state.
+        self._progress_confirm_open: bool = False
+        self._progress_confirm_rects: list[tuple[pygame.Rect,
+                                                 Callable[[], None]]] = []
         # Set when the user asks to switch dungeons or full-reset. The run()
         # loop exits cleanly when this is non-None and returns it to main.py.
         self._pending_reload: ReloadRequest | None = None
@@ -369,6 +381,15 @@ class MapView:
         self._action_button_rects: list[tuple[pygame.Rect,
                                               Callable[[], None],
                                               bool]] = []
+        # Startup warning overlay (Phase 5): a one-shot dismissable panel
+        # shown only when there's something the DM needs to see before
+        # play (e.g. dungeon.json edited externally between sessions).
+        # `_startup_warning_lines` is empty in the happy path so the
+        # overlay never draws. Dismissed by any keypress or click; the
+        # dismiss event is consumed so it doesn't double as a room click.
+        self._startup_warning_lines: list[str] = []
+        self._startup_warning_panel_rect: pygame.Rect | None = None
+
         # Room-info modal: right-click a room to inspect its JSON metadata
         # (box text, encounter, treasure, special, DM notes). Click-rects are
         # recomputed each draw so window resize stays in sync.
@@ -482,6 +503,13 @@ class MapView:
     # -- Event loop ----------------------------------------------------------
 
     def handle_event(self, event: pygame.event.Event) -> None:
+        # Startup warning overlay intercepts the next input event of any
+        # kind and dismisses itself. The event is consumed so a click
+        # used to dismiss doesn't also reveal a room underneath.
+        if self._startup_warning_lines:
+            if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
+                self._dismiss_startup_warnings()
+                return
         # Options menu intercepts mouse clicks while open so the underlying
         # map doesn't receive them (otherwise clicking a menu button would
         # also try to reveal a room behind it).
@@ -568,6 +596,10 @@ class MapView:
                 # (Macs without a middle mouse button can't use button 2).
                 self._panning = True
                 self._pan_anchor = event.pos
+            else:
+                # Update hovered room for keyboard parity.
+                room = self._room_at_screen(event.pos)
+                self._hovered_room_id = room.id if room is not None else None
         elif event.type == pygame.MOUSEWHEEL:
             mx, my = pygame.mouse.get_pos()
             factor = ZOOM_STEP if event.y > 0 else 1 / ZOOM_STEP
@@ -603,6 +635,9 @@ class MapView:
         # options panel if the DM ever opens both (we don't expect this,
         # but the ordering is unambiguous).
         self._draw_room_info_modal(surface)
+        # Startup warning overlay sits on top of everything until the
+        # user dismisses it (one-shot, no-op when no warnings queued).
+        self._draw_startup_warnings(surface)
 
     def _draw_image(self, surface: pygame.Surface, fog: pygame.Surface | None) -> None:
         """Composite image (+ optional fog) at the camera's zoom."""
@@ -739,8 +774,9 @@ class MapView:
             msg = ("A: exit · drag: rect · P: polygon · click+Del: remove · "
                    "Enter: close poly · ⌥-drag: pan · ⌘Z: undo · ⌘+/⌘-: zoom · ⌘0: fit · Esc: cancel/exit")
         else:
-            msg = ("O: options · click: cycle state · right-click: notes · "
-                   "drag: pan · scroll or ⌘+/⌘-: zoom · ⌘0: fit · Esc: quit")
+            msg = ("O: options · click or Enter: cycle hovered · "
+                   "right-click or I: notes · drag: pan · "
+                   "scroll or ⌘+/⌘-: zoom · ⌘0: fit · Esc: quit")
         help_text = self.help_font.render(msg, True, HELP_INK)
         surface.blit(help_text, (8, surface.get_height() - help_text.get_height() - 6))
 
@@ -1165,16 +1201,22 @@ class MapView:
         self.session.tracker.set_noisy(not self.session.tracker.noisy)
         self.session.save()
 
-    def action_restore_fog(self) -> None:
-        """Re-fog every room on every level back to 'unexplored'. Pure
-        visual reset — turn / supplies / journal / party position survive.
-        Forces a fog rebuild and a snapshot so the browser tabs refresh."""
-        n = self.session.restore_fog_of_war()
+    def action_reset_progress(self) -> None:
+        """Reset all play state to a fresh-session baseline: turn=0,
+        fog restored, supplies refilled to defaults, exhaustion zeroed,
+        light sources extinguished, journal cleared, party at level 1's
+        first room. Annotations and dungeon metadata are preserved."""
+        self.session.reset_progress()
+        # The journal was cleared inside reset_progress — drop a single
+        # note line so the DM has a marker for "this run started here".
         self.session.tracker.journal.record(
             self.session.tracker.turn, journal_mod.KIND_NOTE,
-            f"Fog of war restored ({n} rooms re-hidden).",
+            "Dungeon progress reset — fresh run starting.",
         )
         self.session.save()
+        # Reload the level so the view re-binds to whichever level
+        # reset_progress moved the party to (the shallowest).
+        self.switch_to_current_level()
         self._invalidate_fog()
         if self._on_change is not None:
             self._on_change()
@@ -1222,8 +1264,8 @@ class MapView:
             ("Descend Level", "⌘↓",
              self._action_descend,
              self.session.can_descend() and self._action_descend is not None),
-            ("Restore Fog of War", "",
-             self.action_restore_fog, True),
+            ("Reset Dungeon Progress…", "",
+             self.open_progress_confirm, True),
             ("Reset Dungeon…", "",
              self.open_reset_confirm,
              self._dungeon_path is not None),
@@ -1242,6 +1284,22 @@ class MapView:
 
     def close_reset_confirm(self) -> None:
         self._reset_confirm_open = False
+
+    def open_progress_confirm(self) -> None:
+        """Switch the options modal into reset-progress confirm mode.
+        Lighter than the full-reset flow — preserves annotations and
+        only zeros runtime state."""
+        self._progress_confirm_open = True
+        self._options_open = True
+
+    def close_progress_confirm(self) -> None:
+        self._progress_confirm_open = False
+
+    def _do_reset_progress(self) -> None:
+        """Execute the progress reset and close everything modal."""
+        self.action_reset_progress()
+        self._progress_confirm_open = False
+        self._options_open = False
 
     def _do_full_reset(self) -> None:
         """Signal main.py to wipe the current dungeon and reopen it. The
@@ -1279,6 +1337,7 @@ class MapView:
         self._options_button_rects = []
         self._picker_rows = []
         self._reset_confirm_rects = []
+        self._progress_confirm_rects = []
         if not self._options_open:
             return
 
@@ -1289,6 +1348,9 @@ class MapView:
 
         if self._picker_open:
             self._draw_dungeon_picker(surface)
+            return
+        if self._progress_confirm_open:
+            self._draw_progress_confirm(surface)
             return
         if self._reset_confirm_open:
             self._draw_reset_confirm(surface)
@@ -1424,6 +1486,76 @@ class MapView:
 
             row_y += row_h + row_gap
 
+    def _draw_progress_confirm(self, surface: pygame.Surface) -> None:
+        """Confirm modal for Reset Dungeon Progress. Less alarming than
+        the full-reset modal (no red panel border, no "destructive"
+        copy) since annotations are preserved — just runtime state."""
+        ink = (26, 26, 26)
+        panel_w = 540
+        title_h = 56
+        panel_pad = 22
+        body_h = 196
+        btn_h = 46
+        btn_gap = 12
+        panel_h = title_h + panel_pad + body_h + btn_h + panel_pad
+        panel_x = (surface.get_width() - panel_w) // 2
+        panel_y = max(40, (surface.get_height() - panel_h) // 2)
+
+        panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
+        panel_bg = pygame.Surface(panel_rect.size, pygame.SRCALPHA)
+        panel_bg.fill((244, 228, 193, 250))
+        surface.blit(panel_bg, panel_rect.topleft)
+        pygame.draw.rect(surface, ink, panel_rect, 3, border_radius=6)
+
+        title = self.title_font.render("RESET PROGRESS", True, ink)
+        surface.blit(title, (panel_x + (panel_w - title.get_width()) // 2,
+                             panel_y + 16))
+
+        body_lines = [
+            "This resets the play state to a fresh run:",
+            "  • turn counter back to 0",
+            "  • fog of war restored on every level",
+            "  • supplies refilled to defaults",
+            "  • exhaustion zeroed; lights extinguished",
+            "  • journal cleared; party returned to level 1",
+            "",
+            "Annotations and dungeon metadata are preserved.",
+        ]
+        ty = panel_y + title_h + panel_pad - 6
+        for line in body_lines:
+            surf = self.help_font.render(line, True, (40, 30, 20))
+            surface.blit(surf, (panel_x + 24, ty))
+            ty += surf.get_height() + 4
+
+        btn_total_w = panel_w - 48
+        each_w = (btn_total_w - btn_gap) // 2
+        btn_y = panel_y + panel_h - panel_pad - btn_h
+        cancel_rect = pygame.Rect(panel_x + 24, btn_y, each_w, btn_h)
+        confirm_rect = pygame.Rect(panel_x + 24 + each_w + btn_gap, btn_y,
+                                   each_w, btn_h)
+
+        # Cancel — neutral parchment.
+        pygame.draw.rect(surface, (252, 252, 250), cancel_rect, border_radius=4)
+        pygame.draw.rect(surface, ink, cancel_rect, 2, border_radius=4)
+        cancel_label = self.title_font.render("Cancel", True, ink)
+        surface.blit(cancel_label,
+                     (cancel_rect.x + (cancel_rect.width - cancel_label.get_width()) // 2,
+                      cancel_rect.y + (btn_h - cancel_label.get_height()) // 2))
+
+        # Confirm — dark fill (matches the Advance Turn / save buttons),
+        # not red, since annotations survive.
+        pygame.draw.rect(surface, ink, confirm_rect, border_radius=4)
+        confirm_label = self.title_font.render("Reset progress",
+                                               True, (244, 228, 193))
+        surface.blit(confirm_label,
+                     (confirm_rect.x + (confirm_rect.width - confirm_label.get_width()) // 2,
+                      confirm_rect.y + (btn_h - confirm_label.get_height()) // 2))
+
+        self._progress_confirm_rects = [
+            (cancel_rect, self.close_progress_confirm),
+            (confirm_rect, self._do_reset_progress),
+        ]
+
     def _draw_reset_confirm(self, surface: pygame.Surface) -> None:
         """Inside the options modal: destructive confirm for full reset."""
         panel_w = 540
@@ -1494,6 +1626,14 @@ class MapView:
         """Return True if the click was consumed by the options menu."""
         if not self._options_open:
             return False
+        if self._progress_confirm_open:
+            for rect, action in self._progress_confirm_rects:
+                if rect.collidepoint(pos):
+                    action()
+                    return True
+            # Click outside the dialog cancels.
+            self._progress_confirm_open = False
+            return True
         if self._reset_confirm_open:
             for rect, action in self._reset_confirm_rects:
                 if rect.collidepoint(pos):
@@ -1548,10 +1688,130 @@ class MapView:
                 out.append(current)
         return out
 
+    # Inline markdown parser: splits text into (style, text) tokens, where
+    # style is one of 'normal', 'bold', 'italic', 'bi'. The SRD source uses
+    # `_**...**_` for bold-italic (e.g. attack names), `**...**` for plain
+    # bold, and `_..._` for italic. Anything not inside those markers is
+    # 'normal'. Order matters: longest delimiter wins.
+    _MD_BI = "_**"
+    _MD_BI_END = "**_"
+    _MD_BOLD = "**"
+    _MD_ITALIC = "_"
+
+    def _parse_inline_md(self, text: str) -> list[tuple[str, str]]:
+        out: list[tuple[str, str]] = []
+        i = 0
+        n = len(text)
+        while i < n:
+            if text.startswith(self._MD_BI, i):
+                end = text.find(self._MD_BI_END, i + 3)
+                if end != -1:
+                    out.append(("bi", text[i + 3:end]))
+                    i = end + 3
+                    continue
+            if text.startswith(self._MD_BOLD, i):
+                end = text.find(self._MD_BOLD, i + 2)
+                if end != -1:
+                    out.append(("bold", text[i + 2:end]))
+                    i = end + 2
+                    continue
+            if text[i] == self._MD_ITALIC:
+                end = text.find(self._MD_ITALIC, i + 1)
+                if end != -1:
+                    out.append(("italic", text[i + 1:end]))
+                    i = end + 1
+                    continue
+            # Walk forward to the next marker (or end of string).
+            nxt = n
+            for marker in (self._MD_BI, self._MD_BOLD, self._MD_ITALIC):
+                pos = text.find(marker, i + 1)
+                if pos != -1 and pos < nxt:
+                    nxt = pos
+            if nxt == i:
+                # No special marker accepted; consume one char and continue
+                # so we never loop forever on malformed input.
+                out.append(("normal", text[i]))
+                i += 1
+            else:
+                out.append(("normal", text[i:nxt]))
+                i = nxt
+        return out
+
+    def _layout_markdown(self, text: str, fonts: dict, line_h: int,
+                         max_width: int, ink: tuple[int, int, int]
+                         ) -> list[dict]:
+        """Convert a markdown stat-block into a flat list of layout rows.
+        Recognised constructs: ### / #### headers, **bold**, _italic_,
+        _**bold-italic**_, bullets (- ), and table lines (starting with |
+        — kept verbatim in monospace so column alignment survives)."""
+        rows: list[dict] = []
+        body_font = fonts["normal"]
+        h3_font, h4_font, mono_font = fonts["h3"], fonts["h4"], fonts["mono"]
+        h3_h, h4_h = h3_font.get_linesize(), h4_font.get_linesize()
+        mono_h = mono_font.get_linesize()
+
+        for raw in text.split("\n"):
+            stripped = raw.rstrip()
+            if not stripped:
+                rows.append({"kind": "vspace", "h": max(4, line_h // 2)})
+                continue
+            if stripped.startswith("|"):
+                rows.append({"kind": "mono", "text": stripped, "h": mono_h})
+                continue
+            if stripped.startswith("#### "):
+                rows.append({"kind": "vspace", "h": 4})
+                rows.append({"kind": "rich", "color": ink, "h": h4_h,
+                             "segs": [(h4_font, stripped[5:].strip())]})
+                rows.append({"kind": "vspace", "h": 2})
+                continue
+            if stripped.startswith("### "):
+                rows.append({"kind": "vspace", "h": 6})
+                rows.append({"kind": "rich", "color": ink, "h": h3_h,
+                             "segs": [(h3_font, stripped[4:].strip())]})
+                rows.append({"kind": "vspace", "h": 2})
+                continue
+            bullet = stripped.startswith("- ")
+            inline = stripped[2:] if bullet else stripped
+            segments = self._parse_inline_md(inline)
+            current: list[tuple[pygame.font.Font, str]] = []
+            current_w = 0
+            indent_str = "• " if bullet else ""
+            cont_indent = "  " if bullet else ""
+            if indent_str:
+                current.append((body_font, indent_str))
+                current_w = body_font.size(indent_str)[0]
+            for style, seg_text in segments:
+                font = fonts.get(style, body_font)
+                # Tokenise into runs of whitespace and non-whitespace so we
+                # can break at word boundaries while preserving the spaces.
+                for tok in re.findall(r"\S+|\s+", seg_text):
+                    tw = font.size(tok)[0]
+                    if tok.isspace():
+                        if current and current_w + tw <= max_width:
+                            current.append((font, tok))
+                            current_w += tw
+                        continue
+                    if current_w + tw > max_width and current:
+                        rows.append({"kind": "rich", "color": ink,
+                                     "h": line_h, "segs": list(current)})
+                        current = []
+                        current_w = 0
+                        if cont_indent:
+                            current.append((body_font, cont_indent))
+                            current_w = body_font.size(cont_indent)[0]
+                    current.append((font, tok))
+                    current_w += tw
+            if current:
+                rows.append({"kind": "rich", "color": ink, "h": line_h,
+                             "segs": list(current)})
+        return rows
+
     def _draw_room_info_modal(self, surface: pygame.Surface) -> None:
         """Modal overlay listing the JSON-side room metadata (box text,
         encounter, treasure, special, DM notes). Opened via right-click on
-        a room; closed by Esc, the [×] button, or click outside the panel."""
+        a room; closed by Esc, the [×] button, or click outside the panel.
+        The SRD stat blocks section is rendered with inline markdown
+        (headers, bold, italic, bullets, monospace table rows)."""
         self._room_info_close_rect = None
         self._room_info_panel_rect = None
         if not self._room_info_open or self._room_info_room_id is None:
@@ -1572,69 +1832,88 @@ class MapView:
         header_font = pygame.font.SysFont("georgia,serif", 13, bold=True)
         meta_font = self.help_font
 
-        # Build the section list — only non-empty fields appear.
-        sections: list[tuple[str, str]] = []
-        if room.box_text.strip():
-            sections.append(("Box text (read aloud)", room.box_text))
-        enc_parts: list[str] = []
-        if room.encounter_text.strip():
-            enc_parts.append(room.encounter_text)
-        if room.encounter_ref:
-            enc_parts.append(f"D&D Beyond: {room.encounter_ref}")
-        if enc_parts:
-            sections.append(("Encounter", "\n\n".join(enc_parts)))
-        if room.statblocks.strip():
-            sections.append(("SRD stat blocks", room.statblocks))
-        trsr_parts: list[str] = []
-        if room.treasure_text.strip():
-            trsr_parts.append(room.treasure_text)
-        if room.treasure_tier:
-            trsr_parts.append(f"Tier: {room.treasure_tier}")
-        if trsr_parts:
-            sections.append(("Treasure", "\n\n".join(trsr_parts)))
-        if room.special_text.strip():
-            sections.append(("Special", room.special_text))
-        if room.notes.strip():
-            sections.append(("DM notes", room.notes))
+        # Markdown-aware font palette used for the SRD stat-block section.
+        md_fonts = {
+            "normal": body_font,
+            "bold": pygame.font.SysFont("georgia,serif", 14, bold=True),
+            "italic": pygame.font.SysFont("georgia,serif", 14, italic=True),
+            "bi": pygame.font.SysFont("georgia,serif", 14,
+                                       bold=True, italic=True),
+            "mono": pygame.font.SysFont("menlo,monaco,courier", 12),
+            "h3": pygame.font.SysFont("georgia,serif", 17, bold=True),
+            "h4": pygame.font.SysFont("georgia,serif", 14, bold=True),
+        }
 
-        # Lay out the panel — width fixed, height grows with content (capped
-        # at 80% of the window so very long notes still fit).
         sw, sh = surface.get_size()
         panel_w = min(620, sw - 40)
-        text_max_w = panel_w - 48  # inner padding both sides
+        text_max_w = panel_w - 48
         title_h = 56
         section_gap = 14
         section_pad = 6
         line_h = body_font.get_linesize()
         header_h = header_font.get_linesize()
 
-        wrapped: list[tuple[str, list[str]]] = []
-        body_h = 0
-        for header, text in sections:
-            lines = self._wrap_text(text, body_font, text_max_w)
-            wrapped.append((header, lines))
-            body_h += header_h + section_pad + line_h * max(1, len(lines)) + section_gap
+        # Build the section list. The third element flags whether the body
+        # is markdown (so far only the SRD stat blocks).
+        sections: list[tuple[str, str, bool]] = []
+        if room.box_text.strip():
+            sections.append(("Box text (read aloud)", room.box_text, False))
+        enc_parts: list[str] = []
+        if room.encounter_text.strip():
+            enc_parts.append(room.encounter_text)
+        if room.encounter_ref:
+            enc_parts.append(f"D&D Beyond: {room.encounter_ref}")
+        if enc_parts:
+            sections.append(("Encounter", "\n\n".join(enc_parts), False))
+        if room.statblocks.strip():
+            sections.append(("SRD stat blocks", room.statblocks, True))
+        trsr_parts: list[str] = []
+        if room.treasure_text.strip():
+            trsr_parts.append(room.treasure_text)
+        if room.treasure_tier:
+            trsr_parts.append(f"Tier: {room.treasure_tier}")
+        if trsr_parts:
+            sections.append(("Treasure", "\n\n".join(trsr_parts), False))
+        if room.special_text.strip():
+            sections.append(("Special", room.special_text, False))
+        if room.notes.strip():
+            sections.append(("DM notes", room.notes, False))
 
-        # Tag chips and reaction-required indicator add a small meta row
-        # under the title.
-        meta_h = meta_font.get_linesize() + 6
-        if room.reaction_required:
-            meta_h += meta_font.get_linesize() + 4
+        # Build a single flat list of layout rows for the body. Each row
+        # carries its own height so visibility and scroll math stay simple.
+        rows: list[dict] = []
+        for header, text, is_md in sections:
+            rows.append({"kind": "section_header", "text": header,
+                         "h": header_h + section_pad})
+            if is_md:
+                rows.extend(self._layout_markdown(
+                    text, md_fonts, line_h, text_max_w, ink))
+            else:
+                for line in self._wrap_text(text, body_font, text_max_w):
+                    rows.append({"kind": "rich", "color": ink, "h": line_h,
+                                 "segs": [(body_font, line)] if line else []})
+            rows.append({"kind": "vspace", "h": section_gap})
 
-        # If no sections, show a placeholder so the modal isn't empty.
-        if not wrapped:
+        # Placeholder when the room has no metadata at all.
+        if not rows:
             placeholder = (
                 "(No notes for this room yet — open the editor with E to add "
                 "box text, encounter, treasure, special, or DM notes.)"
             )
-            placeholder_lines = self._wrap_text(placeholder, body_font, text_max_w)
-            body_h = line_h * len(placeholder_lines) + section_gap
+            for line in self._wrap_text(placeholder, body_font, text_max_w):
+                rows.append({"kind": "rich", "color": muted, "h": line_h,
+                             "segs": [(body_font, line)]})
+
+        body_h = sum(r["h"] for r in rows)
+
+        meta_h = meta_font.get_linesize() + 6
+        if room.reaction_required:
+            meta_h += meta_font.get_linesize() + 4
 
         # Panel height: prefer enough room for the content, but cap at 85%
-        # of the window. When the content is taller than the cap, the body
-        # area scrolls (mouse wheel / arrow keys); a thin scrollbar on the
-        # right edge of the body shows the visible window.
-        chrome_h = title_h + meta_h + 16 + 24  # title + divider + meta + bottom pad
+        # of the window. When the content is taller, the body scrolls and
+        # a thin scrollbar appears on the right edge.
+        chrome_h = title_h + meta_h + 16 + 24
         max_h = int(sh * 0.85)
         panel_h = min(max_h, chrome_h + body_h)
         panel_x = (sw - panel_w) // 2
@@ -1647,12 +1926,11 @@ class MapView:
         pygame.draw.rect(surface, ink, panel_rect, 3, border_radius=6)
         self._room_info_panel_rect = panel_rect
 
-        # Title: "R02 — Guard Room"   [×]
+        # Title and close button.
         title_text = f"{room.id} — {room.name}" if room.name else room.id
         title_surf = self.title_font.render(title_text, True, ink)
         surface.blit(title_surf, (panel_x + 24, panel_y + 18))
 
-        # Close button [×] in the top-right corner of the panel.
         close_rect = pygame.Rect(panel_x + panel_w - 38, panel_y + 14, 24, 24)
         pygame.draw.rect(surface, ink, close_rect, 2, border_radius=3)
         x_label = self.title_font.render("×", True, ink)
@@ -1661,12 +1939,11 @@ class MapView:
                       close_rect.y + (close_rect.height - x_label.get_height()) // 2 - 2))
         self._room_info_close_rect = close_rect
 
-        # Divider under title.
         sep_y = panel_y + title_h
         pygame.draw.line(surface, ink,
                          (panel_x + 16, sep_y), (panel_x + panel_w - 16, sep_y), 1)
 
-        # Meta row: tags + reaction-required badge.
+        # Meta row.
         meta_y = sep_y + 8
         tag_str = "Tags: " + (", ".join(room.tags) if room.tags else "—")
         meta_surf = meta_font.render(tag_str, True, muted)
@@ -1677,8 +1954,7 @@ class MapView:
                                        True, ALERT_RED)
             surface.blit(rr_surf, (panel_x + 24, rr_y))
 
-        # Body region: clipped + scrollable. Reserve a small right-margin
-        # for the scrollbar so text never sits under it.
+        # Body region.
         body_top = sep_y + 8 + meta_h + 8
         body_bottom = panel_y + panel_h - 16
         body_view_h = max(0, body_bottom - body_top)
@@ -1686,52 +1962,53 @@ class MapView:
                                 panel_w - 32, body_view_h)
         self._room_info_body_rect = body_rect
 
-        # Compute total body content height (placeholder vs sections).
-        if not wrapped:
-            content_h = line_h * len(placeholder_lines) + section_gap
-        else:
-            content_h = body_h
+        content_h = body_h
 
-        # Clamp scroll within bounds (handles content shrinking after a
-        # mtime-poll merge or window enlargement).
         self._room_info_max_scroll = max(0.0, content_h - body_view_h)
         self._room_info_scroll_y = max(
             0.0, min(self._room_info_max_scroll, self._room_info_scroll_y),
         )
 
-        # Set a clip so nothing draws outside the body region.
         prior_clip = surface.get_clip()
         surface.set_clip(body_rect)
         try:
             y = body_top - int(self._room_info_scroll_y)
             text_x = panel_x + 24
-            if not wrapped:
-                for line in placeholder_lines:
-                    ls = body_font.render(line, True, muted)
-                    surface.blit(ls, (text_x, y))
-                    y += line_h
-            else:
-                for header, lines in wrapped:
-                    hs = header_font.render(header, True, ink)
+            for row in rows:
+                row_h = row["h"]
+                # Skip drawing rows that are fully outside the visible area
+                # (still advance y so layout stays in sync).
+                if y + row_h < body_top or y > body_bottom:
+                    y += row_h
+                    continue
+                kind = row["kind"]
+                if kind == "section_header":
+                    hs = header_font.render(row["text"], True, ink)
                     surface.blit(hs, (text_x, y))
-                    y += header_h + section_pad
-                    for line in lines:
-                        ls = body_font.render(line, True, ink)
-                        surface.blit(ls, (text_x, y))
-                        y += line_h
-                    y += section_gap
+                elif kind == "rich":
+                    x = text_x
+                    for font, txt in row["segs"]:
+                        if not txt:
+                            continue
+                        seg_surf = font.render(txt, True, row["color"])
+                        surface.blit(seg_surf, (x, y))
+                        x += seg_surf.get_width()
+                elif kind == "mono":
+                    ms = md_fonts["mono"].render(row["text"], True, ink)
+                    surface.blit(ms, (text_x, y))
+                # vspace: nothing to draw, just advance.
+                y += row_h
         finally:
             surface.set_clip(prior_clip)
 
-        # Scrollbar (right edge of the body) when content overflows. Track
-        # is muted; thumb is ink. Sized proportionally to view/content.
+        # Scrollbar.
         if self._room_info_max_scroll > 0:
             track_w = 6
             track_x = body_rect.right - track_w - 2
             track_rect = pygame.Rect(track_x, body_top, track_w, body_view_h)
             pygame.draw.rect(surface, (214, 202, 168), track_rect,
                              border_radius=3)
-            thumb_h = max(28, int(body_view_h * body_view_h / content_h))
+            thumb_h = max(28, int(body_view_h * body_view_h / max(1, content_h)))
             travel = body_view_h - thumb_h
             thumb_y = body_top + int(travel * (
                 self._room_info_scroll_y / self._room_info_max_scroll
@@ -1757,6 +2034,87 @@ class MapView:
         self._room_info_room_id = None
         self._room_info_scroll_y = 0.0
         self._room_info_max_scroll = 0.0
+
+    # -- Startup warning overlay --------------------------------------------
+
+    def show_startup_warnings(self, lines: list[str]) -> None:
+        """Queue a one-shot warning panel. Visible until the user
+        dismisses it with any keypress or click. Empty list = no
+        overlay (the happy path)."""
+        self._startup_warning_lines = list(lines)
+
+    def _dismiss_startup_warnings(self) -> None:
+        self._startup_warning_lines = []
+        self._startup_warning_panel_rect = None
+
+    @property
+    def has_startup_warnings(self) -> bool:
+        return bool(self._startup_warning_lines)
+
+    def _draw_startup_warnings(self, surface: pygame.Surface) -> None:
+        """Centered parchment panel listing each warning. Dim backdrop
+        behind it so it reads as modal."""
+        self._startup_warning_panel_rect = None
+        if not self._startup_warning_lines:
+            return
+        ink = (26, 26, 26)
+        muted = (130, 110, 80)
+        title_font = self.title_font
+        body_font = pygame.font.SysFont("georgia,serif", 14)
+        hint_font = self.help_font
+
+        sw, sh = surface.get_size()
+        panel_w = min(560, sw - 60)
+        text_max_w = panel_w - 48
+
+        # Wrap each warning, plus a leading "⚠ " glyph on the first line.
+        wrapped: list[tuple[str, list[str]]] = []
+        line_h = body_font.get_linesize()
+        body_h = 0
+        for w in self._startup_warning_lines:
+            lines = self._wrap_text("⚠  " + w, body_font, text_max_w)
+            wrapped.append((w, lines))
+            body_h += line_h * len(lines) + 10  # paragraph gap
+
+        title_h = 50
+        bottom_pad = 56  # room for the dismiss hint
+        panel_h = title_h + body_h + bottom_pad
+        panel_x = (sw - panel_w) // 2
+        panel_y = max(60, (sh - panel_h) // 2)
+        panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
+
+        # Dim backdrop.
+        backdrop = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+        backdrop.fill((0, 0, 0, 130))
+        surface.blit(backdrop, (0, 0))
+
+        # Panel.
+        panel_bg = pygame.Surface(panel_rect.size, pygame.SRCALPHA)
+        panel_bg.fill((244, 228, 193, 250))
+        surface.blit(panel_bg, panel_rect.topleft)
+        pygame.draw.rect(surface, ink, panel_rect, 3, border_radius=6)
+        self._startup_warning_panel_rect = panel_rect
+
+        # Title.
+        title_surf = title_font.render("Heads up", True, ink)
+        surface.blit(title_surf, (panel_x + 24, panel_y + 14))
+        sep_y = panel_y + title_h
+        pygame.draw.line(surface, ink, (panel_x + 16, sep_y),
+                         (panel_x + panel_w - 16, sep_y), 1)
+
+        # Warnings.
+        y = sep_y + 12
+        for _, lines in wrapped:
+            for line in lines:
+                surface.blit(body_font.render(line, True, ink),
+                             (panel_x + 24, y))
+                y += line_h
+            y += 10
+
+        # Dismiss hint.
+        hint = hint_font.render(
+            "Press any key or click to dismiss.", True, muted)
+        surface.blit(hint, (panel_x + 24, panel_y + panel_h - 28))
 
     # -- External-edit detection (mtime poll → metadata merge) ---------------
 
@@ -1839,6 +2197,7 @@ def run(
     on_open_browser: Callable[[], None] | None = None,
     on_open_editor: Callable[[], None] | None = None,
     on_open_player: Callable[[], None] | None = None,
+    startup_warnings: list[str] | None = None,
 ) -> ReloadRequest | None:
     """Run the pygame event loop. on_change fires after any state change.
     The on_open_* hooks are individual tab openers used by the options
@@ -1866,6 +2225,8 @@ def run(
                    dungeon_path=dungeon_path,
                    dungeons_dir=dungeons_dir,
                    on_change=_on_change)
+    if startup_warnings:
+        view.show_startup_warnings(startup_warnings)
     view.snapshot_to_disk()
 
     # Closures for the options-menu actions. We keep them here so they can
@@ -1905,10 +2266,18 @@ def run(
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
+                # Startup warning overlay swallows the next keydown to
+                # dismiss itself. Skip the rest of the per-key dispatch
+                # so e.g. Space doesn't also Advance Turn.
+                if view.has_startup_warnings:
+                    view._dismiss_startup_warnings()
+                    continue
                 cmd = bool(event.mod & cmd_mask)
                 if event.key == pygame.K_ESCAPE:
                     if view._room_info_open:
                         view.close_room_info()
+                    elif view._progress_confirm_open:
+                        view._progress_confirm_open = False
                     elif view._reset_confirm_open:
                         view._reset_confirm_open = False
                     elif view._picker_open:
@@ -1962,9 +2331,22 @@ def run(
                     _ascend()
                 elif cmd and event.key == pygame.K_DOWN:
                     _descend()
+                # --- Hovered-room keyboard parity (Phase 6) ---
+                # Enter cycles the hovered room's reveal state, I opens
+                # the info modal for it. Both are no-ops if the cursor
+                # isn't over a room.
+                elif (event.key == pygame.K_RETURN and not cmd
+                      and not view._annot_mode
+                      and view._hovered_room_id is not None):
+                    view.cycle_room_state(view._hovered_room_id)
+                elif (event.key == pygame.K_i and not cmd
+                      and not view._annot_mode
+                      and view._hovered_room_id is not None):
+                    view._room_info_open = True
+                    view._room_info_room_id = view._hovered_room_id
+                    view._room_info_scroll_y = 0.0
                 # --- Session action shortcuts (turn / resources) ---
-                elif (event.key in (pygame.K_SPACE, pygame.K_RETURN)
-                      and not view._annot_mode):
+                elif (event.key == pygame.K_SPACE and not view._annot_mode):
                     view.action_advance_turn()
                 elif event.key == pygame.K_r and not cmd and not view._annot_mode:
                     view.action_manual_wm_roll()

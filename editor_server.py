@@ -799,7 +799,12 @@ class EditorHandler(BaseHTTPRequestHandler):
         """Scan encounter_text + encounter_ref for monster names, pull the
         matching SRD stat blocks, and write the concatenation to
         room.statblocks. Replaces any prior enrichment wholesale — the DM
-        edits encounter_text and re-clicks Enrich to refresh."""
+        edits encounter_text and re-clicks Enrich to refresh.
+
+        Fuzzy hits (misspelt creature names) are prefixed with a small
+        markdown caveat so the DM can spot and reject false positives.
+        A timestamped backup of the dungeon.json is written first and
+        the last 3 backups are retained."""
         d = dungeon_mod.load(self.dungeon_path)
         level = d.levels_by_number.get(level_number)
         if level is None:
@@ -810,11 +815,22 @@ class EditorHandler(BaseHTTPRequestHandler):
 
         haystack = " ".join(filter(None, (
             room.encounter_text, room.encounter_ref, room.name)))
-        hits = srd_lookup.scan(haystack)
-        if not hits:
+        matches = srd_lookup.scan(haystack)
+        if not matches:
             room.statblocks = ""
         else:
-            room.statblocks = "\n\n".join(sb.body for sb in hits)
+            blocks: list[str] = []
+            for m in matches:
+                if m.source == "fuzzy":
+                    blocks.append(
+                        f"_(fuzzy match — input said {m.original!r})_\n"
+                        f"{m.statblock.body}"
+                    )
+                else:
+                    blocks.append(m.statblock.body)
+            room.statblocks = "\n\n".join(blocks)
+        # Back up before any mutating write so a bad Enrich is recoverable.
+        dungeon_mod.backup_dungeon_json(self.dungeon_path, keep_last=3)
         dungeon_mod.dump(d, self.dungeon_path)
 
     def _mutate_level_and_save(self, level_number: int,
