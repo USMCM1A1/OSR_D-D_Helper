@@ -803,3 +803,99 @@ class TestAssistantMultiDungeon:
         assert d_beta_after.levels[0].rooms_by_id["R01"].name == "Beta Hall"
         d_alpha_after = dungeon_mod.load(root / "alpha" / "dungeon.json")
         assert d_alpha_after.levels[0].rooms_by_id["R01"].name != "Beta Hall"
+
+
+class TestWorkflowStatus:
+    """`_workflow_status` is the source of truth for the Workflow tab.
+    Six steps, each with a state that should advance from todo → done
+    as the user finishes setup. The tests walk the dungeon through the
+    lifecycle and assert each step flips when its precondition is met."""
+
+    def test_fresh_dungeon_reports_todo_states(self, dungeon_json):
+        # SEED_DUNGEON has 2 annotated rooms but no map PNG on disk,
+        # no character JSONs, and no encounter text. So:
+        #   step 0 (map):        todo (PNG missing)
+        #   step 1 (annotate):   done (2 rooms with image_region)
+        #   step 2 (populate):   todo (rooms empty)
+        #   step 3 (characters): todo
+        #   step 4 (simulate):   blocked (no chars, no encounters)
+        #   step 5 (play):       ready (always)
+        d = dungeon_mod.load(dungeon_json)
+        steps = editor_server._workflow_status(d, dungeon_json)
+        states = {s["n"]: s["state"] for s in steps}
+        assert states[0] == "todo"
+        assert states[1] == "done"
+        assert states[2] == "todo"
+        assert states[3] == "todo"
+        assert states[4] == "blocked"
+        assert states[5] == "ready"
+
+    def test_map_step_done_when_png_exists(self, tmp_path):
+        # Build a minimal dungeon whose map_image points at a PNG we
+        # actually write to disk.
+        json_path = tmp_path / "d.json"
+        png_path = tmp_path / "level1.png"
+        png_path.write_bytes(b"\x89PNG\r\n\x1a\n" + b"X" * 50)
+        seed = dict(SEED_DUNGEON)
+        seed["levels"] = [dict(SEED_DUNGEON["levels"][0],
+                               map_image="level1.png")]
+        json_path.write_text(json.dumps(seed))
+        d = dungeon_mod.load(json_path)
+        steps = editor_server._workflow_status(d, json_path)
+        assert steps[0]["state"] == "done"
+
+    def test_populate_done_when_rooms_have_text(self, tmp_path):
+        seed = dict(SEED_DUNGEON)
+        rooms = [dict(r) for r in SEED_DUNGEON["levels"][0]["rooms"]]
+        for r in rooms:
+            r["encounter_text"] = "2 Skeletons (MM p.272). Hostile."
+        seed["levels"] = [dict(SEED_DUNGEON["levels"][0], rooms=rooms)]
+        json_path = tmp_path / "d.json"
+        json_path.write_text(json.dumps(seed))
+        d = dungeon_mod.load(json_path)
+        steps = editor_server._workflow_status(d, json_path)
+        # Step 2 (populate) flips done; step 4 (simulate) still blocked
+        # because there are no characters yet.
+        assert steps[2]["state"] == "done"
+        assert steps[4]["state"] == "blocked"
+
+    def test_simulate_ready_when_chars_and_encounters_present(self, tmp_path):
+        seed = dict(SEED_DUNGEON)
+        rooms = [dict(r) for r in SEED_DUNGEON["levels"][0]["rooms"]]
+        rooms[0]["encounter_text"] = "1 Wight (MM p. 300)."
+        seed["levels"] = [dict(SEED_DUNGEON["levels"][0], rooms=rooms)]
+        json_path = tmp_path / "d.json"
+        json_path.write_text(json.dumps(seed))
+        # Drop a character JSON in the conventional place.
+        chars_dir = tmp_path / "characters"
+        chars_dir.mkdir()
+        (chars_dir / "hero.json").write_text(
+            json.dumps({"name": "Hero", "level": 1})
+        )
+        d = dungeon_mod.load(json_path)
+        steps = editor_server._workflow_status(d, json_path)
+        assert steps[3]["state"] == "done"
+        assert steps[4]["state"] == "ready"
+
+    def test_shell_defaults_to_workflow_for_fresh_dungeon(self, tmp_path):
+        # No image_region on any room → shell should auto-pick the
+        # workflow tab as the default-active iframe.
+        seed = dict(SEED_DUNGEON)
+        rooms = [dict(r) for r in SEED_DUNGEON["levels"][0]["rooms"]]
+        for r in rooms:
+            r.pop("image_region", None)  # un-annotate
+        seed["levels"] = [dict(SEED_DUNGEON["levels"][0], rooms=rooms)]
+        json_path = tmp_path / "d.json"
+        json_path.write_text(json.dumps(seed))
+        srv, _ = editor_server.start_editor_server(json_path, port=0)
+        host, port = srv.server_address[:2]
+        try:
+            resp, body = _http_get(host, port, "/")
+            assert resp.status == 200
+            text = body.decode("utf-8")
+            # Workflow tab has the active class.
+            assert ('id="tab-workflow" data-tab="workflow"\n     class="active"'
+                    in text)
+            assert 'id="frame-workflow"' in text
+        finally:
+            srv.shutdown()

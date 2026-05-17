@@ -210,7 +210,8 @@ FRAME_BRIDGE_JS = r"""
   if (window.parent === window) return;  // not embedded in shell
   function isInternal(href) {
     if (!href) return false;
-    return (href === '/' || href === '/editor'
+    return (href === '/' || href === '/workflow'
+            || href === '/editor'
             || href.startsWith('/editor?')
             || href === '/assistant'
             || href.startsWith('/assistant?')
@@ -234,7 +235,14 @@ FRAME_BRIDGE_JS = r"""
 # Server-rendered shell. The iframes for Editor / Assistant / Characters
 # start loaded so cross-tab broadcasts (e.g. assistant→editor refresh)
 # work without any cold-start latency on first tab click.
-def _render_app_shell(dungeon_name: str) -> str:
+def _render_app_shell(dungeon_name: str, *,
+                      default_tab: str = "editor") -> str:
+    """Render the SPA shell. `default_tab` is the iframe shown when
+    the page loads without a #tab hash — set to 'workflow' for fresh
+    dungeons so new users land on the orientation tab automatically."""
+    valid = {"workflow", "editor", "assistant", "characters"}
+    if default_tab not in valid:
+        default_tab = "editor"
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -244,21 +252,36 @@ def _render_app_shell(dungeon_name: str) -> str:
 </head>
 <body>
 <nav class="tab-strip">
-  <a id="tab-editor" data-tab="editor" class="active">Editor</a>
-  <a id="tab-assistant" data-tab="assistant">Assistant</a>
-  <a id="tab-characters" data-tab="characters">Characters</a>
+  <a id="tab-workflow" data-tab="workflow"
+     class="{'active' if default_tab == 'workflow' else ''}">Workflow</a>
+  <a id="tab-editor" data-tab="editor"
+     class="{'active' if default_tab == 'editor' else ''}">Editor</a>
+  <a id="tab-assistant" data-tab="assistant"
+     class="{'active' if default_tab == 'assistant' else ''}">Assistant</a>
+  <a id="tab-characters" data-tab="characters"
+     class="{'active' if default_tab == 'characters' else ''}">Characters</a>
   <a id="tab-simulate" data-tab="simulate" hidden>Simulator</a>
   <a id="tab-simulate-close" class="close-tab" hidden title="Close simulator">×</a>
   <span class="dungeon-label">{_esc(dungeon_name)}</span>
 </nav>
 <div class="frame-wrap">
-  <iframe id="frame-editor" data-tab="editor" class="active" src="/editor"></iframe>
-  <iframe id="frame-assistant" data-tab="assistant" src="/assistant"></iframe>
-  <iframe id="frame-characters" data-tab="characters" src="/characters"></iframe>
+  <iframe id="frame-workflow" data-tab="workflow"
+          class="{'active' if default_tab == 'workflow' else ''}"
+          src="/workflow"></iframe>
+  <iframe id="frame-editor" data-tab="editor"
+          class="{'active' if default_tab == 'editor' else ''}"
+          src="/editor"></iframe>
+  <iframe id="frame-assistant" data-tab="assistant"
+          class="{'active' if default_tab == 'assistant' else ''}"
+          src="/assistant"></iframe>
+  <iframe id="frame-characters" data-tab="characters"
+          class="{'active' if default_tab == 'characters' else ''}"
+          src="/characters"></iframe>
   <iframe id="frame-simulate" data-tab="simulate" src="about:blank"></iframe>
 </div>
 <script>
 (function () {{
+  var DEFAULT_TAB = {repr(default_tab)};
   var tabEls = document.querySelectorAll('.tab-strip a[data-tab]');
   var frameEls = document.querySelectorAll('.frame-wrap iframe');
   var simTab = document.getElementById('tab-simulate');
@@ -272,7 +295,7 @@ def _render_app_shell(dungeon_name: str) -> str:
     frameEls.forEach(function (f) {{
       f.classList.toggle('active', f.dataset.tab === name);
     }});
-    var hash = (name === 'editor') ? '' : '#tab=' + name;
+    var hash = (name === DEFAULT_TAB) ? '' : '#tab=' + name;
     if (location.hash !== hash) {{
       history.replaceState(null, '', location.pathname + hash);
     }}
@@ -318,7 +341,8 @@ def _render_app_shell(dungeon_name: str) -> str:
       return;
     }}
     var name =
-      (t === '/editor' || t.startsWith('/editor?')) ? 'editor'
+      (t === '/workflow' || t.startsWith('/workflow?')) ? 'workflow'
+      : (t === '/editor' || t.startsWith('/editor?')) ? 'editor'
       : (t === '/assistant' || t.startsWith('/assistant?')) ? 'assistant'
       : (t === '/characters' || t.startsWith('/characters?')) ? 'characters'
       : null;
@@ -655,6 +679,262 @@ def _render_room(level_number: int, room) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Workflow / "Getting Started" tab
+# ---------------------------------------------------------------------------
+
+
+def _workflow_status(d, dungeon_path: Path) -> list[dict]:
+    """Inspect the dungeon + its folder and return one row per stage of
+    the end-to-end DM workflow. Each row carries enough state for the
+    Workflow page to render a numbered step with a status badge, a
+    progress sentence, and a "go" button.
+
+    Order matches how the DM actually moves through setup → play:
+        0. Map        — at least one map_image PNG present.
+        1. Annotate   — rectangles drawn over the map in pygame
+                        (image_region populated).
+        2. Populate   — Assistant has filled in encounter / box / notes.
+        3. Characters — PDFs ingested → JSON sheets on disk.
+        4. Simulate   — characters + room encounters both present, so
+                        the Monte Carlo simulator can run.
+        5. Play       — the pygame DM window itself; always ready.
+    """
+    dungeon_dir = dungeon_path.parent
+
+    # Step 0 — Map.
+    levels_total = len(d.levels)
+    levels_with_map = sum(
+        1 for lv in d.levels
+        if (dungeon_dir / lv.map_image).exists()
+    )
+    if levels_total == 0:
+        map_state = "todo"
+        map_progress = "No levels declared yet."
+    elif levels_with_map == levels_total:
+        map_state = "done"
+        map_progress = (
+            f"All {levels_total} level"
+            f"{'s' if levels_total != 1 else ''} have a map PNG."
+        )
+    elif levels_with_map > 0:
+        map_state = "partial"
+        map_progress = (
+            f"{levels_with_map} of {levels_total} levels have a map. "
+            "Upload the missing PNGs below."
+        )
+    else:
+        map_state = "todo"
+        map_progress = (
+            f"No map PNGs found for any of {levels_total} levels. "
+            "Upload one or more below."
+        )
+
+    # Step 1 — Annotate.
+    rooms_total = sum(len(lv.rooms) for lv in d.levels)
+    rooms_with_geom = sum(
+        1 for lv in d.levels for r in lv.rooms
+        if r.image_region is not None
+    )
+    if rooms_total == 0:
+        annotate_state = "todo"
+        annotate_progress = (
+            "No rooms yet. Open the pygame window, press A to enter "
+            "annotation mode, then drag rectangles over each room."
+        )
+    elif rooms_with_geom == rooms_total:
+        annotate_state = "done"
+        annotate_progress = (
+            f"{rooms_with_geom} rooms drawn across all levels."
+        )
+    else:
+        annotate_state = "partial"
+        annotate_progress = (
+            f"{rooms_with_geom} of {rooms_total} rooms have geometry. "
+            "Open pygame, press A, finish the outlines."
+        )
+
+    # Step 2 — Populate via the Assistant.
+    def _is_populated(r) -> bool:
+        return bool(
+            (r.encounter_text or "").strip()
+            or (r.box_text or "").strip()
+            or (r.treasure_text or "").strip()
+            or (r.special_text or "").strip()
+            or (r.notes or "").strip()
+        )
+    rooms_populated = sum(
+        1 for lv in d.levels for r in lv.rooms if _is_populated(r)
+    )
+    if rooms_total == 0:
+        populate_state = "blocked"
+        populate_progress = "Annotate rooms first."
+    elif rooms_populated == rooms_total:
+        populate_state = "done"
+        populate_progress = (
+            f"All {rooms_total} rooms have encounter / treasure / box "
+            "text."
+        )
+    elif rooms_populated > 0:
+        populate_state = "partial"
+        populate_progress = (
+            f"{rooms_populated} of {rooms_total} rooms populated. "
+            "Re-run the Assistant for the empty ones or fill them by hand."
+        )
+    else:
+        populate_state = "todo"
+        populate_progress = (
+            f"{rooms_total} empty rooms. Run the Assistant to populate "
+            "them in batches, then Apply the proposals you like."
+        )
+
+    # Step 3 — Characters.
+    chars_dir = character_ingester.characters_dir(dungeon_path)
+    try:
+        char_files = sorted(chars_dir.glob("*.json")) if chars_dir.exists() else []
+    except OSError:
+        char_files = []
+    char_count = len(char_files)
+    if char_count == 0:
+        char_state = "todo"
+        char_progress = (
+            "No characters uploaded yet. Drop in PDFs of your party "
+            "sheets — the ingester extracts AC, HP, attacks, spells "
+            "into JSON the simulator can read."
+        )
+    else:
+        char_state = "done"
+        char_progress = (
+            f"{char_count} character"
+            f"{'s' if char_count != 1 else ''} ingested."
+        )
+
+    # Step 4 — Simulator.
+    rooms_with_encounters = sum(
+        1 for lv in d.levels for r in lv.rooms
+        if (r.encounter_text or "").strip()
+    )
+    if char_count == 0 and rooms_with_encounters == 0:
+        sim_state = "blocked"
+        sim_progress = "Needs characters AND at least one encounter."
+    elif char_count == 0:
+        sim_state = "blocked"
+        sim_progress = (
+            f"{rooms_with_encounters} room"
+            f"{'s' if rooms_with_encounters != 1 else ''} have "
+            "encounters, but no characters uploaded yet."
+        )
+    elif rooms_with_encounters == 0:
+        sim_state = "blocked"
+        sim_progress = (
+            f"{char_count} characters uploaded, but no rooms have "
+            "encounter text yet."
+        )
+    else:
+        sim_state = "ready"
+        sim_progress = (
+            f"Ready: {char_count} characters · "
+            f"{rooms_with_encounters} encounters. "
+            "Open the Editor tab and click Simulate on any room."
+        )
+
+    # Step 5 — Play.
+    play_progress = (
+        "Switch to the pygame Dungeon Master View window. Click rooms "
+        "to reveal, press Space to advance turns, project the Player "
+        "View for your players."
+    )
+
+    return [
+        {
+            "n": 0, "title": "Get a map",
+            "blurb": (
+                "Each level needs a PNG of its dungeon map. The pygame "
+                "window paints fog of war on top of these images."
+            ),
+            "state": map_state,
+            "progress": map_progress,
+            "cta": None,
+            "show_upload": map_state != "done",
+        },
+        {
+            "n": 1, "title": "Annotate rooms",
+            "blurb": (
+                "Draw a rectangle (or polygon) over each room in the "
+                "pygame window. Each shape becomes a room in dungeon.json "
+                "and drives the fog of war."
+            ),
+            "state": annotate_state,
+            "progress": annotate_progress,
+            "cta": {
+                "label": "Open pygame and press A",
+                "kind": "hint",
+                "hint": "Annotation mode is keyboard-only — press A in the Dungeon Master View window.",
+            },
+        },
+        {
+            "n": 2, "title": "Populate with the Assistant",
+            "blurb": (
+                "Give the Assistant a theme, pick a level + party "
+                "level, and let it propose encounters / treasure / "
+                "box text per room. Apply the ones you like; reject "
+                "or edit the rest."
+            ),
+            "state": populate_state,
+            "progress": populate_progress,
+            "cta": {
+                "label": "Open Assistant tab →",
+                "kind": "tab", "target": "/assistant",
+            },
+        },
+        {
+            "n": 3, "title": "Upload characters",
+            "blurb": (
+                "Drop in PDFs of your party sheets. The ingester runs "
+                "the Claude CLI against the extracted text and saves "
+                "a structured JSON per character."
+            ),
+            "state": char_state,
+            "progress": char_progress,
+            "cta": {
+                "label": "Open Characters tab →",
+                "kind": "tab", "target": "/characters",
+            },
+        },
+        {
+            "n": 4, "title": "Simulate encounters",
+            "blurb": (
+                "Test each room's encounter before the table: party "
+                "win %, TPK %, MVP, a sample combat trace. Lets you "
+                "tune difficulty before anyone dies for real."
+            ),
+            "state": sim_state,
+            "progress": sim_progress,
+            "cta": {
+                "label": "Open Editor tab →",
+                "kind": "tab", "target": "/editor",
+                "hint": "From the Editor tab, click Simulate on any room card.",
+            },
+        },
+        {
+            "n": 5, "title": "Play",
+            "blurb": (
+                "Run the session in the pygame window. Reveal rooms "
+                "as the party explores, advance turns to burn light "
+                "and roll wandering-monster checks, screen-share the "
+                "Player View."
+            ),
+            "state": "ready",
+            "progress": play_progress,
+            "cta": {
+                "label": "Switch to Dungeon Master View",
+                "kind": "hint",
+                "hint": "The pygame window is the play surface. Press ? in there for the full keyboard legend.",
+            },
+        },
+    ]
+
+
+# ---------------------------------------------------------------------------
 # Encounter simulator + character pages
 # ---------------------------------------------------------------------------
 
@@ -679,6 +959,294 @@ def _build_monsters_from_room(room) -> list[statblock_parser.ParsedMonster]:
         parsed = statblock_parser.parse(entry.statblock)
         monsters.extend([parsed] * count)
     return monsters
+
+
+# Styling for the Workflow page. Lives in its own constant so the
+# editor's PAGE_CSS doesn't grow further; the existing parchment
+# aesthetic + serif body font is preserved.
+WORKFLOW_PAGE_CSS = """
+* { box-sizing: border-box; }
+body {
+  font: 14px/1.5 Georgia, 'Times New Roman', serif;
+  background: #f4e4c1;
+  color: #1a1a1a;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 1.4em 1.5em 4em;
+}
+h1 { font-size: 1.7em; margin: 0.2em 0 0.4em; }
+.lede { color: #5a4830; margin: 0 0 1.4em; }
+
+.step {
+  background: #fffaf0;
+  border: 1.5px solid #c8a96e;
+  border-radius: 6px;
+  margin: 0.9em 0;
+  padding: 0.9em 1.1em 1em;
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 0.6em 1em;
+  align-items: start;
+}
+.step-number {
+  font: bold 28px/1 Georgia, serif;
+  color: #826e50;
+  text-align: center;
+  padding-top: 2px;
+}
+.step-body { min-width: 0; }
+.step-title {
+  font: bold 16px/1.3 Georgia, serif;
+  margin: 0 0 0.2em;
+}
+.step-blurb { color: #5a4830; margin: 0 0 0.5em; }
+.step-progress {
+  font: 12.5px/1.5 'Courier New', monospace;
+  background: #fbf6e6;
+  border-left: 3px solid #c8a96e;
+  padding: 0.4em 0.7em;
+  margin: 0.4em 0 0;
+  white-space: pre-wrap;
+}
+
+.badge {
+  font: bold 11px/1 Georgia, serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+  align-self: start;
+}
+.badge.done    { background: #d5e6c4; color: #2f5f1f; border: 1px solid #2f5f1f; }
+.badge.partial { background: #f6e2b5; color: #826e50; border: 1px solid #826e50; }
+.badge.todo    { background: #f4e4c1; color: #5a4830; border: 1px solid #c8a96e; }
+.badge.ready   { background: #dde6f0; color: #2a4a6a; border: 1px solid #2a4a6a; }
+.badge.blocked { background: #f0d6d2; color: #8b3a30; border: 1px solid #a8201a; }
+
+.cta-row {
+  margin-top: 0.6em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  align-items: center;
+}
+.cta-btn {
+  background: #1a1a1a;
+  color: #f4e4c1;
+  border: 0;
+  padding: 0.5em 1em;
+  font: 13px Georgia, serif;
+  border-radius: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+.cta-btn:hover { background: #3a2f25; }
+.cta-hint {
+  color: #826e50;
+  font-size: 12.5px;
+  font-style: italic;
+}
+
+.upload-row {
+  background: #fbf6e6;
+  border: 1px dashed #c8a96e;
+  border-radius: 4px;
+  padding: 0.5em 0.8em;
+  margin: 0.3em 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  flex-wrap: wrap;
+}
+.upload-row label { font-weight: bold; color: #5a4830; }
+.upload-row .level-tag {
+  font: 12px 'Courier New', monospace;
+  background: #f4e4c1;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.upload-row .missing { color: #a8201a; font-style: italic; }
+.upload-row .present { color: #2f5f1f; font-weight: bold; }
+.upload-row input[type=file] { font: inherit; }
+.upload-row button {
+  background: #1a1a1a; color: #f4e4c1; border: 0;
+  padding: 0.35em 0.8em; border-radius: 3px; cursor: pointer;
+  font: 12px Georgia, serif;
+}
+.upload-result { font-size: 12.5px; margin-left: 0.5em; }
+.upload-result.ok { color: #2f5f1f; }
+.upload-result.err { color: #a8201a; }
+"""
+
+
+def _render_workflow_page_body(*, d, dungeon_path: Path) -> str:
+    """The /workflow page: numbered checklist of the six setup-to-play
+    stages, each with a live status badge and a one-click jump to
+    wherever the next bit of work happens."""
+    steps = _workflow_status(d, dungeon_path)
+    dungeon_dir = dungeon_path.parent
+
+    # Map step gets a special upload widget (one row per level), so
+    # we render it inline rather than as a generic CTA button.
+    level_upload_rows: list[str] = []
+    if steps[0]["state"] != "done":
+        for lv in d.levels:
+            png_path = dungeon_dir / lv.map_image
+            present = png_path.exists()
+            if present:
+                level_upload_rows.append(f"""
+<div class="upload-row">
+  <span class="level-tag">L{lv.level_number}</span>
+  <span>{_esc(lv.display_name)}</span>
+  <span class="present">✓ {_esc(lv.map_image)}</span>
+</div>""".strip())
+            else:
+                level_upload_rows.append(f"""
+<div class="upload-row" data-level="{lv.level_number}"
+     data-target-name="{_esc(lv.map_image)}">
+  <span class="level-tag">L{lv.level_number}</span>
+  <span>{_esc(lv.display_name)}</span>
+  <span class="missing">missing: {_esc(lv.map_image)}</span>
+  <input type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg">
+  <button type="button" class="upload-btn">Upload</button>
+  <span class="upload-result"></span>
+</div>""".strip())
+    upload_block_html = ""
+    if level_upload_rows:
+        upload_block_html = (
+            '<div class="upload-block">\n'
+            + "\n".join(level_upload_rows)
+            + "\n</div>"
+        )
+
+    # Render each step.
+    step_cards: list[str] = []
+    for s in steps:
+        state = s["state"]
+        badge_label = state if state != "done" else "complete"
+        # CTA buttons. Map step gets the inline upload block instead.
+        cta_html = ""
+        if s["n"] == 0 and upload_block_html:
+            cta_html = upload_block_html
+        elif s.get("cta") is not None:
+            cta = s["cta"]
+            parts = []
+            if cta["kind"] == "tab":
+                parts.append(
+                    f'<button type="button" class="cta-btn" '
+                    f'data-tab-target="{_esc(cta["target"])}">'
+                    f'{_esc(cta["label"])}</button>'
+                )
+            else:  # 'hint' — no clickable button; just an instruction.
+                parts.append(
+                    f'<span class="cta-hint">{_esc(cta["label"])}</span>'
+                )
+            if cta.get("hint"):
+                parts.append(
+                    f'<span class="cta-hint">{_esc(cta["hint"])}</span>'
+                )
+            cta_html = f'<div class="cta-row">{"".join(parts)}</div>'
+
+        step_cards.append(f"""
+<div class="step">
+  <div class="step-number">{s["n"]}</div>
+  <div class="step-body">
+    <p class="step-title">{_esc(s["title"])}</p>
+    <p class="step-blurb">{_esc(s["blurb"])}</p>
+    <div class="step-progress">{_esc(s["progress"])}</div>
+    {cta_html}
+  </div>
+  <div class="badge {state}">{_esc(badge_label)}</div>
+</div>""".strip())
+
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Workflow — {_esc(d.name)}</title>
+<style>{WORKFLOW_PAGE_CSS}</style>
+</head>
+<body>
+<h1>{_esc(d.name)}</h1>
+<p class="lede">
+  Six stages from raw map to running the session. This page tracks
+  progress against the current dungeon; refresh after any change.
+</p>
+{chr(10).join(step_cards)}
+
+<script>
+// Tab-target buttons ask the shell to switch to the named iframe.
+(function () {{
+  document.addEventListener('click', function (e) {{
+    var btn = e.target.closest('[data-tab-target]');
+    if (!btn) return;
+    e.preventDefault();
+    var target = btn.dataset.tabTarget;
+    if (window.parent !== window) {{
+      window.parent.postMessage({{type: 'nav', target: target}}, '*');
+    }} else {{
+      window.location.href = target;
+    }}
+  }});
+}})();
+
+// Inline map upload. Each .upload-row owns a file input + button +
+// status span. POST to /workflow/upload_map with raw bytes and a
+// query string that names the level + target filename.
+(function () {{
+  document.querySelectorAll('.upload-row .upload-btn').forEach(function (btn) {{
+    btn.addEventListener('click', function () {{
+      var row = btn.closest('.upload-row');
+      var fileInput = row.querySelector('input[type=file]');
+      var result = row.querySelector('.upload-result');
+      var file = fileInput.files[0];
+      if (!file) {{
+        result.textContent = 'Pick a PNG / JPG first.';
+        result.className = 'upload-result err';
+        return;
+      }}
+      var levelNum = row.dataset.level;
+      var targetName = row.dataset.targetName;
+      btn.disabled = true;
+      btn.textContent = 'Uploading…';
+      result.textContent = '';
+      var url = '/workflow/upload_map?level_number=' +
+                encodeURIComponent(levelNum) +
+                '&target_name=' + encodeURIComponent(targetName);
+      fetch(url, {{
+        method: 'POST',
+        headers: {{'Content-Type': 'application/octet-stream'}},
+        body: file,
+      }}).then(function (r) {{
+        return r.json().then(function (data) {{
+          return {{status: r.status, data: data}};
+        }});
+      }}).then(function (out) {{
+        btn.disabled = false;
+        btn.textContent = 'Upload';
+        if (out.data.ok) {{
+          result.textContent = 'Saved. Reloading…';
+          result.className = 'upload-result ok';
+          setTimeout(function () {{ location.reload(); }}, 600);
+        }} else {{
+          result.textContent = 'Failed: ' + (out.data.error || 'unknown');
+          result.className = 'upload-result err';
+        }}
+      }}).catch(function (err) {{
+        btn.disabled = false;
+        btn.textContent = 'Upload';
+        result.textContent = 'Upload error: ' + err.message;
+        result.className = 'upload-result err';
+      }});
+    }});
+  }});
+}})();
+</script>
+<script>{FRAME_BRIDGE_JS}</script>
+</body>
+</html>"""
 
 
 def _render_characters_page_body(*, dungeon_path: Path,
@@ -2279,6 +2847,9 @@ class EditorHandler(BaseHTTPRequestHandler):
         if self.path == "/":
             self._render_shell()
             return
+        if self.path == "/workflow":
+            self._render_workflow_page()
+            return
         if self.path == "/editor":
             self._render()
             return
@@ -2373,6 +2944,12 @@ class EditorHandler(BaseHTTPRequestHandler):
         if self.path.startswith("/characters/upload"):
             raw = self.rfile.read(length) if length > 0 else b""
             self._handle_character_upload(raw)
+            return
+        # Workflow page's map-upload endpoint takes raw image bytes.
+        # Query string carries level_number + target_name.
+        if self.path.startswith("/workflow/upload_map"):
+            raw = self.rfile.read(length) if length > 0 else b""
+            self._handle_map_upload(raw)
             return
         raw = self.rfile.read(length) if length > 0 else b""
         # Assistant endpoints take JSON bodies (cleaner for nested
@@ -2759,18 +3336,57 @@ class EditorHandler(BaseHTTPRequestHandler):
 
     def _render_shell(self) -> None:
         """GET / — the SPA shell with tab strip and per-tab iframes.
-        Each iframe loads its underlying route (/editor, /assistant,
-        /characters) so the existing page code keeps working unchanged."""
+        Each iframe loads its underlying route (/workflow, /editor,
+        /assistant, /characters) so the existing page code keeps
+        working unchanged."""
         try:
             d = dungeon_mod.load(self.dungeon_path)
             dungeon_name = d.name
+            # The Workflow tab becomes the default for fresh dungeons —
+            # there's nothing to edit yet, and the workflow page tells
+            # the user how to get started. Once any room has geometry
+            # we assume the DM is past the orientation phase and lean
+            # back to the editor.
+            is_fresh = not any(
+                r.image_region is not None
+                for lv in d.levels
+                for r in lv.rooms
+            )
         except (FileNotFoundError, dungeon_mod.DungeonValidationError):
             # The shell itself doesn't need a valid dungeon — the inner
             # iframes will surface their own errors. Fall back to the
             # folder name so the title bar still has something useful.
             dungeon_name = self.dungeon_path.parent.name
-        body = _render_app_shell(dungeon_name).encode("utf-8")
-        self._respond(HTTPStatus.OK, body, "text/html; charset=utf-8")
+            is_fresh = True
+        body = _render_app_shell(dungeon_name,
+                                 default_tab=("workflow" if is_fresh
+                                              else "editor"))
+        self._respond(HTTPStatus.OK, body.encode("utf-8"),
+                      "text/html; charset=utf-8")
+
+    def _render_workflow_page(self) -> None:
+        """GET /workflow — the orientation tab. Always loadable so it
+        can explain itself even when dungeon.json is missing or busted;
+        in the error case we render a tiny notice instead of the cards."""
+        try:
+            d = dungeon_mod.load(self.dungeon_path)
+        except (FileNotFoundError, dungeon_mod.DungeonValidationError) as e:
+            body = (
+                f"<!doctype html><html><head><meta charset='utf-8'>"
+                f"<title>Workflow</title></head><body "
+                f"style='font:14px Georgia,serif;background:#f4e4c1;"
+                f"color:#1a1a1a;padding:2em;'>"
+                f"<h1>Workflow</h1>"
+                f"<p>Couldn't load dungeon.json: {_esc(str(e))}</p>"
+                f"<p>Fix the JSON and refresh.</p>"
+                f"</body></html>"
+            )
+            self._respond(HTTPStatus.OK, body.encode("utf-8"),
+                          "text/html; charset=utf-8")
+            return
+        body = _render_workflow_page_body(d=d, dungeon_path=self.dungeon_path)
+        self._respond(HTTPStatus.OK, body.encode("utf-8"),
+                      "text/html; charset=utf-8")
 
     def _render(self, *, saved_room_id: str | None = None,
                 saved_level_number: int | None = None) -> None:
@@ -2918,6 +3534,91 @@ class EditorHandler(BaseHTTPRequestHandler):
             cli_error=cli_error,
         ).encode("utf-8")
         self._respond(HTTPStatus.OK, body, "text/html; charset=utf-8")
+
+    def _handle_map_upload(self, raw: bytes) -> None:
+        """Receive a raw PNG/JPG body and save it as a level's map_image.
+        Query string carries `level_number` (int) and `target_name`
+        (the dungeon.json's map_image string for that level).
+
+        Responds with JSON {ok: true, path} or {ok: false, error: …}.
+        Atomic write via a sibling temp file so a half-written upload
+        doesn't corrupt an existing map."""
+        from urllib.parse import parse_qs as _pq
+
+        if not raw:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False, "error": "empty upload"})
+            return
+
+        try:
+            _, query = self.path.split("?", 1)
+            qs = _pq(query)
+            level_number = int(qs.get("level_number", [""])[0])
+            target_name = qs.get("target_name", [""])[0].strip()
+        except (ValueError, KeyError):
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False, "error": "bad query string"})
+            return
+        if not target_name:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False, "error": "missing target_name"})
+            return
+
+        # Validate the target name: must be a bare filename (no path
+        # traversal), and must match the level's declared map_image in
+        # dungeon.json (so a malicious client can't write arbitrary
+        # files into the project tree).
+        if "/" in target_name or "\\" in target_name or ".." in target_name:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False,
+                                "error": "target_name must be a bare filename"})
+            return
+        try:
+            d = dungeon_mod.load(self.dungeon_path)
+        except (FileNotFoundError, dungeon_mod.DungeonValidationError) as e:
+            self._respond_json(HTTPStatus.INTERNAL_SERVER_ERROR,
+                               {"ok": False, "error": f"dungeon load: {e}"})
+            return
+        level = d.levels_by_number.get(level_number)
+        if level is None:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False,
+                                "error": f"unknown level {level_number}"})
+            return
+        if level.map_image != target_name:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False,
+                                "error": (
+                                    f"target_name {target_name!r} does not "
+                                    f"match level {level_number}'s "
+                                    f"map_image {level.map_image!r}"
+                                )})
+            return
+
+        # Sanity-check the file looks like an image. Cheap magic-byte
+        # check — PNG / JPEG / GIF. We don't strictly need GIF but
+        # accepting it is harmless and pygame can render it.
+        if not (raw.startswith(b"\x89PNG\r\n\x1a\n")
+                or raw.startswith(b"\xff\xd8\xff")
+                or raw.startswith(b"GIF87a")
+                or raw.startswith(b"GIF89a")):
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False,
+                                "error": "not a PNG / JPG / GIF (magic bytes)"})
+            return
+
+        dungeon_dir = self.dungeon_path.parent
+        target_path = dungeon_dir / target_name
+        tmp_path = target_path.with_suffix(target_path.suffix + ".tmp")
+        try:
+            tmp_path.write_bytes(raw)
+            tmp_path.replace(target_path)
+        except OSError as e:
+            self._respond_json(HTTPStatus.INTERNAL_SERVER_ERROR,
+                               {"ok": False, "error": f"write failed: {e}"})
+            return
+        self._respond_json(HTTPStatus.OK,
+                           {"ok": True, "path": str(target_path)})
 
     def _handle_character_upload(self, raw: bytes) -> None:
         """Receive a raw PDF body, run extraction, save the JSON.
