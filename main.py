@@ -157,20 +157,30 @@ _WEBVIEW_SCRIPT = PROJECT_ROOT / "osr_webview_window.py"
 
 
 class BrowserOpener:
-    """Opens editor / player windows with per-URL rate limiting and
-    stderr tracing.
+    """Opens editor / player windows and prevents duplicates.
 
     Prefers pywebview (a native desktop window with no URL bar — feels
     like an app) and falls back to webbrowser.open (a regular browser
     tab) when pywebview is not installed. Pywebview windows are spawned
     as subprocesses so each one owns its own main thread without
     fighting pygame for it on macOS.
+
+    Duplicate handling differs by backend:
+      - pywebview: we keep a Popen handle per URL. If the subprocess
+        is still alive when the user re-triggers the same URL, we
+        bring its window to the foreground (macOS AppleScript) instead
+        of spawning a second one. If the user closed the window, the
+        Popen has exited and the next press opens a fresh one.
+      - webbrowser fallback: we have no ground truth for "is this tab
+        still open?", so we keep a short cooldown to absorb accidental
+        double-presses.
     """
 
     def __init__(self, *, min_interval_seconds: float = MIN_TAB_REOPEN_SECONDS):
         self._monotonic = time.monotonic
         self._min_interval = min_interval_seconds
         self._last_open_times: dict[str, float] = {}
+        self._windows: dict[str, "subprocess.Popen"] = {}
         self._pywebview_ok = self._probe_pywebview()
         if not self._pywebview_ok:
             print(
@@ -189,6 +199,16 @@ class BrowserOpener:
 
     def open(self, url: str, *, label: str = "tab",
              width: int = 1100, height: int = 800) -> None:
+        if self._pywebview_ok:
+            existing = self._windows.get(url)
+            if existing is not None and existing.poll() is None:
+                # Subprocess still alive → window still exists. Surface
+                # it instead of spawning a second.
+                self._focus_pywebview(existing.pid, label)
+                return
+            self._open_pywebview(url, label, width, height)
+            return
+        # webbrowser fallback path with cooldown.
         now = self._monotonic()
         last = self._last_open_times.get(url)
         if last is not None and now - last < self._min_interval:
@@ -198,18 +218,15 @@ class BrowserOpener:
                   file=sys.stderr)
             return
         self._last_open_times[url] = now
-        if self._pywebview_ok:
-            self._open_pywebview(url, label, width, height)
-        else:
-            print(f"[browser] opening {label}: {url}", file=sys.stderr)
-            webbrowser.open(url, new=2)
+        print(f"[browser] opening {label}: {url}", file=sys.stderr)
+        webbrowser.open(url, new=2)
 
     def _open_pywebview(self, url: str, label: str,
                         width: int, height: int) -> None:
         import subprocess
         print(f"[webview] opening {label}: {url}", file=sys.stderr)
         try:
-            subprocess.Popen(
+            proc = subprocess.Popen(
                 [
                     sys.executable, str(_WEBVIEW_SCRIPT),
                     "--url", url,
@@ -228,6 +245,32 @@ class BrowserOpener:
             print(f"[webview] launch failed ({e}); falling back to browser",
                   file=sys.stderr)
             webbrowser.open(url, new=2)
+            return
+        self._windows[url] = proc
+
+    @staticmethod
+    def _focus_pywebview(pid: int, label: str) -> None:
+        """Bring an existing native window to the front. macOS-only
+        via osascript / System Events; no-op elsewhere. Best-effort:
+        if Accessibility permissions aren't granted, the script
+        silently fails and the user can still Cmd-Tab to the window."""
+        import subprocess
+        print(f"[webview] surfacing existing {label} (pid {pid})",
+              file=sys.stderr)
+        if sys.platform != "darwin":
+            return
+        script = (
+            f'tell application "System Events" to '
+            f'set frontmost of (first process whose unix id is {pid}) to true'
+        )
+        try:
+            subprocess.run(
+                ["osascript", "-e", script],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=2, check=False,
+            )
+        except (subprocess.SubprocessError, FileNotFoundError):
+            pass
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
