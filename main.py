@@ -86,6 +86,25 @@ def _ensure_editor_port_free(port: int, host: str = "127.0.0.1") -> bool:
         pids = []
 
     project_root = str(PROJECT_ROOT.resolve())
+
+    def _process_cwd(pid: int) -> str:
+        """Best-effort: return the working directory of `pid`, or "".
+        `lsof -p PID -a -d cwd -Fn` prints lines starting with 'n<path>'
+        for the cwd descriptor — same on macOS as Linux. Quiet on
+        failure; the caller already has the cmdline as a fallback
+        signal."""
+        try:
+            r = subprocess.run(
+                ["lsof", "-p", str(pid), "-a", "-d", "cwd", "-Fn"],
+                capture_output=True, text=True, timeout=5, check=False,
+            )
+        except (FileNotFoundError, subprocess.SubprocessError):
+            return ""
+        for line in r.stdout.splitlines():
+            if line.startswith("n"):
+                return line[1:]
+        return ""
+
     own_pids: list[int] = []
     foreign_descriptions: list[str] = []
     for pid in pids:
@@ -99,10 +118,20 @@ def _ensure_editor_port_free(port: int, host: str = "127.0.0.1") -> bool:
             cmdline = ps.stdout.strip()
         except subprocess.SubprocessError:
             cmdline = ""
-        # A stale instance of this app: a Python process running
-        # main.py from this project directory. We won't kill anything
-        # else.
-        if "main.py" in cmdline and project_root in cmdline:
+        # A stale instance of this app: a Python process whose cmdline
+        # mentions main.py AND whose working directory is rooted in
+        # this project. The cwd check catches launches via the .command
+        # script (which `cd`s first, so ps reports a bare `main.py`);
+        # the cmdline-path check catches launches with absolute paths.
+        looks_like_main = "main.py" in cmdline
+        cmdline_in_project = project_root in cmdline
+        cwd_in_project = False
+        if looks_like_main:
+            cwd = _process_cwd(pid)
+            cwd_in_project = bool(cwd) and (
+                cwd == project_root or cwd.startswith(project_root + os.sep)
+            )
+        if looks_like_main and (cmdline_in_project or cwd_in_project):
             own_pids.append(pid)
         else:
             foreign_descriptions.append(

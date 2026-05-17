@@ -101,6 +101,68 @@ def test_port_held_by_our_own_instance_is_killed(monkeypatch):
     assert killed and killed[0][0] == fake_pid
 
 
+def test_port_held_by_own_instance_via_relative_cmdline(monkeypatch):
+    """Regression: when our app is launched via Launch Dungeon.command,
+    the launch script does `cd "$PROJECT_DIR"` first, so `ps` reports
+    a bare `python main.py …` with no absolute path. The previous
+    detector required the absolute project root to appear in the
+    cmdline and missed this case. The cwd-via-lsof fallback fixes it."""
+    fake_pid = 88888
+    project_root = str(main_mod.PROJECT_ROOT.resolve())
+
+    bind_attempts = {"n": 0}
+    real_socket = socket.socket
+
+    class _FakeSocket:
+        def __init__(self, *a, **kw):
+            self._real = real_socket(*a, **kw)
+        def setsockopt(self, *a, **kw):
+            self._real.setsockopt(*a, **kw)
+        def bind(self, addr):
+            bind_attempts["n"] += 1
+            if bind_attempts["n"] == 1:
+                err = OSError("Address already in use")
+                err.errno = errno.EADDRINUSE
+                raise err
+            return self._real.bind(("127.0.0.1", 0))
+        def close(self):
+            self._real.close()
+
+    monkeypatch.setattr(socket, "socket", _FakeSocket)
+
+    def fake_run(args, **kw):
+        if args[0] == "lsof" and "-ti" in args:
+            return subprocess.CompletedProcess(
+                args, 0, stdout=f"{fake_pid}\n", stderr=""
+            )
+        if args[0] == "lsof" and "-d" in args and "cwd" in args:
+            # Mimic `lsof -p PID -a -d cwd -Fn` output: a 'p' line for
+            # the pid, an 'f' line for the descriptor, then 'n<path>'.
+            return subprocess.CompletedProcess(
+                args, 0,
+                stdout=f"p{fake_pid}\nfcwd\nn{project_root}\n",
+                stderr="",
+            )
+        if args[:2] == ["ps", "-p"]:
+            # Relative cmdline — what the launch script produces.
+            return subprocess.CompletedProcess(
+                args, 0,
+                stdout="/opt/anaconda3/bin/python main.py dungeons/x\n",
+                stderr="",
+            )
+        raise AssertionError(f"unexpected subprocess call: {args}")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    killed = []
+    monkeypatch.setattr(os, "kill",
+                        lambda pid, sig: killed.append((pid, sig)))
+    monkeypatch.setattr(time, "sleep", lambda _s: None)
+
+    assert main_mod._ensure_editor_port_free(8765) is True
+    assert killed and killed[0][0] == fake_pid
+
+
 def test_port_held_by_foreign_process_returns_false(monkeypatch, capsys):
     """When the port is held by something other than this app (e.g.
     a different web server), we don't touch it and report a clear error."""
