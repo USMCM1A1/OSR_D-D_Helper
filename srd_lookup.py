@@ -5,11 +5,9 @@ exposes:
 
     find(name)  -> StatBlock | None       (exact name, case-insensitive)
     names()     -> list[str]              (all known creatures)
-    scan(text)  -> list[Match]            (every creature mentioned in text;
-                                            each Match flags whether it was
-                                            found by exact regex or fuzzy
-                                            similarity so the editor can
-                                            surface the difference)
+    scan(text)  -> list[Match]            (every creature mentioned in
+                                            text by exact word-boundary
+                                            match)
 
 The two source files use different markdown levels for creature names:
 
@@ -22,21 +20,20 @@ We detect creature sections by header level *and* by the presence of the
 **Armor Class** marker in the body — header text alone is ambiguous
 (e.g. `### Burrow` is a rules subsection, not a monster).
 
-`scan` is two-pass:
-  Pass 1 — exact word-boundary regex (longest name wins, plural-`s`
-           accepted). Catches the common case with zero false positives.
-  Pass 2 — `difflib`-based fuzzy match on residual capitalised tokens
-           the regex missed. Catches misspellings (`zomby`→`Zombie`,
-           `skelaton`→`Skeleton`) and typo'd plurals. Cutoff 0.85;
-           tokens shorter than 4 chars are skipped to avoid noise.
-           Tagged `'fuzzy'` so the editor can render a caveat.
+`scan` does a single exact pass: word-boundary regex (longest name wins,
+plural-`s` accepted). A previous version of this module also did a
+difflib-based fuzzy pass to catch misspellings (`zomby`→`Zombie`), but
+in practice the DM rarely mistypes monster names while the false-
+positive rate against ordinary English is unacceptable: the prose
+"Fight to the death" used to silently inject Wight, Dretch and Knight
+into a room. The fuzzy pass was removed in favor of a clean
+"misspelt → no match" failure mode, which is easier to notice and fix.
 
-No LLM. Both passes are deterministic and offline.
+No LLM. Deterministic and offline.
 """
 
 from __future__ import annotations
 
-import difflib
 import re
 from pathlib import Path
 from typing import Literal, NamedTuple
@@ -45,18 +42,6 @@ SRD_DIR = Path(__file__).parent / "srd-resources"
 MONSTERS_PATH = SRD_DIR / "Monsters.txt"
 MISC_PATH = SRD_DIR / "Miscellaneous-creatures.txt"
 
-# Fuzzy-match tuning. `cutoff` is difflib's similarity ratio threshold
-# (1.0 = identical, 0.0 = nothing in common). Empirically, 0.72 catches
-# the typo cases we care about (`zomby`→Zombie at 0.727, `skelaton`,
-# `goblen`, `kobald` all ≥ 0.83) while staying above unrelated pairs.
-# Min token length 5 keeps short words ("from", "lone", "here") out of
-# fuzzy territory — the regex pass handles correctly-spelt short names.
-# The fuzzy pass will sometimes surface a debatable match (e.g.
-# "skeletal" → Skeleton at 0.75) — that's by design: the editor renders
-# fuzzy hits with a caveat so the DM can reject false positives.
-FUZZY_CUTOFF = 0.72
-FUZZY_MIN_TOKEN_LEN = 5
-
 
 class StatBlock(NamedTuple):
     name: str
@@ -64,11 +49,26 @@ class StatBlock(NamedTuple):
 
 
 class Match(NamedTuple):
-    """One creature reference found in input text. `source` records how
-    the match was made so the UI can flag fuzzy hits for human review."""
+    """One creature reference found in input text.
+
+    `source` is kept on the type for backwards compatibility with prior
+    callers; it is now always `"exact"`. The fuzzy matcher was removed
+    after it produced too many false positives on ordinary English.
+    """
     statblock: StatBlock
     source: Literal["exact", "fuzzy"]
     original: str  # the substring of the input text that matched
+
+
+class EncounterEntry(NamedTuple):
+    """One formal monster declaration parsed from a room's encounter
+    text — the `<count> <Name>(s) (MM p.<page>)` pattern. Anchored on
+    the parenthesised page reference so descriptive prose can mention
+    creature-adjacent words ("shadow", "light", "death") without
+    inflating the encounter."""
+    count_expr: str   # the literal count token: "3", "1d4", "1d6+1"
+    statblock: StatBlock
+    original: str     # the full matched substring
 
 
 def _sections_at_level(text: str, level: int) -> list[tuple[str, str]]:
@@ -127,18 +127,91 @@ def names() -> list[str]:
     return sorted(s.name for s in _index().values())
 
 
+_DECLARATION_RE = re.compile(
+    # count: integer or NdN±M dice expression. Optional — a bare
+    # "Giant Scorpion (MM p.327)" is read as a single creature.
+    r"\b"
+    r"(?:(?P<count>\d+(?:d\d+(?:[+-]\d+)?)?)\s+)?"
+    # name: one or more capitalised words, no punctuation. The capital
+    # requirement keeps the match from extending backwards into
+    # lowercase prose ("in the hollow Giant Scorpion ..."). The
+    # greediness is bounded by the required parenthesised page ref
+    # that follows. Title-Case prose words that *do* sit adjacent to
+    # the declaration ("The Giant Scorpion (MM p.327)") are peeled
+    # off in `parse_encounter_declarations` until the remainder
+    # resolves to a known stat block.
+    r"(?P<name>[A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)"
+    # MM page ref. "p." is optional; spacing is flexible: "(MM p.272)",
+    # "(MM p. 272)", "(MM 272)" all match.
+    r"\s*\(MM\s*(?:p\.?\s*)?\d+\s*\)",
+)
+
+
+def parse_encounter_declarations(text: str) -> list[EncounterEntry]:
+    """Pull formal monster declarations from `text`. Each declaration
+    is a `<count> <Name>(s) (MM p.<page>)` triple. The MM page
+    reference is the anchor that distinguishes a declaration from
+    descriptive prose — without it, a sentence like "1 Giant Scorpion
+    ... dormant in a hollow it has scraped in the pit's northern
+    shadow" would inflate the encounter with a phantom Shadow.
+
+    Names are resolved against the SRD index via `find`, with a fall-
+    back that strips trailing 's' for simple plurals. Declarations
+    whose name doesn't resolve to a known stat block are skipped (the
+    empty stat-block area in the editor is the DM's cue to fix the
+    spelling).
+    """
+    if not text:
+        return []
+    out: list[EncounterEntry] = []
+    seen_names: set[str] = set()
+    for m in _DECLARATION_RE.finditer(text):
+        raw_name = m.group("name").strip()
+        # Peel leading Title-Case words off the captured name until the
+        # remainder resolves. Handles prose words that the regex pulls
+        # in alongside the real creature name, e.g. "The Giant Scorpion
+        # (MM p.327)" → try "The Giant Scorpion" → "Giant Scorpion" ✓.
+        sb = None
+        words = raw_name.split()
+        for i in range(len(words)):
+            candidate = " ".join(words[i:])
+            sb = find(candidate) or find(candidate.rstrip("sS"))
+            if sb is not None:
+                break
+        if sb is None:
+            continue
+        if sb.name in seen_names:
+            # Same creature declared twice: keep the first declaration's
+            # count and skip the rest. (If the DM really wants
+            # heterogeneous counts they can scale the first.)
+            continue
+        seen_names.add(sb.name)
+        out.append(EncounterEntry(
+            count_expr=m.group("count") or "1",
+            statblock=sb,
+            original=m.group(0),
+        ))
+    return out
+
+
 def scan(text: str) -> list[Match]:
     """Find every creature whose name appears in `text`. Returns a
-    de-duplicated list ordered by where the match starts in the text.
-    Two-pass: exact regex first (zero false positives), then fuzzy
-    string similarity on residual tokens to catch misspellings."""
+    de-duplicated list ordered by where the match starts.
+
+    Exact word-boundary regex only, with optional trailing 's' for
+    plurals. Longest creature names are tried first so a multi-word
+    name ("Minotaur Skeleton") claims its span before "Skeleton" can
+    match the inner word.
+
+    Note: for room enrichment and encounter simulation, prefer
+    `parse_encounter_declarations` — that function anchors on the
+    formal `(MM p.<page>)` declaration syntax and ignores prose
+    mentions of creature-adjacent words.
+    """
     if not text:
         return []
     haystack = text.lower()
 
-    # ----- Pass 1: exact word-boundary regex with plural-s -----
-    # Longest names first so "Minotaur Skeleton" claims its span before
-    # plain "Skeleton" matches the inner word.
     candidates = sorted(_index().values(), key=lambda s: -len(s.name))
     consumed: list[tuple[int, int]] = []
     found: list[tuple[int, Match]] = []
@@ -157,40 +230,6 @@ def scan(text: str) -> list[Match]:
                     original=text[span[0]:span[1]],
                 )))
             break  # one statblock per creature
-
-    # ----- Pass 2: fuzzy match on residual word tokens -----
-    # Walk through every word in the original text. Skip tokens that
-    # overlap an already-consumed exact span (those are accounted for).
-    # Skip short tokens (≤3 chars) — too prone to noise. Apply
-    # difflib.get_close_matches against the lowercase name index; accept
-    # the top hit if its ratio is ≥ FUZZY_CUTOFF.
-    name_index_lower = [s.name.lower() for s in _index().values()]
-    name_lookup = {s.name.lower(): s for s in _index().values()}
-    for m in re.finditer(r"\b[A-Za-z][A-Za-z'\-]+\b", text):
-        span = (m.start(), m.end())
-        token = m.group(0)
-        if len(token) < FUZZY_MIN_TOKEN_LEN:
-            continue
-        if any(span[0] < e and span[1] > s for s, e in consumed):
-            continue  # exact pass already claimed this region
-        # Strip trailing 's' before fuzzy compare so "zombys" lines up
-        # with "zombie" (otherwise the pluralisation drops the ratio).
-        probe = token.lower().rstrip("s")
-        if len(probe) < FUZZY_MIN_TOKEN_LEN:
-            continue
-        hits = difflib.get_close_matches(
-            probe, name_index_lower, n=1, cutoff=FUZZY_CUTOFF,
-        )
-        if not hits:
-            continue
-        sb = name_lookup[hits[0]]
-        if sb.name in seen:
-            continue
-        seen.add(sb.name)
-        consumed.append(span)
-        found.append((span[0], Match(
-            statblock=sb, source="fuzzy", original=token,
-        )))
 
     found.sort(key=lambda t: t[0])
     return [match for _, match in found]
