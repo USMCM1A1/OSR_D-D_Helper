@@ -899,3 +899,83 @@ class TestWorkflowStatus:
             assert 'id="frame-workflow"' in text
         finally:
             srv.shutdown()
+
+
+class TestNewDungeonEndpoint:
+    """POST /workflow/new_dungeon scaffolds a new dungeon under the
+    server's dungeons_dir. Doesn't try to switch the running pygame
+    onto it — that's the launcher's job."""
+
+    @pytest.fixture
+    def server_with_dungeons_dir(self, tmp_path, dungeon_json):
+        # Re-use the seed dungeon fixture as the "current" dungeon,
+        # but place dungeons_dir at tmp_path/dungeons so the scaffolder
+        # writes into a known empty root.
+        dungeons_root = tmp_path / "dungeons"
+        dungeons_root.mkdir()
+        srv, _ = editor_server.start_editor_server(
+            dungeon_json, port=0, dungeons_dir=dungeons_root,
+        )
+        host, port = srv.server_address[:2]
+        try:
+            yield srv, host, port, dungeons_root
+        finally:
+            srv.shutdown()
+
+    def test_scaffolds_new_dungeon(self, server_with_dungeons_dir):
+        _, host, port, root = server_with_dungeons_dir
+        resp, raw = _http_post_json(
+            host, port, "/workflow/new_dungeon",
+            {"name": "The Whispering Vault", "party_level": 5,
+             "party_size": 4},
+        )
+        data = json.loads(raw.decode("utf-8"))
+        assert resp.status == 200, data
+        assert data["ok"] is True
+        assert data["folder"] == "the-whispering-vault"
+        target = root / "the-whispering-vault"
+        assert target.exists()
+        # Scaffolded dungeon.json should have the requested fields.
+        scaffold = json.loads((target / "dungeon.json").read_text())
+        assert scaffold["dungeon_name"] == "The Whispering Vault"
+        assert scaffold["party_level"] == 5
+        assert len(scaffold["levels"]) == 1
+        assert scaffold["levels"][0]["rooms"] == []
+
+    def test_rejects_empty_name(self, server_with_dungeons_dir):
+        _, host, port, _ = server_with_dungeons_dir
+        resp, raw = _http_post_json(
+            host, port, "/workflow/new_dungeon",
+            {"name": "   ", "party_level": 3},
+        )
+        data = json.loads(raw.decode("utf-8"))
+        assert resp.status == 400
+        assert data["ok"] is False
+        assert "required" in data["error"].lower()
+
+    def test_rejects_slug_collision(self, server_with_dungeons_dir):
+        _, host, port, root = server_with_dungeons_dir
+        # Pre-create a folder so the second scaffold collides.
+        (root / "duplicate-name").mkdir()
+        resp, raw = _http_post_json(
+            host, port, "/workflow/new_dungeon",
+            {"name": "Duplicate Name", "party_level": 3},
+        )
+        data = json.loads(raw.decode("utf-8"))
+        assert resp.status == 409
+        assert data["ok"] is False
+        assert "already exists" in data["error"].lower()
+
+    def test_punctuation_name_falls_back_to_untitled(self, server_with_dungeons_dir):
+        # slugify_dungeon_name returns "untitled-dungeon" when the
+        # name has nothing slugable in it. Document that behavior
+        # here so a future tightening of the slugger surfaces in tests.
+        _, host, port, root = server_with_dungeons_dir
+        resp, raw = _http_post_json(
+            host, port, "/workflow/new_dungeon",
+            {"name": "!!!", "party_level": 3},
+        )
+        data = json.loads(raw.decode("utf-8"))
+        assert resp.status == 200, data
+        assert data["folder"] == "untitled-dungeon"
+        assert (root / "untitled-dungeon").exists()

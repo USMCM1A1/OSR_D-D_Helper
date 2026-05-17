@@ -339,6 +339,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                         "are both unavailable in play mode.")
     p.add_argument("--dungeons-dir", type=Path, default=DEFAULT_DUNGEONS_DIR,
                    help="Override the dungeons/ root directory used by --list.")
+    p.add_argument("--scaffold", type=str, metavar="NAME",
+                   help="Scaffold a new dungeon folder under --dungeons-dir "
+                        "with the given display name, print the folder path "
+                        "on stdout, and exit. Used by the bash launcher's "
+                        "'New dungeon' option.")
+    p.add_argument("--party-level", type=int, default=3,
+                   help="(With --scaffold) party level for the new dungeon. "
+                        "Default: 3.")
+    p.add_argument("--party-size", type=int, default=4,
+                   help="(With --scaffold) party size for the new dungeon. "
+                        "Default: 4.")
     return p.parse_args(argv)
 
 
@@ -355,6 +366,46 @@ def _list_dungeons(dungeons_dir: Path) -> int:
         else:
             extra = f"{i.n_levels} levels, no progress yet"
         print(f"  {i.folder.name:35}  {i.name!r}  ({extra})")
+    return 0
+
+
+def _scaffold_dungeon(name: str, *,
+                      party_level: int,
+                      party_size: int,
+                      dungeons_dir: Path) -> int:
+    """Scaffold a new dungeon under `dungeons_dir`. Prints the folder
+    path on stdout so the bash launcher can capture it and immediately
+    relaunch against the new folder.
+
+    Reuses Session.scaffold_dungeon — the very same code path the
+    pygame New Dungeon modal uses, so the scaffolds stay in sync
+    regardless of which entry point built them."""
+    clean_name = (name or "").strip()
+    if not clean_name:
+        print("error: --scaffold requires a non-empty dungeon name",
+              file=sys.stderr)
+        return 2
+    slug = Session.slugify_dungeon_name(clean_name)
+    if not slug:
+        print(f"error: {clean_name!r} produces an empty folder slug "
+              "(use letters / numbers in the name)", file=sys.stderr)
+        return 2
+    target = (dungeons_dir / slug).resolve()
+    try:
+        Session.scaffold_dungeon(
+            target, name=clean_name,
+            party_level=int(party_level),
+            party_size=int(party_size),
+        )
+    except FileExistsError:
+        print(f"error: a dungeon already exists at {target}. "
+              "Pick a different name.", file=sys.stderr)
+        return 2
+    except (ValueError, OSError) as e:
+        print(f"error: could not scaffold dungeon: {e}", file=sys.stderr)
+        return 2
+    # Single line, no decoration — the launcher captures this with $(...).
+    print(target)
     return 0
 
 
@@ -416,9 +467,17 @@ def main(argv: list[str] | None = None) -> int:
         return _list_dungeons(args.dungeons_dir)
     if args.reset is not None:
         return _reset_dungeon(args.reset)
+    if args.scaffold is not None:
+        return _scaffold_dungeon(
+            args.scaffold,
+            party_level=args.party_level,
+            party_size=args.party_size,
+            dungeons_dir=args.dungeons_dir,
+        )
     if args.dungeon is None:
         print("error: must pass a dungeon folder path "
-              "(or --list / --reset). See --help.", file=sys.stderr)
+              "(or --list / --reset / --scaffold). See --help.",
+              file=sys.stderr)
         return 2
 
     folder = args.dungeon.resolve()

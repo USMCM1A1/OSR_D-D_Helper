@@ -1078,6 +1078,84 @@ h1 { font-size: 1.7em; margin: 0.2em 0 0.4em; }
 .upload-result { font-size: 12.5px; margin-left: 0.5em; }
 .upload-result.ok { color: #2f5f1f; }
 .upload-result.err { color: #a8201a; }
+
+.dungeon-switcher {
+  background: #f0e3bf;
+  border: 1.5px solid #826e50;
+  border-radius: 6px;
+  padding: 0.8em 1em;
+  margin: 0 0 1.2em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8em;
+}
+.switcher-current {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+}
+.switcher-label {
+  color: #826e50;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.switcher-current strong { font-size: 15px; }
+.cta-btn.secondary {
+  background: transparent;
+  color: #1a1a1a;
+  border: 1px solid #826e50;
+}
+.cta-btn.secondary:hover { background: #d6caa8; }
+#new-dungeon-form {
+  flex: 1 1 100%;
+  border-top: 1px dashed #c8a96e;
+  margin-top: 0.6em;
+  padding-top: 0.7em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em 1em;
+  align-items: flex-end;
+}
+#new-dungeon-form label {
+  font-weight: bold;
+  font-size: 0.92em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+#new-dungeon-form input {
+  font: inherit;
+  padding: 0.35em 0.55em;
+  border: 1px solid #c8a96e;
+  border-radius: 3px;
+  background: #fffefb;
+  min-width: 12em;
+}
+#new-dungeon-form .form-actions {
+  display: flex;
+  gap: 0.5em;
+  align-self: end;
+}
+.dungeon-switcher-result {
+  flex: 1 1 100%;
+  border-radius: 4px;
+  padding: 0.6em 0.9em;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+.dungeon-switcher-result.ok {
+  background: #d5e6c4;
+  border: 1px solid #2f5f1f;
+  color: #2f5f1f;
+}
+.dungeon-switcher-result.err {
+  background: #f0d6d2;
+  border: 1px solid #a8201a;
+  color: #a8201a;
+}
 """
 
 
@@ -1174,9 +1252,105 @@ def _render_workflow_page_body(*, d, dungeon_path: Path) -> str:
   Six stages from raw map to running the session. This page tracks
   progress against the current dungeon; refresh after any change.
 </p>
+
+<div class="dungeon-switcher">
+  <div class="switcher-current">
+    <span class="switcher-label">Working on</span>
+    <strong>{_esc(d.name)}</strong>
+  </div>
+  <button type="button" id="new-dungeon-toggle" class="cta-btn">
+    Create new dungeon
+  </button>
+  <form id="new-dungeon-form" hidden>
+    <label>Name
+      <input type="text" name="name" required maxlength="64"
+             placeholder="e.g. The Reliquary of Whispering Steel">
+    </label>
+    <label>Party level
+      <input type="number" name="party_level" value="3" min="1" max="20">
+    </label>
+    <label>Party size
+      <input type="number" name="party_size" value="4" min="1" max="10">
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="cta-btn">Scaffold</button>
+      <button type="button" id="new-dungeon-cancel" class="cta-btn secondary">
+        Cancel
+      </button>
+    </div>
+  </form>
+  <div id="new-dungeon-result" class="dungeon-switcher-result" hidden></div>
+</div>
+
 {chr(10).join(step_cards)}
 
 <script>
+// "Create new dungeon" toggle + POST. On success show the location
+// and remind the user to switch dungeons via the launcher — the
+// SPA + pygame can't live-swap each other's dungeon today.
+(function () {{
+  var toggle = document.getElementById('new-dungeon-toggle');
+  var form = document.getElementById('new-dungeon-form');
+  var cancel = document.getElementById('new-dungeon-cancel');
+  var result = document.getElementById('new-dungeon-result');
+  if (!toggle || !form) return;
+  toggle.addEventListener('click', function () {{
+    form.hidden = false;
+    toggle.hidden = true;
+    result.hidden = true;
+    var first = form.querySelector('input[name="name"]');
+    if (first) first.focus();
+  }});
+  cancel.addEventListener('click', function () {{
+    form.hidden = true;
+    toggle.hidden = false;
+    form.reset();
+  }});
+  form.addEventListener('submit', function (e) {{
+    e.preventDefault();
+    var fd = new FormData(form);
+    var body = {{
+      name: (fd.get('name') || '').trim(),
+      party_level: parseInt(fd.get('party_level') || '3', 10),
+      party_size: parseInt(fd.get('party_size') || '4', 10),
+    }};
+    var submitBtn = form.querySelector('button[type=submit]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Scaffolding…';
+    fetch('/workflow/new_dungeon', {{
+      method: 'POST',
+      headers: {{'Content-Type': 'application/json'}},
+      body: JSON.stringify(body),
+    }}).then(function (r) {{
+      return r.json().then(function (d) {{
+        return {{status: r.status, data: d}};
+      }});
+    }}).then(function (out) {{
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Scaffold';
+      result.hidden = false;
+      if (out.data.ok) {{
+        result.className = 'dungeon-switcher-result ok';
+        result.textContent =
+          'Scaffolded at dungeons/' + out.data.folder + '/.\n\n' +
+          'Quit pygame (Esc), then double-click Launch Dungeon.command ' +
+          'and pick "' + out.data.folder + '" to switch into the new dungeon. ' +
+          'Once you\\'re in it, come back here — Step 0 will show an upload ' +
+          'widget for your map PNG.';
+      }} else {{
+        result.className = 'dungeon-switcher-result err';
+        result.textContent = 'Failed: ' + (out.data.error || 'unknown error');
+      }}
+    }}).catch(function (err) {{
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Scaffold';
+      result.hidden = false;
+      result.className = 'dungeon-switcher-result err';
+      result.textContent = 'Network error: ' + err.message;
+    }});
+  }});
+}})();
+
 // Tab-target buttons ask the shell to switch to the named iframe.
 (function () {{
   document.addEventListener('click', function (e) {{
@@ -2951,6 +3125,12 @@ class EditorHandler(BaseHTTPRequestHandler):
             raw = self.rfile.read(length) if length > 0 else b""
             self._handle_map_upload(raw)
             return
+        # Workflow page's "Create new dungeon" widget. JSON body with
+        # {name, party_level, party_size}.
+        if self.path == "/workflow/new_dungeon":
+            raw = self.rfile.read(length) if length > 0 else b""
+            self._handle_new_dungeon_post(raw)
+            return
         raw = self.rfile.read(length) if length > 0 else b""
         # Assistant endpoints take JSON bodies (cleaner for nested
         # message lists); the existing form endpoints still parse
@@ -3619,6 +3799,75 @@ class EditorHandler(BaseHTTPRequestHandler):
             return
         self._respond_json(HTTPStatus.OK,
                            {"ok": True, "path": str(target_path)})
+
+    def _handle_new_dungeon_post(self, raw: bytes) -> None:
+        """POST /workflow/new_dungeon — scaffold a new dungeon under
+        `dungeons_dir`. JSON body: {name, party_level, party_size}.
+        Returns {ok: true, folder, path} or {ok: false, error}.
+
+        Doesn't try to live-swap the running pygame onto the new
+        dungeon — the SPA + pygame are separate processes that only
+        share state through dungeon.json. The launcher is the
+        dungeon-switcher; we just create the folder."""
+        from session import Session  # local import — avoid circular
+        if self.dungeons_dir is None:
+            self._respond_json(HTTPStatus.INTERNAL_SERVER_ERROR,
+                               {"ok": False,
+                                "error": "server has no dungeons_dir configured"})
+            return
+        try:
+            body = json.loads(raw.decode("utf-8")) if raw else {}
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False, "error": f"bad JSON: {e}"})
+            return
+        name = str(body.get("name") or "").strip()
+        if not name:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False,
+                                "error": "name is required"})
+            return
+        try:
+            party_level = int(body.get("party_level", 3))
+            party_size = int(body.get("party_size", 4))
+        except (TypeError, ValueError) as e:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False,
+                                "error": f"party_level / party_size must be ints: {e}"})
+            return
+        slug = Session.slugify_dungeon_name(name)
+        if not slug:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False,
+                                "error": (
+                                    f"{name!r} slugs to an empty folder "
+                                    "name — use letters / numbers."
+                                )})
+            return
+        target = (self.dungeons_dir / slug).resolve()
+        try:
+            Session.scaffold_dungeon(
+                target, name=name,
+                party_level=party_level,
+                party_size=party_size,
+            )
+        except FileExistsError:
+            self._respond_json(HTTPStatus.CONFLICT,
+                               {"ok": False,
+                                "error": (
+                                    f"a dungeon already exists at "
+                                    f"dungeons/{slug}/ — pick a different name."
+                                )})
+            return
+        except (ValueError, OSError) as e:
+            self._respond_json(HTTPStatus.BAD_REQUEST,
+                               {"ok": False,
+                                "error": f"scaffold failed: {e}"})
+            return
+        self._respond_json(HTTPStatus.OK,
+                           {"ok": True,
+                            "folder": slug,
+                            "path": str(target)})
 
     def _handle_character_upload(self, raw: bytes) -> None:
         """Receive a raw PDF body, run extraction, save the JSON.
