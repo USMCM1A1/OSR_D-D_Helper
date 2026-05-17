@@ -78,9 +78,14 @@ MAX_UNDO_DEPTH = 50
 # --- Bottom strip (always-visible turn / resources / actions) ---------------
 STATUS_BAR_HEIGHT       = 22
 ACTION_BUTTON_HEIGHT    = 30
-ACTION_BUTTON_WIDTH     = 130
+ACTION_BUTTON_WIDTH     = 160  # wide enough for "Advance Turn (Space)"
 ACTION_BUTTON_GAP       = 6
 STRIP_PAD_BOTTOM        = 30  # leave room for the existing help line below
+
+# Hover dwell before a tooltip appears. 400 ms is fast enough to feel
+# responsive but slow enough that mouse-passes-through doesn't trigger
+# a flicker storm of plates.
+TOOLTIP_DWELL_MS        = 400
 STATUS_INK              = (40, 40, 40)
 STATUS_PLATE            = (244, 228, 193, 230)
 STATUS_PLATE_NOISY      = (224, 184, 120, 240)  # warm tan when Noisy is on
@@ -417,6 +422,23 @@ class MapView:
         self._room_info_room_id: str | None = None
         self._room_info_close_rect: pygame.Rect | None = None
         self._room_info_panel_rect: pygame.Rect | None = None
+
+        # Tooltip layer: hover any registered rect for TOOLTIP_DWELL_MS
+        # to surface a one-line explanation. Accumulator is rebuilt
+        # each frame by the components that draw the chrome (buttons,
+        # status bar segments); the hover-dwell state is preserved
+        # across frames so the timer only resets when the cursor
+        # leaves the current hot rect.
+        self._tooltips_this_frame: list[tuple[pygame.Rect, str]] = []
+        self._tooltip_hover_rect: pygame.Rect | None = None
+        self._tooltip_hover_started_ms: int | None = None
+
+        # Help / legend modal. Toggled by `?` and by the "Help (?)"
+        # entry in the Options menu. Pure overlay — no interactive
+        # widgets beyond Esc / backdrop-click to dismiss.
+        self._help_modal_open: bool = False
+        self._help_close_rect: pygame.Rect | None = None
+        self._help_panel_rect: pygame.Rect | None = None
         # Scroll state: y-offset in pixels into the body (clamped to
         # [0, max_scroll]); max_scroll is updated each draw so resizing the
         # window or switching rooms with longer notes stays consistent.
@@ -567,6 +589,13 @@ class MapView:
                         self._room_info_room_id = room.id
                         self._room_info_scroll_y = 0.0
                     return
+        # Help modal intercepts left-clicks the same way as room-info:
+        # [×] / outside-panel dismisses; clicks inside are swallowed
+        # so the map below doesn't see them.
+        if self._help_modal_open and event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                self._handle_help_modal_click(event.pos)
+                return
         # Bottom-strip action buttons intercept too (otherwise clicking
         # "Advance Turn" would also click-through to a room behind it).
         if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
@@ -636,6 +665,10 @@ class MapView:
         # disturbing reveal state or annotated regions.
         self._poll_dungeon_mtime()
 
+        # Reset the tooltip accumulator — every chrome-drawing routine
+        # below registers fresh rects for this frame.
+        self._tooltips_this_frame = []
+
         surface.fill(BG_OUTSIDE)
         if self.image is None:
             return
@@ -655,9 +688,16 @@ class MapView:
         # options panel if the DM ever opens both (we don't expect this,
         # but the ordering is unambiguous).
         self._draw_room_info_modal(surface)
+        # Help / legend modal sits between the options panel and the
+        # startup warning overlay. Self-contained and dismissable.
+        self._draw_help_modal(surface)
         # Startup warning overlay sits on top of everything until the
         # user dismisses it (one-shot, no-op when no warnings queued).
         self._draw_startup_warnings(surface)
+        # Tooltips render absolutely last so they sit over every modal
+        # too — hovering a button in the Options menu can show its
+        # tooltip when we extend coverage later.
+        self._draw_tooltips(surface)
 
     def _draw_image(self, surface: pygame.Surface, fog: pygame.Surface | None) -> None:
         """Composite image (+ optional fog) at the camera's zoom."""
@@ -795,7 +835,7 @@ class MapView:
                    "P: polygon · hover+Del: remove room · Enter: close poly · "
                    "⌘Z: undo · ⌘+/⌘-: zoom · ⌘0: fit · Esc: cancel/exit")
         else:
-            msg = ("O: options · click or Enter: cycle hovered · "
+            msg = ("?: help · O: options · click or Enter: cycle hovered · "
                    "right-click or I: notes · drag: pan · "
                    "scroll or ⌘+/⌘-: zoom · ⌘0: fit · Esc: quit")
         help_text = self.help_font.render(msg, True, HELP_INK)
@@ -812,7 +852,11 @@ class MapView:
 
     def _draw_status_strip(self, surface: pygame.Surface) -> None:
         """Single-line text summary above the action buttons: turn,
-        elapsed time, light sources, supply pool, last WM, Noisy."""
+        elapsed time, light sources, supply pool, last WM, Noisy.
+
+        Rendered as discrete segments so each can register its own
+        tooltip. The abbreviations (T:/L:/O:/R:/W:) are unkeyed by
+        themselves; the tooltip on the Stash segment spells them out."""
         tracker = self.session.tracker
         turn = tracker.turn
         h, m = tracker.elapsed_hm
@@ -840,13 +884,38 @@ class MapView:
             wm_str = f"{wm.method}={wm.roll}{mark}"
             if wm.triggered and wm.encounter:
                 wm_str += f" {wm.encounter}"
-        noisy_str = "  · NOISY" if tracker.noisy else ""
 
-        text = (f"Turn {turn}  {h}h{m:02d}m"
-                f"  ·  Lights: {lights_str}"
-                f"  ·  Stash: {sup_str}"
-                f"  ·  WM: {wm_str}{noisy_str}")
-        surf = self.help_font.render(text, True, STATUS_INK)
+        segments: list[tuple[str, str]] = [
+            (
+                f"Turn {turn}  {h}h{m:02d}m",
+                "Current turn number (1 turn = 10 minutes) and total "
+                "elapsed in-game time.",
+            ),
+            (
+                f"Lights: {lights_str}",
+                "Active light sources, each with turns remaining. "
+                "Torch lasts 6 turns (1 h); hooded lantern 36 turns "
+                "(6 h) per oil flask. ⚠ flags ≤ 2 turns left.",
+            ),
+            (
+                f"Stash: {sup_str}",
+                "Supplies on hand. T = Torches · L = Hooded lanterns · "
+                "O = Oil flasks · R = Rations · W = Water (gallons).",
+            ),
+            (
+                f"WM: {wm_str}",
+                "Last wandering-monster check. ✓ = no encounter; "
+                "✗ = encounter rolled. Roll fresh with R.",
+            ),
+        ]
+        if tracker.noisy:
+            segments.append((
+                "NOISY",
+                "Party-noise flag is on — wandering-monster checks fire "
+                "more often. Toggle off with the 'Noisy Party' button "
+                "or N.",
+            ))
+
         # Plate underneath so the strip stays readable over the PNG.
         bar_y = (surface.get_height() - STRIP_PAD_BOTTOM
                  - ACTION_BUTTON_HEIGHT - STATUS_BAR_HEIGHT - 8)
@@ -855,20 +924,67 @@ class MapView:
                                pygame.SRCALPHA)
         plate.fill(plate_color)
         surface.blit(plate, (0, bar_y))
-        surface.blit(surf, (10, bar_y + (STATUS_BAR_HEIGHT - surf.get_height()) // 2))
 
-    def _action_buttons(self) -> list[tuple[str, Callable[[], None], bool]]:
-        """List of (label, action, enabled) tuples shown in the bottom row."""
+        sep = "  ·  "
+        sep_surf = self.help_font.render(sep, True, STATUS_INK)
+        y_offset = (STATUS_BAR_HEIGHT - self.help_font.get_height()) // 2
+        x = 10
+        for i, (seg_text, seg_tip) in enumerate(segments):
+            seg_surf = self.help_font.render(seg_text, True, STATUS_INK)
+            seg_rect = pygame.Rect(x, bar_y, seg_surf.get_width(),
+                                   STATUS_BAR_HEIGHT)
+            surface.blit(seg_surf, (x, bar_y + y_offset))
+            self._register_tooltip(seg_rect, seg_tip)
+            x += seg_surf.get_width()
+            if i < len(segments) - 1:
+                surface.blit(sep_surf, (x, bar_y + y_offset))
+                x += sep_surf.get_width()
+
+    def _action_buttons(
+        self,
+    ) -> list[tuple[str, str, Callable[[], None], bool, str]]:
+        """Bottom-row button definitions. Tuple is
+        (key, label, action, enabled, tooltip):
+          - key is a stable identifier the renderer uses for the
+            highlight-when-active check (so renaming the label can't
+            break the Noisy highlight by accident)
+          - label is the rendered text — written in full so the
+            function is legible without a legend
+          - tooltip is shown after a half-second hover, restating
+            what the button does in a sentence plus the shortcut.
+        """
         return [
-            ("Advance Turn", self.action_advance_turn, True),
-            ("Roll WM",      self.action_manual_wm_roll, True),
-            ("+ Torch",      self.action_light_torch,
-             self._can_light_torch()),
-            ("+ Lantern",    self.action_light_lantern,
-             self._can_light_lantern()),
-            ("Refill",       self.action_refill_lantern,
-             self._can_refill_lantern()),
-            ("Noisy",        self.action_toggle_noisy, True),
+            ("advance_turn", "Advance Turn (Space)",
+             self.action_advance_turn, True,
+             "Advance one turn (10 minutes). Burns light, rolls the "
+             "wandering-monster check, logs to the journal. Shortcut: Space."),
+            ("roll_wm",      "Roll WM (R)",
+             self.action_manual_wm_roll, True,
+             "Roll a wandering-monster check now without advancing the "
+             "turn. Shortcut: R."),
+            ("light_torch",  "Light Torch (1h)",
+             self.action_light_torch, self._can_light_torch(),
+             "Light a torch from supplies. Burns 6 turns (1 hour); "
+             "bright 20 ft / dim 20 ft beyond. Shortcut: T."),
+            ("light_lantern", "Light Lantern (6h)",
+             self.action_light_lantern, self._can_light_lantern(),
+             "Light a hooded lantern from supplies (consumes one oil "
+             "flask). Burns 36 turns (6 hours); bright 30 ft / dim 30 ft. "
+             "Shortcut: L."),
+            ("refill",       "Refill Lantern",
+             self.action_refill_lantern, self._can_refill_lantern(),
+             "Top the active lantern up with another oil flask. Adds "
+             "36 turns. Shortcut: Shift+L."),
+            ("noisy",        "Noisy Party",
+             self.action_toggle_noisy, True,
+             "Toggle the party-noise flag. While on, the wandering-"
+             "monster check fires more often — combat, failed stealth, "
+             "sprung traps. Shortcut: N."),
+            ("options",      "Options (O)",
+             self.toggle_options_menu, True,
+             "Open the Options menu — annotation mode, room editor, "
+             "Player view, level switch, reset, quit. Shortcut: O. "
+             "Press ? any time for the full help legend."),
         ]
 
     def _draw_action_buttons(self, surface: pygame.Surface) -> None:
@@ -881,10 +997,11 @@ class MapView:
         # Centered horizontally, just above the help line.
         x = max(10, (surface.get_width() - total_w) // 2)
         y = surface.get_height() - STRIP_PAD_BOTTOM - ACTION_BUTTON_HEIGHT
-        for label, action, enabled in items:
+        for key, label, action, enabled, tooltip in items:
             rect = pygame.Rect(x, y, ACTION_BUTTON_WIDTH, ACTION_BUTTON_HEIGHT)
-            # Highlight Noisy button when active.
-            is_noisy_active = (label == "Noisy" and self.session.tracker.noisy)
+            # Highlight Noisy button when active. Keyed off the stable
+            # `key`, not the label string, so future renames are safe.
+            is_noisy_active = (key == "noisy" and self.session.tracker.noisy)
             if is_noisy_active:
                 fill = (200, 100, 60)
                 edge = (120, 50, 20)
@@ -903,6 +1020,7 @@ class MapView:
             surface.blit(text, (rect.x + (rect.w - text.get_width()) // 2,
                                 rect.y + (rect.h - text.get_height()) // 2))
             self._action_button_rects.append((rect, action, enabled))
+            self._register_tooltip(rect, tooltip)
             x += ACTION_BUTTON_WIDTH + ACTION_BUTTON_GAP
 
     def _handle_action_button_click(self, pos: tuple[int, int]) -> bool:
@@ -914,6 +1032,121 @@ class MapView:
                     action()
                 return True
         return False
+
+    # -- Tooltip layer -------------------------------------------------------
+
+    def _register_tooltip(self, rect: pygame.Rect, text: str) -> None:
+        """Mark `rect` as carrying `text` for this frame. Called by the
+        chrome-drawing routines as they lay out buttons + status segments.
+        The accumulator is rebuilt every frame in `draw()`, so registered
+        rects from the previous frame are discarded automatically when
+        the layout changes (window resize, button enable/disable, etc.)."""
+        self._tooltips_this_frame.append((rect, text))
+
+    @staticmethod
+    def _resolve_tooltip(
+        rects: list[tuple[pygame.Rect, str]],
+        mouse_pos: tuple[int, int],
+        hover_rect: pygame.Rect | None,
+        hover_started_ms: int | None,
+        now_ms: int,
+        dwell_ms: int = TOOLTIP_DWELL_MS,
+    ) -> tuple[str | None, pygame.Rect | None, int | None]:
+        """Pure helper: decide which tooltip (if any) to render this
+        frame. Split out from the View so the dwell logic is testable
+        without a pygame display.
+
+        Returns (text_to_show, new_hover_rect, new_hover_started_ms).
+        text_to_show is None until the cursor has been stationary inside
+        a registered rect for `dwell_ms` milliseconds."""
+        # Find the rect under the cursor, if any. Last-registered wins
+        # so overlapping rects (e.g. the noisy button when the strip is
+        # also under the cursor) get sensible priority — the more
+        # specific child draws last.
+        current: pygame.Rect | None = None
+        text: str | None = None
+        for rect, t in reversed(rects):
+            if rect.collidepoint(mouse_pos):
+                current = rect
+                text = t
+                break
+        if current is None:
+            # Cursor isn't over any tooltip-bearing rect.
+            return (None, None, None)
+        if hover_rect == current and hover_started_ms is not None:
+            if now_ms - hover_started_ms >= dwell_ms:
+                return (text, current, hover_started_ms)
+            return (None, current, hover_started_ms)
+        # Newly entered rect — start the dwell timer.
+        return (None, current, now_ms)
+
+    def _draw_tooltips(self, surface: pygame.Surface) -> None:
+        """Draw at most one tooltip plate per frame. Called last so it
+        renders above every other chrome element."""
+        if not self._tooltips_this_frame:
+            self._tooltip_hover_rect = None
+            self._tooltip_hover_started_ms = None
+            return
+        mouse_pos = pygame.mouse.get_pos()
+        now_ms = pygame.time.get_ticks()
+        text, new_rect, new_started = self._resolve_tooltip(
+            self._tooltips_this_frame, mouse_pos,
+            self._tooltip_hover_rect, self._tooltip_hover_started_ms,
+            now_ms,
+        )
+        self._tooltip_hover_rect = new_rect
+        self._tooltip_hover_started_ms = new_started
+        if text is None:
+            return
+        # Wrap the body if it's wide, so long explanations don't run
+        # off the screen. Pygame doesn't have native wrapping; we do a
+        # word-by-word fill against a max-width budget.
+        max_w = min(360, surface.get_width() - 40)
+        lines = self._wrap_text(text, self.help_font, max_w)
+        line_h = self.help_font.get_height()
+        pad = 6
+        plate_w = max(self.help_font.size(line)[0] for line in lines) + pad * 2
+        plate_h = line_h * len(lines) + pad * 2
+        # Anchor the plate to the bottom-right of the cursor by default,
+        # flipping sides when it would overflow the surface edges.
+        mx, my = mouse_pos
+        x = mx + 16
+        y = my + 18
+        if x + plate_w > surface.get_width() - 4:
+            x = max(4, mx - 8 - plate_w)
+        if y + plate_h > surface.get_height() - 4:
+            y = max(4, my - 8 - plate_h)
+        plate = pygame.Surface((plate_w, plate_h), pygame.SRCALPHA)
+        plate.fill((250, 240, 213, 248))
+        surface.blit(plate, (x, y))
+        pygame.draw.rect(surface, (26, 26, 26),
+                         pygame.Rect(x, y, plate_w, plate_h), 1)
+        ty = y + pad
+        for line in lines:
+            surf = self.help_font.render(line, True, (26, 26, 26))
+            surface.blit(surf, (x + pad, ty))
+            ty += line_h
+
+    @staticmethod
+    def _wrap_text(text: str, font: pygame.font.Font,
+                   max_width: int) -> list[str]:
+        """Greedy word-wrap so a long tooltip fits a fixed-width plate.
+        Always returns at least one line, even if a single word exceeds
+        max_width (it stays on its own oversized line — acceptable)."""
+        words = text.split()
+        if not words:
+            return [""]
+        lines: list[str] = []
+        current = words[0]
+        for w in words[1:]:
+            candidate = current + " " + w
+            if font.size(candidate)[0] <= max_width:
+                current = candidate
+            else:
+                lines.append(current)
+                current = w
+        lines.append(current)
+        return lines
 
     # -- Annotation mode -----------------------------------------------------
 
@@ -1283,9 +1516,25 @@ class MapView:
     def toggle_options_menu(self) -> None:
         self._options_open = not self._options_open
 
+    def open_help_modal(self) -> None:
+        """Open the Help / Legend modal. Safe to call from anywhere —
+        the modal is its own overlay layer and doesn't interact with
+        the options menu state."""
+        self._help_modal_open = True
+
+    def close_help_modal(self) -> None:
+        self._help_modal_open = False
+
+    def _open_help_from_menu(self) -> None:
+        """Options-menu row handler: close the menu, open the legend."""
+        self._options_open = False
+        self._help_modal_open = True
+
     def _options_items(self) -> list[tuple[str, str, Callable[[], None] | None, bool]]:
         """Return the menu rows: (label, key_hint, action, enabled)."""
         return [
+            ("Help / Legend", "?",
+             self._open_help_from_menu, True),
             ("New Dungeon…", "",
              self.open_new_dungeon_modal,
              self._dungeons_dir is not None),
@@ -2323,6 +2572,161 @@ class MapView:
         self._room_info_scroll_y = 0.0
         self._room_info_max_scroll = 0.0
 
+    # -- Help / Legend modal ------------------------------------------------
+
+    # Static content for the legend overlay. Two columns of (label,
+    # body lines). Adding a section is cheap — just append a tuple.
+    _HELP_SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
+        ("Time", (
+            "1 turn = 10 minutes in-game.",
+            "Advance with Space or the \"Advance Turn\" button. Each",
+            "advance burns light, rolls a wandering-monster check,",
+            "and writes a journal entry.",
+        )),
+        ("Light sources", (
+            "Torch — 6 turns (1 hour). Bright 20 ft / dim 20 ft beyond.",
+            "Hooded lantern — 36 turns (6 h) per oil flask. Bright 30 ft.",
+            "Refill lantern — pour another oil flask in. +36 turns.",
+        )),
+        ("Supplies key (\"Stash:\" in the status bar)", (
+            "T = Torches    L = Hooded lanterns    O = Oil flasks",
+            "R = Rations    W = Water (gallons)",
+        )),
+        ("Wandering monsters", (
+            "Each turn rolls a check (1d20 or 1d6 — set per dungeon).",
+            "On a d20 the default threshold is 18+; on a d6 it's a 1.",
+            "\"Noisy Party\" raises the chance for the next few turns —",
+            "combat noise, failed stealth, sprung traps.",
+        )),
+        ("Map controls", (
+            "Click a room — reveal / cycle hovered room.",
+            "Right-click or I — open that room's notes.",
+            "Drag — pan the map.",
+            "Scroll or ⌘+ / ⌘− — zoom.    ⌘0 — fit to window.",
+        )),
+        ("Modes & windows", (
+            "A — Annotation mode (draw rooms on the map PNG).",
+            "O — Options menu (new / open / reset / quit).",
+            "E — DM Assistant Tools window (rooms, assistant, characters).",
+            "M — Player View window (screen-shareable fog-of-war map).",
+            "V — Fallback: open both in the default browser.",
+        )),
+        ("Keyboard reference", (
+            "Space        Advance turn",
+            "R            Roll wandering monster",
+            "T            Light torch",
+            "L            Light hooded lantern",
+            "Shift+L      Refill lantern",
+            "N            Toggle Noisy Party",
+            "Enter        Cycle the hovered room",
+            "I            Notes for the hovered room",
+            "?            This legend",
+            "Esc          Quit (or dismiss whatever modal is open)",
+        )),
+    )
+
+    def _draw_help_modal(self, surface: pygame.Surface) -> None:
+        """Modal overlay with the full legend. Same chrome as the
+        options panel — dim backdrop + tan parchment panel + black
+        border + a [×] close button. Esc / outside-click / [×] dismiss.
+
+        Content is laid out as section headers + body lines. If the
+        composed height exceeds the panel, we shrink the panel to fit
+        the surface and accept a tighter top/bottom margin; we do NOT
+        implement scrolling — the content is sized so the legend fits
+        a 720 px window with margin to spare."""
+        self._help_close_rect = None
+        if not self._help_modal_open:
+            return
+
+        ink = (26, 26, 26)
+        muted = (130, 110, 80)
+        header_font = pygame.font.SysFont("georgia,serif", 15, bold=True)
+        body_font = self.help_font
+        title_font = self.title_font
+
+        # Dim backdrop.
+        backdrop = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+        backdrop.fill((0, 0, 0, 130))
+        surface.blit(backdrop, (0, 0))
+
+        # Measure required height so the panel hugs the content.
+        section_gap = 12
+        line_h = body_font.get_height()
+        header_h = header_font.get_height()
+        body_h = 0
+        for header, lines in self._HELP_SECTIONS:
+            body_h += header_h + 4
+            body_h += line_h * len(lines)
+            body_h += section_gap
+        title_h = 50
+        panel_pad = 20
+        panel_w = min(620, surface.get_width() - 40)
+        panel_h = min(title_h + panel_pad + body_h + panel_pad,
+                      surface.get_height() - 40)
+        panel_x = (surface.get_width() - panel_w) // 2
+        panel_y = (surface.get_height() - panel_h) // 2
+
+        panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
+        self._help_panel_rect = panel_rect
+        panel_bg = pygame.Surface(panel_rect.size, pygame.SRCALPHA)
+        panel_bg.fill((244, 228, 193, 250))
+        surface.blit(panel_bg, panel_rect.topleft)
+        pygame.draw.rect(surface, ink, panel_rect, 3, border_radius=6)
+
+        # Title.
+        title = title_font.render("HELP / LEGEND", True, ink)
+        surface.blit(title,
+                     (panel_x + (panel_w - title.get_width()) // 2,
+                      panel_y + 14))
+
+        # [×] close button in the top-right corner of the panel.
+        close_size = 28
+        close_rect = pygame.Rect(panel_x + panel_w - close_size - 10,
+                                 panel_y + 10,
+                                 close_size, close_size)
+        pygame.draw.rect(surface, (252, 252, 250), close_rect,
+                         border_radius=4)
+        pygame.draw.rect(surface, ink, close_rect, 2, border_radius=4)
+        close_glyph = title_font.render("×", True, ink)
+        surface.blit(close_glyph,
+                     (close_rect.x + (close_size - close_glyph.get_width()) // 2,
+                      close_rect.y + (close_size - close_glyph.get_height()) // 2 - 2))
+        self._help_close_rect = close_rect
+
+        # Body sections.
+        cy = panel_y + title_h + panel_pad
+        for header, lines in self._HELP_SECTIONS:
+            h_surf = header_font.render(header, True, ink)
+            surface.blit(h_surf, (panel_x + 24, cy))
+            cy += header_h + 4
+            for line in lines:
+                # Monospace alignment for the keyboard reference reads
+                # better in the same proportional font we use elsewhere
+                # because the entries are all 4-12 chars; if a real
+                # mismatch appears the section header makes it obvious.
+                l_surf = body_font.render(line, True, muted)
+                surface.blit(l_surf, (panel_x + 36, cy))
+                cy += line_h
+            cy += section_gap
+            if cy > panel_y + panel_h - panel_pad:
+                # Sanity: don't draw past the panel even if a future
+                # edit blows the budget. Future content sections that
+                # don't fit will silently be skipped — the visible
+                # cut-off is easier to notice than a hidden overflow.
+                break
+
+    def _handle_help_modal_click(self, pos: tuple[int, int]) -> None:
+        """Close on [×] or click outside the panel. Clicks inside the
+        panel are swallowed (no action — the modal is read-only)."""
+        if (self._help_close_rect is not None
+                and self._help_close_rect.collidepoint(pos)):
+            self.close_help_modal()
+            return
+        panel = getattr(self, "_help_panel_rect", None)
+        if panel is not None and not panel.collidepoint(pos):
+            self.close_help_modal()
+
     # -- Startup warning overlay --------------------------------------------
 
     def show_startup_warnings(self, lines: list[str]) -> None:
@@ -2567,7 +2971,9 @@ def run(
                         continue
                 cmd = bool(event.mod & cmd_mask)
                 if event.key == pygame.K_ESCAPE:
-                    if view._room_info_open:
+                    if view._help_modal_open:
+                        view.close_help_modal()
+                    elif view._room_info_open:
                         view.close_room_info()
                     elif view._new_dungeon_open:
                         view.close_new_dungeon_modal()
@@ -2588,6 +2994,14 @@ def run(
                         view.toggle_annotation_mode()
                     else:
                         running = False
+                elif event.key == pygame.K_SLASH and (event.mod & pygame.KMOD_SHIFT):
+                    # `?` on a US keyboard is Shift+/. Open or toggle the
+                    # help legend regardless of any other modal — easier
+                    # to remember and reach than the menu path.
+                    if view._help_modal_open:
+                        view.close_help_modal()
+                    else:
+                        view.open_help_modal()
                 elif event.key == pygame.K_v and on_open_browser is not None:
                     on_open_browser()
                 elif event.key == pygame.K_o and not cmd and not view._annot_mode:

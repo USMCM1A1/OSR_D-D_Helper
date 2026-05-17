@@ -674,3 +674,79 @@ class TestLevelSwitch:
             assert id(view.image) != original_image_id
         finally:
             s.close()
+
+
+class TestTooltipResolver:
+    """The tooltip layer's dwell logic is `_resolve_tooltip`. Tests run
+    against the staticmethod without a pygame display — pure timing /
+    rect-hit logic, all the heavy plate-drawing is elsewhere."""
+
+    DWELL = 400
+
+    def test_no_rect_under_cursor_returns_none(self):
+        rects = [(pygame.Rect(0, 0, 10, 10), "first")]
+        text, _, _ = MapView._resolve_tooltip(
+            rects, mouse_pos=(50, 50),
+            hover_rect=None, hover_started_ms=None,
+            now_ms=1000, dwell_ms=self.DWELL,
+        )
+        assert text is None
+
+    def test_hover_before_dwell_no_tooltip(self):
+        r = pygame.Rect(0, 0, 10, 10)
+        rects = [(r, "first")]
+        # Enter the rect at t=0; dwell threshold not yet reached.
+        text, hover, started = MapView._resolve_tooltip(
+            rects, mouse_pos=(5, 5),
+            hover_rect=None, hover_started_ms=None,
+            now_ms=0, dwell_ms=self.DWELL,
+        )
+        assert text is None
+        assert hover == r
+        assert started == 0
+        # Still inside at t=200 (< 400) — still no tooltip.
+        text, hover, started = MapView._resolve_tooltip(
+            rects, mouse_pos=(5, 5),
+            hover_rect=hover, hover_started_ms=started,
+            now_ms=200, dwell_ms=self.DWELL,
+        )
+        assert text is None
+
+    def test_hover_past_dwell_returns_text(self):
+        r = pygame.Rect(0, 0, 10, 10)
+        rects = [(r, "the-tip")]
+        text, hover, started = MapView._resolve_tooltip(
+            rects, mouse_pos=(5, 5),
+            hover_rect=r, hover_started_ms=0,
+            now_ms=self.DWELL, dwell_ms=self.DWELL,
+        )
+        assert text == "the-tip"
+
+    def test_overlapping_rects_inner_wins(self):
+        # Outer registered first, inner registered second — last wins
+        # because the more specific control draws on top.
+        outer = pygame.Rect(0, 0, 100, 100)
+        inner = pygame.Rect(40, 40, 20, 20)
+        rects = [(outer, "outer"), (inner, "inner")]
+        text, hover, _ = MapView._resolve_tooltip(
+            rects, mouse_pos=(50, 50),
+            hover_rect=inner, hover_started_ms=0,
+            now_ms=self.DWELL, dwell_ms=self.DWELL,
+        )
+        assert text == "inner"
+        assert hover == inner
+
+    def test_moving_to_new_rect_restarts_dwell(self):
+        a = pygame.Rect(0, 0, 10, 10)
+        b = pygame.Rect(20, 0, 10, 10)
+        rects = [(a, "A"), (b, "B")]
+        # Was hovering A past dwell; cursor moves into B at t=600.
+        text, hover, started = MapView._resolve_tooltip(
+            rects, mouse_pos=(25, 5),
+            hover_rect=a, hover_started_ms=0,
+            now_ms=600, dwell_ms=self.DWELL,
+        )
+        # New rect — timer restarted, no tooltip yet.
+        assert text is None
+        assert hover == b
+        assert started == 600
