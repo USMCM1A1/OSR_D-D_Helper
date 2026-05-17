@@ -109,9 +109,20 @@ class TestGet:
         assert resp.status == 200
         assert body == b"ok\n"
 
-    def test_root_returns_form_with_room_ids(self, server):
+    def test_root_returns_spa_shell(self, server):
+        # GET / is now the SPA shell with tab strip + iframes.
+        # The room-editor content lives at /editor (an iframe target).
         _, host, port = server
         resp, body = _http_get(host, port, "/")
+        assert resp.status == 200
+        text = body.decode("utf-8")
+        assert 'data-tab="editor"' in text
+        assert 'data-tab="assistant"' in text
+        assert 'src="/editor"' in text
+
+    def test_editor_returns_form_with_room_ids(self, server):
+        _, host, port = server
+        resp, body = _http_get(host, port, "/editor")
         assert resp.status == 200
         text = body.decode("utf-8")
         assert "R01" in text
@@ -119,12 +130,44 @@ class TestGet:
         assert 'name="box_text"' in text
         assert 'name="notes"' in text
 
-    def test_root_when_dungeon_missing_404(self, tmp_path):
+    def test_player_route_renders_html(self, server):
+        # /player is the screen-shareable Player View. It's a tiny HTML
+        # wrapper that auto-refreshes /player.png on a 2 s interval.
+        _, host, port = server
+        resp, body = _http_get(host, port, "/player")
+        assert resp.status == 200
+        text = body.decode("utf-8")
+        assert "/player.png" in text
+        assert "Player View" in text
+
+    def test_player_png_404_when_missing(self, server, monkeypatch, tmp_path):
+        # When pygame hasn't written the PNG yet, /player.png returns
+        # 404 so the client-side refresh polls without crashing.
+        monkeypatch.setattr(editor_server, "_PLAYER_PNG_PATH",
+                            tmp_path / "nonexistent.png")
+        _, host, port = server
+        resp, _ = _http_get(host, port, "/player.png")
+        assert resp.status == 404
+
+    def test_player_png_serves_bytes_when_present(self, server, monkeypatch, tmp_path):
+        # When the PNG exists, /player.png returns its bytes with the
+        # right content-type. Use a tiny placeholder — the route doesn't
+        # inspect the contents.
+        fake = tmp_path / "player_map.png"
+        fake.write_bytes(b"\x89PNG\r\n\x1a\n" + b"fake-bytes-for-test")
+        monkeypatch.setattr(editor_server, "_PLAYER_PNG_PATH", fake)
+        _, host, port = server
+        resp, body = _http_get(host, port, "/player.png")
+        assert resp.status == 200
+        assert resp.getheader("Content-Type") == "image/png"
+        assert body == fake.read_bytes()
+
+    def test_editor_when_dungeon_missing_404(self, tmp_path):
         p = tmp_path / "nope.json"
         srv, _ = editor_server.start_editor_server(p, port=0)
         host, port = srv.server_address[:2]
         try:
-            resp, _ = _http_get(host, port, "/")
+            resp, _ = _http_get(host, port, "/editor")
             assert resp.status == 404
         finally:
             srv.shutdown()
@@ -175,7 +218,7 @@ class TestPost:
             "tags": ["empty"],
         })
         assert resp.status == 303  # Post/Redirect/Get
-        assert resp.getheader("Location") == "/?saved=R01"
+        assert resp.getheader("Location") == "/editor?saved=R01"
 
         d = dungeon_mod.load(dungeon_json)
         room = d.get_level(1).rooms_by_id["R01"]
@@ -262,7 +305,7 @@ class TestLevelEndpoint:
 
     def test_get_includes_level_card(self, server):
         _, host, port = server
-        _, body = _http_get(host, port, "/")
+        _, body = _http_get(host, port, "/editor")
         text = body.decode("utf-8")
         assert "level-card" in text
         assert 'name="challenge_rating"' in text
@@ -284,7 +327,7 @@ class TestLevelEndpoint:
             "wm_encounter": ["Skeleton", "Giant Rat"],
         })
         assert resp.status == 303
-        assert resp.getheader("Location") == "/?saved=L1"
+        assert resp.getheader("Location") == "/editor?saved=L1"
         d = dungeon_mod.load(dungeon_json)
         lv = d.get_level(1)
         assert lv.display_name == "The Entry Vaults"

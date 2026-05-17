@@ -37,8 +37,6 @@ from session import (
 PROJECT_ROOT = Path(__file__).parent
 DEFAULT_DUNGEONS_DIR = PROJECT_ROOT / "dungeons"
 RENDER_DIR = PROJECT_ROOT / "render_output"
-DM_HTML = RENDER_DIR / "dm.html"
-PLAYER_HTML = RENDER_DIR / "player.html"
 DEFAULT_EDITOR_PORT = 8765
 
 # Suppress repeat-opens of the same URL within this many seconds. See
@@ -353,18 +351,23 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print("Play mode: editor server disabled, browser tabs skipped.")
 
-        def open_all(_url=editor_url) -> None:
+        # The DM map lives in the pygame window itself; the editor +
+        # assistant + characters live behind the SPA shell at the
+        # editor URL; the player view is its own route at /player.
+        player_url = (editor_url.rstrip("/") + "/player") if editor_url else None
+
+        def open_all(_url=editor_url, _player=player_url) -> None:
             if args.play:
                 return
-            opener.open(DM_HTML.resolve().as_uri(), label="DM map")
-            opener.open(PLAYER_HTML.resolve().as_uri(), label="Player map")
             if _url is not None:
                 opener.open(_url, label="editor")
+            if _player is not None:
+                opener.open(_player, label="Player view")
 
-        def open_player_tab() -> None:
-            if args.play:
+        def open_player_tab(_player=player_url) -> None:
+            if args.play or _player is None:
                 return
-            opener.open(PLAYER_HTML.resolve().as_uri(), label="Player map")
+            opener.open(_player, label="Player view")
 
         def open_editor_tab(_url=editor_url) -> None:
             if args.play or _url is None:

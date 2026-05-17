@@ -50,6 +50,62 @@ from dungeon_assistant import AssistantSession, AssistantUnavailable
 
 DEFAULT_PORT = 8765
 
+# Path to the player-view PNG written by renderer.py. The /player
+# route renders an HTML wrapper around this image; /player.png streams
+# its bytes. The PNG is regenerated whenever fog state changes.
+_PLAYER_PNG_PATH = Path(__file__).resolve().parent / "render_output" / "player_map.png"
+
+# Player-view HTML. Black background fills the projector / TV when
+# the map's aspect ratio doesn't match the screen. The img tag busts
+# its own cache every 2 s so newly revealed rooms appear without the
+# DM having to refresh anything.
+_PLAYER_HTML = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OSR Dungeon — Player Map</title>
+<style>
+  html, body { margin: 0; height: 100vh; background: #1a1a1a; overflow: hidden; }
+  #map { width: 100vw; height: 100vh; object-fit: contain; display: block; }
+  #status {
+    position: fixed; bottom: 8px; right: 12px;
+    font: 12px Georgia, 'Times New Roman', serif; color: #f4e4c1;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 4px 8px; border-radius: 3px;
+    pointer-events: none;
+  }
+  #empty {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #826e50; font: 14px Georgia, serif;
+  }
+</style>
+</head>
+<body>
+<img id="map" alt="Player map">
+<div id="status">Player View · live</div>
+<div id="empty" hidden>Waiting for the DM to reveal the first room…</div>
+<script>
+  var img = document.getElementById('map');
+  var empty = document.getElementById('empty');
+  function refresh() {
+    var probe = new Image();
+    probe.onload = function () {
+      img.src = probe.src;
+      empty.hidden = true;
+    };
+    probe.onerror = function () {
+      empty.hidden = false;
+      img.removeAttribute('src');
+    };
+    probe.src = '/player.png?t=' + Date.now();
+  }
+  refresh();
+  setInterval(refresh, 2000);
+</script>
+</body>
+</html>"""
+
 # Tags shown as checkboxes; order matches CLAUDE.md.
 TAG_OPTIONS = list(config.ROOM_TAGS)
 
@@ -66,6 +122,213 @@ def _get_or_none_assistant(path: Path) -> AssistantSession | None:
 
 
 # --- HTML rendering ----------------------------------------------------------
+
+
+# Outer single-page-app shell. GET / returns this; the three real
+# pages (room editor, assistant, characters) live inside iframes so
+# their existing CSS/JS keeps working unchanged. The simulator is a
+# fourth on-demand iframe loaded when the user clicks a room's
+# "Simulate" button — it's not a persistent tab in the strip.
+#
+# Why iframes instead of in-page panel swaps:
+#   - Each page has its own substantial CSS + JS already; isolating
+#     them avoids selector and script-namespace clashes.
+#   - All three persistent iframes stay loaded when the user tabs
+#     away, so the existing BroadcastChannel-driven editor refresh
+#     after an assistant Apply keeps working without surgery.
+#   - Wrapping the whole thing in a pywebview window later doesn't
+#     require any in-frame changes.
+SHELL_CSS = """
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; background: #f4e4c1; }
+body { font: 14px/1.4 Georgia, 'Times New Roman', serif; color: #1a1a1a; }
+
+.tab-strip {
+  display: flex;
+  background: #1a1a1a;
+  padding: 0;
+  position: sticky; top: 0; z-index: 10;
+  border-bottom: 2px solid #1a1a1a;
+}
+.tab-strip a {
+  color: #d6caa8;
+  text-decoration: none;
+  padding: 0.65em 1.4em;
+  font: 13px/1 Georgia, 'Times New Roman', serif;
+  letter-spacing: 0.04em;
+  border-right: 1px solid #3a2f25;
+  cursor: pointer;
+  user-select: none;
+}
+.tab-strip a:hover:not(.active) { background: #3a2f25; color: #f4e4c1; }
+.tab-strip a.active {
+  background: #f4e4c1;
+  color: #1a1a1a;
+  font-weight: bold;
+}
+.tab-strip a.close-tab {
+  margin-left: 0.6em;
+  padding: 0.65em 0.8em;
+  color: #d6caa8;
+  font-weight: bold;
+}
+.tab-strip a.close-tab:hover { color: #a8201a; background: #3a2f25; }
+.tab-strip .dungeon-label {
+  margin-left: auto;
+  padding: 0.65em 1.2em;
+  color: #826e50;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.frame-wrap {
+  position: relative;
+  height: calc(100vh - 36px);
+  overflow: hidden;
+}
+.frame-wrap iframe {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  border: 0;
+  display: none;
+  background: #f4e4c1;
+}
+.frame-wrap iframe.active { display: block; }
+"""
+
+
+# Bridge JS injected into every in-frame page so:
+#   - clicks on internal anchors (/, /editor, /assistant, /characters,
+#     /simulate?…) switch the parent shell's active tab instead of
+#     navigating the iframe out of the shell, and
+#   - the page's own Simulate buttons can ask the parent to open the
+#     simulator tab via window.parent.postMessage.
+# If the page is loaded outside the shell (window.parent === window),
+# the bridge is a no-op and links behave normally.
+FRAME_BRIDGE_JS = r"""
+(function () {
+  if (window.parent === window) return;  // not embedded in shell
+  function isInternal(href) {
+    if (!href) return false;
+    return (href === '/' || href === '/editor'
+            || href.startsWith('/editor?')
+            || href === '/assistant'
+            || href.startsWith('/assistant?')
+            || href === '/characters'
+            || href.startsWith('/characters?')
+            || href.startsWith('/simulate?'));
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!isInternal(href)) return;
+    e.preventDefault();
+    var target = (href === '/') ? '/editor' : href;
+    window.parent.postMessage({type: 'nav', target: target}, '*');
+  });
+})();
+"""
+
+
+# Server-rendered shell. The iframes for Editor / Assistant / Characters
+# start loaded so cross-tab broadcasts (e.g. assistant→editor refresh)
+# work without any cold-start latency on first tab click.
+def _render_app_shell(dungeon_name: str) -> str:
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OSR Dungeon — {_esc(dungeon_name)}</title>
+<style>{SHELL_CSS}</style>
+</head>
+<body>
+<nav class="tab-strip">
+  <a id="tab-editor" data-tab="editor" class="active">Editor</a>
+  <a id="tab-assistant" data-tab="assistant">Assistant</a>
+  <a id="tab-characters" data-tab="characters">Characters</a>
+  <a id="tab-simulate" data-tab="simulate" hidden>Simulator</a>
+  <a id="tab-simulate-close" class="close-tab" hidden title="Close simulator">×</a>
+  <span class="dungeon-label">{_esc(dungeon_name)}</span>
+</nav>
+<div class="frame-wrap">
+  <iframe id="frame-editor" data-tab="editor" class="active" src="/editor"></iframe>
+  <iframe id="frame-assistant" data-tab="assistant" src="/assistant"></iframe>
+  <iframe id="frame-characters" data-tab="characters" src="/characters"></iframe>
+  <iframe id="frame-simulate" data-tab="simulate" src="about:blank"></iframe>
+</div>
+<script>
+(function () {{
+  var tabEls = document.querySelectorAll('.tab-strip a[data-tab]');
+  var frameEls = document.querySelectorAll('.frame-wrap iframe');
+  var simTab = document.getElementById('tab-simulate');
+  var simClose = document.getElementById('tab-simulate-close');
+  var simFrame = document.getElementById('frame-simulate');
+
+  function show(name) {{
+    tabEls.forEach(function (t) {{
+      t.classList.toggle('active', t.dataset.tab === name);
+    }});
+    frameEls.forEach(function (f) {{
+      f.classList.toggle('active', f.dataset.tab === name);
+    }});
+    var hash = (name === 'editor') ? '' : '#tab=' + name;
+    if (location.hash !== hash) {{
+      history.replaceState(null, '', location.pathname + hash);
+    }}
+  }}
+
+  function openSimulator(url) {{
+    simFrame.src = url;
+    simTab.hidden = false;
+    simClose.hidden = false;
+    show('simulate');
+  }}
+
+  function closeSimulator() {{
+    simFrame.src = 'about:blank';
+    simTab.hidden = true;
+    simClose.hidden = true;
+    show('editor');
+  }}
+
+  tabEls.forEach(function (t) {{
+    t.addEventListener('click', function (e) {{
+      e.preventDefault();
+      show(t.dataset.tab);
+    }});
+  }});
+  simClose.addEventListener('click', function (e) {{
+    e.preventDefault();
+    closeSimulator();
+  }});
+
+  // Honor #tab=<name> on first load (the simulator tab is excluded —
+  // it needs a target URL from a child message, not just a name).
+  var m = /^#tab=([a-z]+)/.exec(location.hash);
+  if (m && m[1] !== 'simulate') show(m[1]);
+
+  // Child-frame → shell bridge. Children postMessage({{type:'nav',target}}).
+  window.addEventListener('message', function (ev) {{
+    var d = ev.data || {{}};
+    if (d.type !== 'nav' || !d.target) return;
+    var t = d.target;
+    if (t.startsWith('/simulate?')) {{
+      openSimulator(t);
+      return;
+    }}
+    var name =
+      (t === '/editor' || t.startsWith('/editor?')) ? 'editor'
+      : (t === '/assistant' || t.startsWith('/assistant?')) ? 'assistant'
+      : (t === '/characters' || t.startsWith('/characters?')) ? 'characters'
+      : null;
+    if (name) show(name);
+  }});
+}})();
+</script>
+</body>
+</html>
+"""
 
 
 PAGE_CSS = """
@@ -553,6 +816,7 @@ def _render_characters_page_body(*, dungeon_path: Path,
   }});
 }})();
 </script>
+<script>{FRAME_BRIDGE_JS}</script>
 </body>
 </html>
 """
@@ -783,6 +1047,7 @@ no positioning grid, no opportunity attacks, no concentration, no
 condition effects (paralysis riders are noted in the trace but not
 applied). At 0&nbsp;HP a PC is "down" and out of the fight.
 </p>
+<script>{FRAME_BRIDGE_JS}</script>
 </body>
 </html>
 """
@@ -828,6 +1093,7 @@ def _render_simulate_setup(*, title: str, level_number: int, room_id: str,
   <p>{problem}</p>
   <p>{fix}</p>
 </div>
+<script>{FRAME_BRIDGE_JS}</script>
 </body>
 </html>
 """
@@ -972,9 +1238,10 @@ function enrichRoom(btn) {
   });
 }
 
-// Simulate button — opens the encounter simulation results in a new tab.
-// We use a plain GET so the new window can be the response page directly,
-// which makes it easy to bookmark / refresh / share.
+// Simulate button — open the encounter simulation in the shell's
+// on-demand "Simulator" tab. When loaded inside the SPA shell we
+// postMessage the URL to the parent; when loaded standalone we fall
+// back to opening a new browser tab.
 function simulateRoom(btn) {
   if (btn.disabled) return;
   var card = btn.closest('.room');
@@ -985,7 +1252,11 @@ function simulateRoom(btn) {
   if (!levelInput || !roomInput) return;
   var url = '/simulate?level_number=' + encodeURIComponent(levelInput.value) +
             '&room_id=' + encodeURIComponent(roomInput.value);
-  window.open(url, '_blank');
+  if (window.parent !== window) {
+    window.parent.postMessage({type: 'nav', target: url}, '*');
+  } else {
+    window.open(url, '_blank');
+  }
 }
 
 // Listen on the cross-tab BroadcastChannel so when the /assistant tab
@@ -1149,6 +1420,7 @@ def _render_page(d, *, saved_room_id: str | None = None,
 {saved_banner}
 {body}
 <script>{PAGE_JS}</script>
+<script>{FRAME_BRIDGE_JS}</script>
 </body>
 </html>
 """
@@ -1915,6 +2187,7 @@ $('reset-btn').addEventListener('click', async () => {{
   $('user-input').disabled = true;
 }});
 </script>
+<script>{FRAME_BRIDGE_JS}</script>
 </body>
 </html>"""
 
@@ -1962,6 +2235,7 @@ claude --version</pre>
     console account. The rest of the app stays fully offline.
   </p>
 </div>
+<script>{FRAME_BRIDGE_JS}</script>
 </body>
 </html>"""
 
@@ -1990,7 +2264,25 @@ class EditorHandler(BaseHTTPRequestHandler):
         if self.path == "/healthz":
             self._respond(HTTPStatus.OK, b"ok\n", "text/plain; charset=utf-8")
             return
-        if self.path.startswith("/?saved="):
+        # Player view: a separate window the DM screen-shares / projects.
+        # /player is the HTML wrapper that auto-refreshes /player.png.
+        if self.path == "/player":
+            self._respond(HTTPStatus.OK,
+                          _PLAYER_HTML.encode("utf-8"),
+                          "text/html; charset=utf-8")
+            return
+        if self.path == "/player.png" or self.path.startswith("/player.png?"):
+            self._serve_player_png()
+            return
+        # GET / returns the SPA shell; each tab is an iframe pointing at
+        # the underlying route. The room editor itself lives at /editor.
+        if self.path == "/":
+            self._render_shell()
+            return
+        if self.path == "/editor":
+            self._render()
+            return
+        if self.path.startswith("/editor?saved="):
             saved_id = self.path.split("=", 1)[1]
             # Level saves use the form `?saved=L<number>`; rooms use the
             # plain id. We dispatch on the leading 'L' so we can show the
@@ -2002,9 +2294,6 @@ class EditorHandler(BaseHTTPRequestHandler):
                 except ValueError:
                     pass
             self._render(saved_room_id=saved_id)
-            return
-        if self.path == "/":
-            self._render()
             return
         # GET /room?level_number=N&room_id=R01 → fresh card fragment.
         # Used by the / editor tab when it gets a BroadcastChannel
@@ -2122,7 +2411,7 @@ class EditorHandler(BaseHTTPRequestHandler):
             else:
                 self._respond(HTTPStatus.SEE_OTHER, b"",
                               content_type="text/plain",
-                              extra_headers={"Location": f"/?saved={room_id}"})
+                              extra_headers={"Location": f"/editor?saved={room_id}"})
             return
 
         if self.path == "/level":
@@ -2137,7 +2426,7 @@ class EditorHandler(BaseHTTPRequestHandler):
             else:
                 self._respond(HTTPStatus.SEE_OTHER, b"",
                               content_type="text/plain",
-                              extra_headers={"Location": f"/?saved=L{level_number}"})
+                              extra_headers={"Location": f"/editor?saved=L{level_number}"})
             return
 
         if self.path == "/enrich":
@@ -2449,6 +2738,39 @@ class EditorHandler(BaseHTTPRequestHandler):
         self._respond(HTTPStatus.OK, body, "text/html; charset=utf-8")
 
     # -- Internals ---------------------------------------------------------
+
+    def _serve_player_png(self) -> None:
+        """Stream the player-view PNG bytes. Returns 404 with a tiny
+        placeholder when pygame hasn't written the file yet (cold
+        start), so the client-side auto-refresh keeps polling without
+        a console error."""
+        try:
+            data = _PLAYER_PNG_PATH.read_bytes()
+        except FileNotFoundError:
+            self.send_error(HTTPStatus.NOT_FOUND, "Player map not generated yet")
+            return
+        self._respond(
+            HTTPStatus.OK, data, "image/png",
+            # No-cache so the client's cache-busting query string isn't
+            # the only thing keeping refreshes fresh; some intermediaries
+            # ignore querystrings in their cache key.
+            extra_headers={"Cache-Control": "no-store, max-age=0"},
+        )
+
+    def _render_shell(self) -> None:
+        """GET / — the SPA shell with tab strip and per-tab iframes.
+        Each iframe loads its underlying route (/editor, /assistant,
+        /characters) so the existing page code keeps working unchanged."""
+        try:
+            d = dungeon_mod.load(self.dungeon_path)
+            dungeon_name = d.name
+        except (FileNotFoundError, dungeon_mod.DungeonValidationError):
+            # The shell itself doesn't need a valid dungeon — the inner
+            # iframes will surface their own errors. Fall back to the
+            # folder name so the title bar still has something useful.
+            dungeon_name = self.dungeon_path.parent.name
+        body = _render_app_shell(dungeon_name).encode("utf-8")
+        self._respond(HTTPStatus.OK, body, "text/html; charset=utf-8")
 
     def _render(self, *, saved_room_id: str | None = None,
                 saved_level_number: int | None = None) -> None:
