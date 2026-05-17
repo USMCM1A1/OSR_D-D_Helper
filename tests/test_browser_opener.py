@@ -58,12 +58,14 @@ def test_uses_subprocess_when_pywebview_available(monkeypatch):
         return p
     monkeypatch.setattr(subprocess, "Popen", fake_popen)
     opener = _FakeOpener(pywebview_ok=True)
-    opener.open("http://127.0.0.1:8765/player", label="Player View",
+    opener.open("http://127.0.0.1:8765/player",
+                label="OSR Dungeon — Player View",
                 width=1280, height=720)
     assert len(calls) == 1
     cmd, kw = calls[0]
     # Verify the command line points at the per-window script with
-    # the right URL/title/dimensions.
+    # the right URL/title/dimensions. The label is passed straight
+    # through as --title — the caller owns the full string.
     assert cmd[0] == sys.executable
     assert cmd[1].endswith("osr_webview_window.py")
     assert "--url" in cmd and "http://127.0.0.1:8765/player" in cmd

@@ -230,7 +230,9 @@ class BrowserOpener:
                 [
                     sys.executable, str(_WEBVIEW_SCRIPT),
                     "--url", url,
-                    "--title", f"OSR Dungeon — {label}",
+                    # Caller supplies the full title string. HTML pages
+                    # may override via their own <title> tag once loaded.
+                    "--title", label,
                     "--width", str(width),
                     "--height", str(height),
                 ],
@@ -454,25 +456,33 @@ def main(argv: list[str] | None = None) -> int:
         # editor URL; the player view is its own route at /player.
         player_url = (editor_url.rstrip("/") + "/player") if editor_url else None
 
+        # Window titles match how the user thinks about each surface:
+        # the pygame window is the "Dungeon Master View" (live map +
+        # fog + turn tracker), the SPA is "DM Assistant Tools" (rooms,
+        # LLM assistant, characters, simulator), and the third is the
+        # screen-shareable Player View.
+        editor_title = "OSR - DM Assistant Tools"
+        player_title = "OSR Dungeon — Player View"
+
         def open_all(_url=editor_url, _player=player_url) -> None:
             if args.play:
                 return
             if _url is not None:
-                opener.open(_url, label="Editor", width=1200, height=850)
+                opener.open(_url, label=editor_title, width=1200, height=850)
             if _player is not None:
-                opener.open(_player, label="Player View",
+                opener.open(_player, label=player_title,
                             width=1280, height=720)
 
         def open_player_tab(_player=player_url) -> None:
             if args.play or _player is None:
                 return
-            opener.open(_player, label="Player View",
+            opener.open(_player, label=player_title,
                         width=1280, height=720)
 
         def open_editor_tab(_url=editor_url) -> None:
             if args.play or _url is None:
                 return
-            opener.open(_url, label="Editor", width=1200, height=850)
+            opener.open(_url, label=editor_title, width=1200, height=850)
 
         if not args.no_open and not args.play:
             open_all()

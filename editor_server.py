@@ -239,7 +239,7 @@ def _render_app_shell(dungeon_name: str) -> str:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>OSR Dungeon — {_esc(dungeon_name)}</title>
+<title>OSR - DM Assistant Tools</title>
 <style>{SHELL_CSS}</style>
 </head>
 <body>

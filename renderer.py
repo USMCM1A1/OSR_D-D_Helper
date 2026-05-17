@@ -2501,7 +2501,7 @@ def run(
     pygame.init()
     pygame.font.init()
     surface = pygame.display.set_mode(window_size, pygame.RESIZABLE)
-    pygame.display.set_caption(f"OSR Dungeon — Editor — {session.dungeon.name}")
+    pygame.display.set_caption("OSR Dungeon Master View")
     clock = pygame.time.Clock()
 
     def _on_change() -> None:
