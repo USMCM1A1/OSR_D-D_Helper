@@ -11,6 +11,15 @@ dependencies = [
     "pypdf>=4.0",
 ]
 
+[project.optional-dependencies]
+# Native desktop windows for the editor + player views (no browser
+# chrome). On macOS pywebview uses system WebKit, no Chromium bundle.
+# Without this extra installed the app falls back to webbrowser.open
+# and the editor + player views show up as regular browser tabs.
+#
+#     pip install -e ".[desktop]"
+desktop = ["pywebview>=5.0"]
+
 # The dungeon assistant + character ingester subprocess the local
 # `claude` CLI (Claude Code) and ride on its existing subscription auth
 # — no separate API key required. Install Claude Code from

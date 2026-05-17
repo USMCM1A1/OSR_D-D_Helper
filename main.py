@@ -153,15 +153,42 @@ def _ensure_editor_port_free(port: int, host: str = "127.0.0.1") -> bool:
     return False
 
 
+_WEBVIEW_SCRIPT = PROJECT_ROOT / "osr_webview_window.py"
+
+
 class BrowserOpener:
-    """webbrowser.open with per-URL rate limiting and stderr tracing."""
+    """Opens editor / player windows with per-URL rate limiting and
+    stderr tracing.
+
+    Prefers pywebview (a native desktop window with no URL bar — feels
+    like an app) and falls back to webbrowser.open (a regular browser
+    tab) when pywebview is not installed. Pywebview windows are spawned
+    as subprocesses so each one owns its own main thread without
+    fighting pygame for it on macOS.
+    """
 
     def __init__(self, *, min_interval_seconds: float = MIN_TAB_REOPEN_SECONDS):
         self._monotonic = time.monotonic
         self._min_interval = min_interval_seconds
         self._last_open_times: dict[str, float] = {}
+        self._pywebview_ok = self._probe_pywebview()
+        if not self._pywebview_ok:
+            print(
+                "[browser] pywebview not installed — opening browser tabs "
+                "instead. Run `pip install pywebview` for native windows.",
+                file=sys.stderr,
+            )
 
-    def open(self, url: str, *, label: str = "tab") -> None:
+    @staticmethod
+    def _probe_pywebview() -> bool:
+        try:
+            import webview  # noqa: F401
+        except ImportError:
+            return False
+        return _WEBVIEW_SCRIPT.exists()
+
+    def open(self, url: str, *, label: str = "tab",
+             width: int = 1100, height: int = 800) -> None:
         now = self._monotonic()
         last = self._last_open_times.get(url)
         if last is not None and now - last < self._min_interval:
@@ -171,8 +198,36 @@ class BrowserOpener:
                   file=sys.stderr)
             return
         self._last_open_times[url] = now
-        print(f"[browser] opening {label}: {url}", file=sys.stderr)
-        webbrowser.open(url, new=2)
+        if self._pywebview_ok:
+            self._open_pywebview(url, label, width, height)
+        else:
+            print(f"[browser] opening {label}: {url}", file=sys.stderr)
+            webbrowser.open(url, new=2)
+
+    def _open_pywebview(self, url: str, label: str,
+                        width: int, height: int) -> None:
+        import subprocess
+        print(f"[webview] opening {label}: {url}", file=sys.stderr)
+        try:
+            subprocess.Popen(
+                [
+                    sys.executable, str(_WEBVIEW_SCRIPT),
+                    "--url", url,
+                    "--title", f"OSR Dungeon — {label}",
+                    "--width", str(width),
+                    "--height", str(height),
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                # Detach so closing the window — or pygame exiting —
+                # doesn't drag the webview process with it. The user
+                # is free to close either independently.
+                start_new_session=True,
+            )
+        except OSError as e:
+            print(f"[webview] launch failed ({e}); falling back to browser",
+                  file=sys.stderr)
+            webbrowser.open(url, new=2)
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -360,19 +415,21 @@ def main(argv: list[str] | None = None) -> int:
             if args.play:
                 return
             if _url is not None:
-                opener.open(_url, label="editor")
+                opener.open(_url, label="Editor", width=1200, height=850)
             if _player is not None:
-                opener.open(_player, label="Player view")
+                opener.open(_player, label="Player View",
+                            width=1280, height=720)
 
         def open_player_tab(_player=player_url) -> None:
             if args.play or _player is None:
                 return
-            opener.open(_player, label="Player view")
+            opener.open(_player, label="Player View",
+                        width=1280, height=720)
 
         def open_editor_tab(_url=editor_url) -> None:
             if args.play or _url is None:
                 return
-            opener.open(_url, label="editor")
+            opener.open(_url, label="Editor", width=1200, height=850)
 
         if not args.no_open and not args.play:
             open_all()

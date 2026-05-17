@@ -409,6 +409,12 @@ This replaces the prior "war room / dark background / amber + sans-serif" direct
   clicks Start session. Without Claude Code installed, the assistant
   page renders a setup-instructions card and the rest of the app
   behaves identically.
+- **Optional**: `pip install -e ".[desktop]"` pulls in `pywebview`
+  so the editor and Player view open as native desktop windows
+  (system WebKit on macOS, no Chromium bundle) instead of browser
+  tabs. Each window runs in its own subprocess to avoid the macOS
+  main-thread conflict with pygame. Without pywebview installed the
+  app falls back to `webbrowser.open` and everything still works.
 - Target OS: macOS (cross-platform compatible)
 
 ---
