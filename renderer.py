@@ -338,7 +338,11 @@ class MapView:
         self._annot_drag_start_world: tuple[float, float] | None = None
         self._annot_drag_current_world: tuple[float, float] | None = None
         self._annot_polygon_points: list[tuple[float, float]] = []
-        self._annot_selected_room_id: str | None = None
+        # The room currently under the cursor in annotation mode.
+        # MOUSEMOTION updates this; rendering highlights it red so the
+        # DM can see what they're about to delete; Delete/Backspace
+        # acts on it. Replaces the older click-to-select model.
+        self._annot_hovered_room_id: str | None = None
         # Undo stack — tuples of (action_kind, level_number, room_snapshot,
         # original_index). action_kind ∈ {"add", "delete"}. We snapshot the
         # full Room (so undoing a delete restores name/state/tags/region).
@@ -374,6 +378,22 @@ class MapView:
         self._progress_confirm_open: bool = False
         self._progress_confirm_rects: list[tuple[pygame.Rect,
                                                  Callable[[], None]]] = []
+        # New-Dungeon modal: collects a free-text name + party level,
+        # scaffolds dungeons/<slug>/dungeon.json, and reload-switches
+        # the running app to the new folder via ReloadRequest. The
+        # text field is the focused element while the modal is open;
+        # all KEYDOWN events are routed to it (the run loop checks
+        # _new_dungeon_open before any other key bindings).
+        self._new_dungeon_open: bool = False
+        self._new_dungeon_name: str = ""
+        self._new_dungeon_party_level: int = 3
+        # Which field has keyboard focus: 'name' | 'party_level'
+        self._new_dungeon_focus: str = "name"
+        self._new_dungeon_error: str = ""
+        self._new_dungeon_rects: list[tuple[pygame.Rect,
+                                            Callable[[], None]]] = []
+        # Per-field click rects so Tab/click switches focus.
+        self._new_dungeon_field_rects: dict[str, pygame.Rect] = {}
         # Set when the user asks to switch dungeons or full-reset. The run()
         # loop exits cleanly when this is non-None and returns it to main.py.
         self._pending_reload: ReloadRequest | None = None
@@ -685,7 +705,7 @@ class MapView:
         for r in self.level.rooms:
             if r.image_region is None:
                 continue
-            color = (210, 60, 60) if r.id == self._annot_selected_room_id else (60, 130, 220)
+            color = (210, 60, 60) if r.id == self._annot_hovered_room_id else (60, 130, 220)
             self._draw_region_outline(surface, r.image_region, color, width=3)
             # Label in image-space at centroid.
             cx, cy = r.image_region.centroid()
@@ -771,8 +791,9 @@ class MapView:
         surface.blit(text, (6 + pad, 6 + pad))
 
         if self._annot_mode:
-            msg = ("A: exit · drag: rect · P: polygon · click+Del: remove · "
-                   "Enter: close poly · ⌥-drag: pan · ⌘Z: undo · ⌘+/⌘-: zoom · ⌘0: fit · Esc: cancel/exit")
+            msg = ("A: exit · drag: rect · space-drag: pan · "
+                   "P: polygon · hover+Del: remove room · Enter: close poly · "
+                   "⌘Z: undo · ⌘+/⌘-: zoom · ⌘0: fit · Esc: cancel/exit")
         else:
             msg = ("O: options · click or Enter: cycle hovered · "
                    "right-click or I: notes · drag: pan · "
@@ -906,19 +927,25 @@ class MapView:
         self._annot_drag_start_world = None
         self._annot_drag_current_world = None
         self._annot_polygon_points = []
-        self._annot_selected_room_id = None
+        self._annot_hovered_room_id = None
 
     def _handle_annotation_event(self, event: pygame.event.Event) -> None:
-        # Pan + zoom still work in annotation mode. Middle-drag pans on a
-        # 3-button mouse; option/alt + left-drag pans on Macs without one
-        # (left-drag alone is reserved for sketching room rectangles).
+        # Pan + zoom still work in annotation mode. Three pan gestures
+        # are accepted, in order of convention:
+        #   - Space + left-drag  (the universal graphics-tool gesture —
+        #     Photoshop/Figma/Illustrator all use this; most discoverable)
+        #   - Option/Alt + left-drag (kept for muscle memory)
+        #   - Middle-mouse-button drag (3-button mouse only)
+        # Plain left-drag stays reserved for drawing room rectangles.
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 2:
                 self._panning = True
                 self._pan_anchor = event.pos
                 return
             if event.button == 1:
-                if pygame.key.get_mods() & pygame.KMOD_ALT:
+                mods = pygame.key.get_mods()
+                space_held = pygame.key.get_pressed()[pygame.K_SPACE]
+                if space_held or (mods & pygame.KMOD_ALT):
                     self._panning = True
                     self._pan_anchor = event.pos
                     return
@@ -941,6 +968,11 @@ class MapView:
                 self._pan_anchor = event.pos
             elif self._annot_drag_start_world is not None:
                 self._annot_drag_current_world = self.camera.screen_to_world(*event.pos)
+            else:
+                # Idle motion: update hovered room so it highlights red
+                # and Delete/Backspace can act on it.
+                room = self._room_at_screen(event.pos)
+                self._annot_hovered_room_id = room.id if room is not None else None
         elif event.type == pygame.MOUSEWHEEL:
             mx, my = pygame.mouse.get_pos()
             factor = ZOOM_STEP if event.y > 0 else 1 / ZOOM_STEP
@@ -948,12 +980,16 @@ class MapView:
 
     def _annot_mouse_down(self, pos: tuple[int, int]) -> None:
         if self._annot_tool == "rect":
-            # Click on an existing region selects it (Delete then removes it).
+            # Click on an existing region: no-op. The hover state
+            # already highlights it (red), and Delete/Backspace will
+            # remove the hovered room. We deliberately don't start a
+            # new rectangle on top of an existing one — overlapping
+            # rooms are confusing in fog rendering and almost always
+            # accidental.
             room = self._room_at_screen(pos)
             if room is not None:
-                self._annot_selected_room_id = room.id
                 return
-            self._annot_selected_room_id = None
+            # Empty space: start a new rectangle drag.
             self._annot_drag_start_world = self.camera.screen_to_world(*pos)
             self._annot_drag_current_world = self._annot_drag_start_world
 
@@ -1039,8 +1075,11 @@ class MapView:
                 )
         return new_room
 
-    def _delete_selected_room(self) -> None:
-        rid = self._annot_selected_room_id
+    def _delete_hovered_room(self) -> None:
+        """Remove the room currently under the cursor in annotation
+        mode. No-op if nothing is hovered. Wired to Delete/Backspace
+        in the run loop's annotation-mode key handler."""
+        rid = self._annot_hovered_room_id
         if rid is None:
             return
         # Snapshot for undo before mutating.
@@ -1050,7 +1089,7 @@ class MapView:
         snapshot = self.level.rooms[idx]
         self._remove_room(rid)
         self._push_undo("delete", self.level.level_number, snapshot, idx)
-        self._annot_selected_room_id = None
+        self._annot_hovered_room_id = None
         self._after_annotation_change()
 
     def _remove_room(self, rid: str) -> None:
@@ -1247,6 +1286,9 @@ class MapView:
     def _options_items(self) -> list[tuple[str, str, Callable[[], None] | None, bool]]:
         """Return the menu rows: (label, key_hint, action, enabled)."""
         return [
+            ("New Dungeon…", "",
+             self.open_new_dungeon_modal,
+             self._dungeons_dir is not None),
             ("Open Different Dungeon…", "",
              self.open_dungeon_picker,
              self._dungeons_dir is not None),
@@ -1284,6 +1326,125 @@ class MapView:
 
     def close_reset_confirm(self) -> None:
         self._reset_confirm_open = False
+
+    # -- New Dungeon modal -----------------------------------------------
+
+    def open_new_dungeon_modal(self) -> None:
+        """Open the New Dungeon modal. Caller is the menu row handler;
+        the options menu must already be open."""
+        if self._dungeons_dir is None:
+            return
+        self._new_dungeon_open = True
+        self._new_dungeon_name = ""
+        self._new_dungeon_party_level = 3
+        self._new_dungeon_focus = "name"
+        self._new_dungeon_error = ""
+        self._options_open = True
+
+    def close_new_dungeon_modal(self) -> None:
+        self._new_dungeon_open = False
+        self._new_dungeon_error = ""
+
+    def _do_create_new_dungeon(self) -> None:
+        """Validate the form, scaffold the dungeon, and queue a
+        ReloadRequest so main.py swaps the running app onto it."""
+        if self._dungeons_dir is None:
+            return
+        from session import Session  # local import — avoid circular
+        name = self._new_dungeon_name.strip()
+        if not name:
+            self._new_dungeon_error = "Enter a name for the dungeon."
+            return
+        slug = Session.slugify_dungeon_name(name)
+        target = (self._dungeons_dir / slug).resolve()
+        if target.exists():
+            self._new_dungeon_error = (
+                f"A dungeon already exists at dungeons/{slug}/. "
+                f"Pick a different name."
+            )
+            return
+        try:
+            Session.scaffold_dungeon(
+                target, name=name,
+                party_level=self._new_dungeon_party_level,
+            )
+        except (ValueError, FileExistsError, OSError) as e:
+            self._new_dungeon_error = f"Couldn't create dungeon: {e}"
+            return
+        # Success — close all modals and reload into the new folder.
+        # session.save() flushes the current dungeon's state before the
+        # run loop returns; main.py then opens the new folder.
+        self.session.save()
+        self._new_dungeon_open = False
+        self._options_open = False
+        self._pending_reload = ReloadRequest(folder=target,
+                                             do_full_reset=False)
+
+    def _handle_new_dungeon_keydown(self, event: pygame.event.Event) -> bool:
+        """Route a keydown to the focused field. Returns True if the
+        event was consumed (so the run loop doesn't also process it)."""
+        if not self._new_dungeon_open:
+            return False
+        if event.key == pygame.K_ESCAPE:
+            self.close_new_dungeon_modal()
+            return True
+        if event.key == pygame.K_TAB:
+            self._new_dungeon_focus = (
+                "party_level" if self._new_dungeon_focus == "name" else "name"
+            )
+            return True
+        if event.key == pygame.K_RETURN:
+            self._do_create_new_dungeon()
+            return True
+        if self._new_dungeon_focus == "name":
+            if event.key == pygame.K_BACKSPACE:
+                self._new_dungeon_name = self._new_dungeon_name[:-1]
+                self._new_dungeon_error = ""
+                return True
+            ch = event.unicode
+            if ch and ch.isprintable() and len(self._new_dungeon_name) < 64:
+                self._new_dungeon_name += ch
+                self._new_dungeon_error = ""
+                return True
+        elif self._new_dungeon_focus == "party_level":
+            if event.key == pygame.K_BACKSPACE:
+                # Reset to 1 on backspace so the field is never blank
+                # (we display ints, not free-text).
+                self._new_dungeon_party_level = 1
+                return True
+            if event.key in (pygame.K_UP, pygame.K_RIGHT, pygame.K_PLUS,
+                             pygame.K_EQUALS):
+                self._new_dungeon_party_level = min(
+                    20, self._new_dungeon_party_level + 1)
+                return True
+            if event.key in (pygame.K_DOWN, pygame.K_LEFT, pygame.K_MINUS,
+                             pygame.K_KP_MINUS):
+                self._new_dungeon_party_level = max(
+                    1, self._new_dungeon_party_level - 1)
+                return True
+            ch = event.unicode
+            if ch and ch.isdigit():
+                # Replace-on-type: 1 → 12 → 3 (typing replaces, easier
+                # than tracking digit-buffer state for a 1-2 digit field).
+                self._new_dungeon_party_level = max(1, min(20, int(ch)))
+                return True
+        return True  # swallow everything else while modal is open
+
+    def _handle_new_dungeon_click(self, pos: tuple[int, int]) -> bool:
+        """Click handler for the New Dungeon modal. Returns True if
+        consumed."""
+        if not self._new_dungeon_open:
+            return False
+        for rect, action in self._new_dungeon_rects:
+            if rect.collidepoint(pos):
+                action()
+                return True
+        # Click on a field switches focus.
+        for field, rect in self._new_dungeon_field_rects.items():
+            if rect.collidepoint(pos):
+                self._new_dungeon_focus = field
+                return True
+        return True  # swallow clicks outside; user must Cancel/Esc
 
     def open_progress_confirm(self) -> None:
         """Switch the options modal into reset-progress confirm mode.
@@ -1348,6 +1509,9 @@ class MapView:
 
         if self._picker_open:
             self._draw_dungeon_picker(surface)
+            return
+        if self._new_dungeon_open:
+            self._draw_new_dungeon_modal(surface)
             return
         if self._progress_confirm_open:
             self._draw_progress_confirm(surface)
@@ -1485,6 +1649,128 @@ class MapView:
                 self._picker_rows.append((rect, info.folder))
 
             row_y += row_h + row_gap
+
+    def _draw_new_dungeon_modal(self, surface: pygame.Surface) -> None:
+        """Modal collecting a new dungeon's name + party level.
+        Renders inside the options-modal stack — caller (the options
+        menu draw) has already drawn the dim backdrop."""
+        from session import Session  # for slug preview
+        ink = (26, 26, 26)
+        muted = (130, 110, 80)
+        focus_ring = (90, 72, 48)
+        panel_w = 540
+        title_h = 56
+        panel_pad = 22
+        body_h = 220
+        btn_h = 46
+        btn_gap = 12
+        panel_h = title_h + panel_pad + body_h + btn_h + panel_pad
+        panel_x = (surface.get_width() - panel_w) // 2
+        panel_y = max(40, (surface.get_height() - panel_h) // 2)
+
+        panel_rect = pygame.Rect(panel_x, panel_y, panel_w, panel_h)
+        panel_bg = pygame.Surface(panel_rect.size, pygame.SRCALPHA)
+        panel_bg.fill((244, 228, 193, 250))
+        surface.blit(panel_bg, panel_rect.topleft)
+        pygame.draw.rect(surface, ink, panel_rect, 3, border_radius=6)
+
+        title = self.title_font.render("NEW DUNGEON", True, ink)
+        surface.blit(title, (panel_x + (panel_w - title.get_width()) // 2,
+                             panel_y + 16))
+
+        # Name field
+        label_y = panel_y + title_h + panel_pad - 6
+        name_label = self.help_font.render(
+            "Dungeon name (free text):", True, muted)
+        surface.blit(name_label, (panel_x + 24, label_y))
+        name_rect = pygame.Rect(panel_x + 24, label_y + 18,
+                                panel_w - 48, 32)
+        bg_color = (252, 252, 250)
+        pygame.draw.rect(surface, bg_color, name_rect, border_radius=3)
+        edge = focus_ring if self._new_dungeon_focus == "name" else (130, 110, 80)
+        edge_w = 2 if self._new_dungeon_focus == "name" else 1
+        pygame.draw.rect(surface, edge, name_rect, edge_w, border_radius=3)
+
+        body_font = pygame.font.SysFont("georgia,serif", 16)
+        text_surf = body_font.render(self._new_dungeon_name, True, ink)
+        surface.blit(text_surf, (name_rect.x + 8, name_rect.y + 6))
+        # Caret indicator when focused.
+        if self._new_dungeon_focus == "name":
+            caret_x = name_rect.x + 8 + text_surf.get_width()
+            pygame.draw.line(
+                surface, ink,
+                (caret_x, name_rect.y + 5),
+                (caret_x, name_rect.y + name_rect.height - 5),
+                1,
+            )
+        self._new_dungeon_field_rects["name"] = name_rect
+
+        # Slug preview
+        slug = Session.slugify_dungeon_name(self._new_dungeon_name)
+        slug_msg = (f"Folder will be: dungeons/{slug}/"
+                    if self._new_dungeon_name.strip() else
+                    "Folder name is generated from the dungeon name.")
+        slug_surf = self.help_font.render(slug_msg, True, muted)
+        surface.blit(slug_surf, (panel_x + 24, name_rect.y + name_rect.height + 6))
+
+        # Party-level field
+        party_label_y = name_rect.y + name_rect.height + 30
+        party_label = self.help_font.render(
+            "Party level (1–20, ↑/↓ or type a digit):", True, muted)
+        surface.blit(party_label, (panel_x + 24, party_label_y))
+        party_rect = pygame.Rect(panel_x + 24, party_label_y + 18, 80, 32)
+        pygame.draw.rect(surface, bg_color, party_rect, border_radius=3)
+        edge_p = focus_ring if self._new_dungeon_focus == "party_level" else (130, 110, 80)
+        edge_pw = 2 if self._new_dungeon_focus == "party_level" else 1
+        pygame.draw.rect(surface, edge_p, party_rect, edge_pw, border_radius=3)
+        pl_surf = body_font.render(
+            str(self._new_dungeon_party_level), True, ink)
+        surface.blit(pl_surf,
+                     (party_rect.x + (party_rect.width - pl_surf.get_width()) // 2,
+                      party_rect.y + 6))
+        self._new_dungeon_field_rects["party_level"] = party_rect
+
+        # Error (only when present)
+        if self._new_dungeon_error:
+            err_surf = self.help_font.render(
+                self._new_dungeon_error, True, ALERT_RED)
+            surface.blit(err_surf, (panel_x + 24, party_rect.y + 42))
+
+        # Hint line right above buttons.
+        hint = self.help_font.render(
+            "After creating, drop your level1.png into the new folder, "
+            "then press A to annotate rooms.",
+            True, muted,
+        )
+        surface.blit(hint,
+                     (panel_x + 24, panel_y + panel_h - panel_pad - btn_h - 22))
+
+        # Buttons
+        btn_total_w = panel_w - 48
+        each_w = (btn_total_w - btn_gap) // 2
+        btn_y = panel_y + panel_h - panel_pad - btn_h
+        cancel_rect = pygame.Rect(panel_x + 24, btn_y, each_w, btn_h)
+        create_rect = pygame.Rect(panel_x + 24 + each_w + btn_gap, btn_y,
+                                  each_w, btn_h)
+
+        pygame.draw.rect(surface, (252, 252, 250), cancel_rect, border_radius=4)
+        pygame.draw.rect(surface, ink, cancel_rect, 2, border_radius=4)
+        cancel_label = self.title_font.render("Cancel", True, ink)
+        surface.blit(cancel_label,
+                     (cancel_rect.x + (cancel_rect.width - cancel_label.get_width()) // 2,
+                      cancel_rect.y + (btn_h - cancel_label.get_height()) // 2))
+
+        pygame.draw.rect(surface, ink, create_rect, border_radius=4)
+        create_label = self.title_font.render("Create dungeon",
+                                              True, (244, 228, 193))
+        surface.blit(create_label,
+                     (create_rect.x + (create_rect.width - create_label.get_width()) // 2,
+                      create_rect.y + (btn_h - create_label.get_height()) // 2))
+
+        self._new_dungeon_rects = [
+            (cancel_rect, self.close_new_dungeon_modal),
+            (create_rect, self._do_create_new_dungeon),
+        ]
 
     def _draw_progress_confirm(self, surface: pygame.Surface) -> None:
         """Confirm modal for Reset Dungeon Progress. Less alarming than
@@ -1626,6 +1912,8 @@ class MapView:
         """Return True if the click was consumed by the options menu."""
         if not self._options_open:
             return False
+        if self._new_dungeon_open:
+            return self._handle_new_dungeon_click(pos)
         if self._progress_confirm_open:
             for rect, action in self._progress_confirm_rects:
                 if rect.collidepoint(pos):
@@ -2272,10 +2560,17 @@ def run(
                 if view.has_startup_warnings:
                     view._dismiss_startup_warnings()
                     continue
+                # New Dungeon modal owns ALL keydowns while open — text
+                # entry must not double as Advance Turn / hotkeys.
+                if view._new_dungeon_open:
+                    if view._handle_new_dungeon_keydown(event):
+                        continue
                 cmd = bool(event.mod & cmd_mask)
                 if event.key == pygame.K_ESCAPE:
                     if view._room_info_open:
                         view.close_room_info()
+                    elif view._new_dungeon_open:
+                        view.close_new_dungeon_modal()
                     elif view._progress_confirm_open:
                         view._progress_confirm_open = False
                     elif view._reset_confirm_open:
@@ -2326,7 +2621,7 @@ def run(
                     if view._annot_tool == "polygon":
                         view._commit_polygon()
                 elif view._annot_mode and event.key in (pygame.K_DELETE, pygame.K_BACKSPACE):
-                    view._delete_selected_room()
+                    view._delete_hovered_room()
                 elif cmd and event.key == pygame.K_UP:
                     _ascend()
                 elif cmd and event.key == pygame.K_DOWN:

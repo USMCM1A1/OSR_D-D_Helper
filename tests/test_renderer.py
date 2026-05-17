@@ -318,13 +318,169 @@ class TestMapView:
         new_room = view.level.rooms[-1]
         assert new_room.image_region.kind == "polygon"
 
-    def test_delete_selected_room_removes_it(self, session, tmp_path):
+    def test_delete_hovered_room_removes_it(self, session, tmp_path):
         view = MapView(session, dungeon_path=tmp_path / "annotated.json")
         view.toggle_annotation_mode()
-        view._annot_selected_room_id = view.level.rooms[0].id
+        view._annot_hovered_room_id = view.level.rooms[0].id
         before = len(view.level.rooms)
-        view._delete_selected_room()
+        view._delete_hovered_room()
         assert len(view.level.rooms) == before - 1
+
+    def test_delete_with_no_hover_is_noop(self, session, tmp_path):
+        view = MapView(session, dungeon_path=tmp_path / "annotated.json")
+        view.toggle_annotation_mode()
+        view._annot_hovered_room_id = None
+        before = len(view.level.rooms)
+        view._delete_hovered_room()
+        assert len(view.level.rooms) == before  # still all there
+
+    def test_mouse_motion_in_annotation_updates_hover(
+        self, session, tmp_path,
+    ):
+        """The MOUSEMOTION handler in annotation mode tracks which
+        room is under the cursor, so hover+Del knows what to delete."""
+        view = MapView(session, dungeon_path=tmp_path / "annotated.json")
+        pygame.display.set_mode((1280, 800))
+        view._fit_to_window()
+        view.toggle_annotation_mode()
+        room = view.level.rooms[0]
+        # Use the room's centroid as a guaranteed-inside-the-region
+        # world point, then convert to screen coords.
+        cx, cy = room.image_region.centroid()
+        sx, sy = view.camera.world_to_screen(cx, cy)
+        ev = pygame.event.Event(pygame.MOUSEMOTION,
+                                pos=(int(sx), int(sy)),
+                                rel=(0, 0), buttons=(0, 0, 0))
+        view._handle_annotation_event(ev)
+        assert view._annot_hovered_room_id == room.id
+
+        # Move off the room → hover clears.
+        ev2 = pygame.event.Event(pygame.MOUSEMOTION,
+                                 pos=(0, 0),
+                                 rel=(0, 0), buttons=(0, 0, 0))
+        view._handle_annotation_event(ev2)
+        assert view._annot_hovered_room_id is None
+
+
+class TestNewDungeonModal:
+    """The pygame Options menu's 'New Dungeon…' modal: scaffolds
+    `dungeons/<slug>/dungeon.json` from a typed name and queues a
+    ReloadRequest so main.py swaps onto it."""
+
+    def test_modal_starts_closed(self, session, tmp_path):
+        view = MapView(session, dungeons_dir=tmp_path / "dungeons")
+        assert view._new_dungeon_open is False
+        assert view._new_dungeon_name == ""
+
+    def test_open_resets_form_state(self, session, tmp_path):
+        view = MapView(session, dungeons_dir=tmp_path / "dungeons")
+        view._new_dungeon_name = "old text"
+        view._new_dungeon_error = "stale error"
+        view.open_new_dungeon_modal()
+        assert view._new_dungeon_open
+        assert view._new_dungeon_name == ""
+        assert view._new_dungeon_party_level == 3
+        assert view._new_dungeon_focus == "name"
+        assert view._new_dungeon_error == ""
+
+    def test_open_noops_without_dungeons_dir(self, session):
+        view = MapView(session, dungeons_dir=None)
+        view.open_new_dungeon_modal()
+        assert view._new_dungeon_open is False
+
+    def test_keydown_appends_printable_to_name(self, session, tmp_path):
+        view = MapView(session, dungeons_dir=tmp_path / "dungeons")
+        view.open_new_dungeon_modal()
+        for ch in "Tomb of Test":
+            ev = pygame.event.Event(
+                pygame.KEYDOWN, key=pygame.K_a, unicode=ch, mod=0,
+            )
+            view._handle_new_dungeon_keydown(ev)
+        assert view._new_dungeon_name == "Tomb of Test"
+
+    def test_keydown_backspace_trims_name(self, session, tmp_path):
+        view = MapView(session, dungeons_dir=tmp_path / "dungeons")
+        view.open_new_dungeon_modal()
+        view._new_dungeon_name = "abcde"
+        ev = pygame.event.Event(
+            pygame.KEYDOWN, key=pygame.K_BACKSPACE, unicode="", mod=0,
+        )
+        view._handle_new_dungeon_keydown(ev)
+        assert view._new_dungeon_name == "abcd"
+
+    def test_tab_swaps_focus(self, session, tmp_path):
+        view = MapView(session, dungeons_dir=tmp_path / "dungeons")
+        view.open_new_dungeon_modal()
+        ev = pygame.event.Event(
+            pygame.KEYDOWN, key=pygame.K_TAB, unicode="\t", mod=0,
+        )
+        view._handle_new_dungeon_keydown(ev)
+        assert view._new_dungeon_focus == "party_level"
+        view._handle_new_dungeon_keydown(ev)
+        assert view._new_dungeon_focus == "name"
+
+    def test_party_level_arrow_keys_clamp(self, session, tmp_path):
+        view = MapView(session, dungeons_dir=tmp_path / "dungeons")
+        view.open_new_dungeon_modal()
+        view._new_dungeon_focus = "party_level"
+        view._new_dungeon_party_level = 1
+        # Down at floor stays at 1.
+        ev_down = pygame.event.Event(
+            pygame.KEYDOWN, key=pygame.K_DOWN, unicode="", mod=0,
+        )
+        view._handle_new_dungeon_keydown(ev_down)
+        assert view._new_dungeon_party_level == 1
+        # Up steps; ceiling is 20.
+        ev_up = pygame.event.Event(
+            pygame.KEYDOWN, key=pygame.K_UP, unicode="", mod=0,
+        )
+        for _ in range(25):
+            view._handle_new_dungeon_keydown(ev_up)
+        assert view._new_dungeon_party_level == 20
+
+    def test_create_with_empty_name_shows_error(self, session, tmp_path):
+        view = MapView(session, dungeons_dir=tmp_path / "dungeons")
+        view.open_new_dungeon_modal()
+        view._do_create_new_dungeon()
+        assert view._new_dungeon_error
+        assert view._pending_reload is None
+
+    def test_create_with_collision_shows_error(self, session, tmp_path):
+        # Pre-create a colliding folder.
+        dungeons = tmp_path / "dungeons"
+        dungeons.mkdir()
+        (dungeons / "test-thing").mkdir()
+        view = MapView(session, dungeons_dir=dungeons)
+        view.open_new_dungeon_modal()
+        view._new_dungeon_name = "Test Thing"
+        view._do_create_new_dungeon()
+        assert "already exists" in view._new_dungeon_error
+        assert view._pending_reload is None
+
+    def test_create_success_scaffolds_and_queues_reload(
+        self, session, tmp_path,
+    ):
+        dungeons = tmp_path / "dungeons"
+        dungeons.mkdir()
+        view = MapView(session, dungeons_dir=dungeons)
+        view.open_new_dungeon_modal()
+        view._new_dungeon_name = "Brand New Dungeon"
+        view._new_dungeon_party_level = 5
+        view._do_create_new_dungeon()
+
+        assert view._new_dungeon_error == ""
+        assert view._new_dungeon_open is False
+        # Folder + JSON exist on disk.
+        target = dungeons / "brand-new-dungeon"
+        assert (target / "dungeon.json").exists()
+        # Reload queued onto the new folder.
+        assert view._pending_reload is not None
+        assert view._pending_reload.folder.resolve() == target.resolve()
+        assert view._pending_reload.do_full_reset is False
+        # Loaded dungeon picks up the typed party_level + name.
+        d = dungeon_mod.load(target / "dungeon.json")
+        assert d.name == "Brand New Dungeon"
+        assert d.party_level == 5
 
 
 class TestExternalReload:
@@ -471,8 +627,8 @@ class TestUndo:
         view.cycle_room_state("R01")  # → known
         assert view.level.rooms_by_id["R01"].state == "known"
         # Now delete it.
-        view._annot_selected_room_id = "R01"
-        view._delete_selected_room()
+        view._annot_hovered_room_id = "R01"
+        view._delete_hovered_room()
         assert "R01" not in view.level.rooms_by_id
         # Undo restores it AND its prior state.
         view.undo_last_annotation()

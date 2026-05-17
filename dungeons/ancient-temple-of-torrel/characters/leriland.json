@@ -1,0 +1,67 @@
+{
+  "name": "Leriland",
+  "class": "rogue",
+  "level": 1,
+  "ac": 13,
+  "hp_max": 11,
+  "speed": 30,
+  "init_bonus": 3,
+  "ability_mods": {
+    "str": 2,
+    "dex": 3,
+    "con": 3,
+    "int": 1,
+    "wis": 1,
+    "cha": 1
+  },
+  "saves": {
+    "str": 2,
+    "dex": 5,
+    "con": 3,
+    "int": 3,
+    "wis": 1,
+    "cha": 1
+  },
+  "attacks": [
+    {
+      "name": "Shortbow",
+      "to_hit": 5,
+      "damage": "1d6+3",
+      "damage_type": "piercing",
+      "range": "ranged"
+    },
+    {
+      "name": "Shortsword",
+      "to_hit": 5,
+      "damage": "1d6+3",
+      "damage_type": "piercing",
+      "range": "melee"
+    },
+    {
+      "name": "Dagger",
+      "to_hit": 5,
+      "damage": "1d4+3",
+      "damage_type": "piercing",
+      "range": "melee"
+    },
+    {
+      "name": "Unarmed Strike",
+      "to_hit": 4,
+      "damage": "3",
+      "damage_type": "bludgeoning",
+      "range": "melee"
+    }
+  ],
+  "features": {
+    "sneak_attack_dice": 1,
+    "second_wind": false,
+    "divine_smite_slots_usable": false,
+    "rage": false,
+    "action_surge": false
+  },
+  "spells": {
+    "slots": {},
+    "memorized": []
+  },
+  "tactics_notes": "Level 1 Rogue with no spellcasting. Priority action each turn is triggering Sneak Attack (1d6 bonus) \u2014 use Shortbow from range or Shortsword/Dagger in melee when an ally is within 5 ft of the target (or when advantage is available). Shortbow and Shortsword are the main offensive weapons; both use DEX and qualify as finesse/ranged for Sneak Attack. Two daggers available as backup melee or thrown (same +5/1d4+3 profile). Expertise in Sleight of Hand (+7) and Stealth (+5) support ambush and setup plays. Unarmed strike is a last resort only."
+}

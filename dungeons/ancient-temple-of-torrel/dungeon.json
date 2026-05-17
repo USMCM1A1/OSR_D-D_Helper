@@ -1,7 +1,7 @@
 {
   "dungeon_name": "Ancient Temple of Torrel",
   "party_level": 3,
-  "current_level": 2,
+  "current_level": 3,
   "party": {
     "size": 4,
     "characters": [
@@ -56,7 +56,7 @@
         {
           "id": "R01",
           "name": "R01 The Scorched Threshold",
-          "state": "unexplored",
+          "state": "known",
           "tags": [
             "special",
             "stairs_up"
@@ -133,7 +133,7 @@
           "encounter_ref": null,
           "treasure_tier": null,
           "box_text": "A long rectangular room with a low ceiling. Stone pegs protrude from the walls at irregular intervals \u2014 handholds, or obstacles. The floor is scored with countless shallow cuts. Three figures stand motionless against the far wall, wrapped in the remnants of dark linen, their heads bowed.",
-          "encounter_text": "3 Skeletons (MM p.272). Unaware \u2014 standing dormant in niches along the north wall. They animate as a group the moment any living creature crosses the midpoint of the room. Fight to the death, will not pursue beyond room exits. They spread to flank using the room's width. Stone pegs on the walls count as difficult terrain near the walls.",
+          "encounter_text": "2 Skeletons (MM p.272). Unaware \u2014 standing dormant in niches along the north wall. They animate as a group the moment any living creature crosses the midpoint of the room. Fight to the death, will not pursue beyond room exits. They spread to flank using the room's width. Stone pegs on the walls count as difficult terrain near the walls.",
           "treasure_text": "",
           "special_text": "",
           "statblocks": "### Skeleton\n\n_Medium undead, lawful evil_\n\n- **Armor Class** 13 (armor scraps)\n- **Hit Points** 13 (2d8 + 4)\n- **Speed** 30 ft.\n\n|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |\n|------------------|--------|--------|--------|--------|--------|--------|\n| **Score**        |     10 |     14 |     15 |      6 |      8 |      5 |\n| **Modifier**     |     +0 |     +2 |     +2 |     -2 |     -1 |     -3 |\n| **Saving Throw** |     +0 |     +2 |     +2 |     -2 |     -1 |     -3 |\n\n- **Damage Vulnerabilities** bludgeoning\n- **Damage Immunities** poison\n- **Condition Immunities** exhaustion, poisoned\n- **Senses** darkvision 60 ft., passive Perception 9\n- **Languages** understands all languages it knew in life but can't speak\n- **Challenge** 1/4 (50 XP)\n\n#### Actions\n\n_**Shortsword.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.\n\n_**Shortbow.**_ _Ranged Weapon Attack:_ +4 to hit, range 80/320 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.",
@@ -147,18 +147,19 @@
         },
         {
           "id": "R04",
-          "name": "R04",
+          "name": "Adepts' Quarters",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "trap",
+            "treasure"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "Blade trap: relocated from altar to the threshold between the western and eastern rooms \u2014 the doorway arch. Wire strung at shin height, nearly invisible. DC 14 Perception (passive or active) to notice. DC 13 Dexterity (Thieves' Tools) to disarm; failure triggers immediately. Trigger releases a weighted blade from a slot above the arch: 2d6 slashing, no saving throw. Trap is spent after one trigger. The letter is the first explicit lore hook pointing toward Level 3 and the Djinn's objective \u2014 even partial, it tells the party the dungeon has a deeper mystery. Chest search: the toppled shelf is not a hazard, just environmental clutter; costs no action to move aside.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "Two connected rooms, once private quarters for senior assassins. The western room held a preparation table, now collapsed, and iron pegs still set in the walls \u2014 empty of whatever hung there. The eastern room contains two narrow stone sleeping platforms with carved serpent-motif headboards. A banded iron chest sits at the southern end of the eastern room, half-buried under a toppled shelf.",
           "encounter_text": "",
-          "treasure_text": "",
+          "treasure_text": "The chest is locked (DC 13 Dexterity [Thieves' Tools] to pick; DC 16 Strength to force, which makes noise). Inside: 95 gp and 30 sp in coin; a matched pair of bone-handled throwing daggers in a sewn leather roll (no special properties; DC 13 History to identify as senior-rank cult markers by the serpent inlay on the grips; worth 55 gp as a matched set to a collector or fence); and a folded letter, partially legible after years of damp, written in common \u2014 the legible passage reads: '...the third seal was never meant to be found. If the Djinn reaches the sanctum before...' The remainder is water-damaged beyond recovery.",
           "special_text": "",
           "statblocks": "",
           "image_region": {
@@ -171,20 +172,21 @@
         },
         {
           "id": "R05",
-          "name": "R05",
+          "name": "Barracks of Dust",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "encounter",
+            "treasure"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "Midpoint trigger: the imaginary line between the two northern platforms. All three zombies activate on the same initiative (roll once for the group). Undead Fortitude applies \u2014 players expecting quick kills may be surprised. Blocking the exit is the tactical threat; the party may need to fight through or retreat back the way they came. Treasure: DC 12 Perception to notice the kit bag's strap, or found automatically on a deliberate search under the southwest platform. Primary XP room for the level.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
-          "encounter_text": "",
-          "treasure_text": "",
+          "box_text": "Four stone sleeping platforms fill the alcoves, each buried under thick drifts of desert sand. Rotted roll-mats have collapsed into stringy heaps in the corners. The air is dead still. Nothing obviously moves, but the sand on the platforms is disturbed \u2014 and recently.",
+          "encounter_text": "3 Zombies (MM p.316). Unaware \u2014 each lies inert beneath a light sand covering on a sleeping platform; all three animate simultaneously when any creature crosses the room's midpoint. Rise immediately and move to block the exit. Will not pursue beyond the room's threshold.",
+          "treasure_text": "A rotted canvas kit bag wedged beneath the southwestern platform: 210 sp in a drawstring purse, 40 gp loose among the sand, and one polished carnelian stone (25 gp).",
           "special_text": "",
-          "statblocks": "",
+          "statblocks": "### Zombie\n\n_Medium undead, neutral evil_\n\n- **Armor Class** 8\n- **Hit Points** 22 (3d8 + 9)\n- **Speed** 20 ft.\n\n|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |\n|------------------|--------|--------|--------|--------|--------|--------|\n| **Score**        |     13 |      6 |     16 |      3 |      6 |      5 |\n| **Modifier**     |     +1 |     -2 |     +3 |     -4 |     -2 |     -3 |\n| **Saving Throw** |     +1 |     -2 |     +3 |     -4 |     +0 |     -3 |\n\n- **Damage Immunities** poison\n- **Condition Immunities** poisoned\n- **Senses** darkvision 60 ft., passive Perception 8\n- **Languages** understands the languages it knew in life but can't speak\n- **Challenge** 1/4 (50 XP)\n\n#### Traits\n\n_**Undead Fortitude.**_ If damage reduces the zombie to 0 hit points, it must make a Constitution saving throw with a DC of 5 + the damage taken, unless the damage is radiant or from a critical hit. On a success, the zombie drops to 1 hit point instead.\n\n#### Actions\n\n_**Slam.**_ _Melee Weapon Attack:_ +3 to hit, reach 5 ft., one target. _Hit:_ 4 (1d6 + 1) bludgeoning damage.",
           "image_region": {
             "kind": "rect",
             "x": 4372,
@@ -195,19 +197,20 @@
         },
         {
           "id": "R06",
-          "name": "R06",
-          "state": "unexplored",
+          "name": "Sand-Choked Vestibule",
+          "state": "known",
           "tags": [
-            "empty"
+            "empty",
+            "special"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "The footprints are lizardfolk scouts from R07 (the eastern stair). DC 12 Survival to identify as digitigrade and reptilian \u2014 claw impressions at toe-tips. No return tracks means the scouts descended and have not come back up; the party is behind them. The cult cipher map, if decoded (or if the cipher key is recovered from R09), shows R09 marked as a poison chamber and R07 marked with an asterisk. Silence oil: mundane item, no identification spell needed; label is in cipher but the vial's contents are obvious once opened.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "A low antechamber. Desert sand has silted through a ceiling crack and built a waist-high drift against the eastern wall. The far arch has no door. Bare, narrow footprints cross the sand near the drift \u2014 but there are no return tracks.",
           "encounter_text": "",
           "treasure_text": "",
-          "special_text": "",
+          "special_text": "The sand drift conceals a sealed clay canister, its rim just visible to anyone who examines the drift directly (DC 13 Perception). Digging it free takes one full dungeon turn. Inside: a tightly folded parchment \u2014 a crude schematic of Level 1 drawn in cult cipher (DC 15 Intelligence to decode without a key; one glyph clearly marks a specific chamber, one marks the eastern stairhead); a stoppered glass vial of silence oil (non-magical alchemical compound, advantage on Dexterity [Stealth] checks for movement for 10 minutes, 3 uses, worth 30 gp to an alchemist); and 35 gp in small cut desert-glass beads.",
           "statblocks": "",
           "image_region": {
             "kind": "rect",
@@ -219,16 +222,17 @@
         },
         {
           "id": "R07",
-          "name": "R07",
-          "state": "unexplored",
+          "name": "Eastern Watch",
+          "state": "known",
           "tags": [
-            "empty"
+            "empty",
+            "stairs_down"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "Stairhead descends to Level 2 (eastern entry point). The ceramic shards are broken water vessels \u2014 a guard's cache smashed when the lizardfolk scouts passed through. DC 11 Investigation to notice scrape marks and claw-drag gouges on the upper stair treads, consistent with large reptilians moving equipment. Reptile musk is noticeably stronger on the stair treads themselves. Primary telegraph that Level 2 has active inhabitants before the party descends.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "A narrow guardpost, its slot-windows sealed with sand and crumbled mortar. Two stone benches face each other across a low table; something ceramic was shattered here long ago and the shards have been kicked to the walls. In the floor's center, a stone-framed stairhead descends into darkness. Dry, reptilian air rises from below.",
           "encounter_text": "",
           "treasure_text": "",
           "special_text": "",
@@ -243,20 +247,20 @@
         },
         {
           "id": "R08",
-          "name": "R08",
-          "state": "unexplored",
+          "name": "The Proving Pit",
+          "state": "known",
           "tags": [
-            "empty"
+            "encounter"
           ],
-          "reaction_required": false,
-          "notes": "",
+          "reaction_required": true,
+          "notes": "DEADLY for three level-1 characters. CR 3, 52 HP, AC 15. Claws +5 to hit (2d8+4 each), sting +4 to hit (1d8+4 plus DC 12 Con save or 22 poison damage). The pit containment is the saving mechanic \u2014 a party that stays on the rim and uses ranged attacks or reach weapons can avoid the claw multiattack. Parties that drop in will almost certainly take a full multiattack. Telegraph: exoskeleton shards and a molted carapace segment on the benches are visible on entry; DC 11 Perception to smell the musk before moving close. Tally marks are from initiate combat training. 700 XP. The scorpion has been here long enough to pick the pit bare.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
-          "encounter_text": "",
+          "box_text": "The floor drops away at the room's center into a shallow fighting pit \u2014 four feet deep, circular, ringed by cracked stone benches. Bleached bones and dry sand cover the pit floor. The benches are scored with rows of tally marks. Something large shifts in the shadow along the pit's far wall.",
+          "encounter_text": "Giant Scorpion (MM p.327). Unaware \u2014 dormant in a hollow it has scraped in the pit's northern shadow (DC 13 passive Perception to notice the bulk before it stirs). Becomes hostile the moment direct light strikes it or a creature drops into the pit. Will not climb out of the pit to pursue; it treats the pit rim as its territory boundary.",
           "treasure_text": "",
           "special_text": "",
-          "statblocks": "",
+          "statblocks": "## Giant Scorpion\n\n_Large beast, unaligned_\n\n- **Armor Class** 15 (natural armor)\n- **Hit Points** 52 (7d10 + 14)\n- **Speed** 40 ft.\n\n|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |\n|------------------|--------|--------|--------|--------|--------|--------|\n| **Score**        |     15 |     13 |     15 |      1 |      9 |      3 |\n| **Modifier**     |     +2 |     +1 |     +2 |     -5 |     -1 |     -4 |\n| **Saving Throw** |     +2 |     +1 |     +2 |     -5 |     -1 |     -4 |\n\n- **Senses** blindsight 60 ft., passive Perception 9\n- **Languages** \u2014\n- **Challenge** 3 (700 XP)\n\n### Actions\n\n_**Multiattack.**_ The scorpion makes three attacks: two with its claws and one with its sting.\n\n_**Claw.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 6 (1d8 + 2) bludgeoning damage, and the target is grappled (escape DC 12). The scorpion has two claws, each of which can grapple only one target.\n\n_**Sting.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 7 (1d10 + 2) piercing damage, and the target must make a DC 12 Constitution saving throw, taking 22 (4d10) poison damage on a failed save, or half as much damage on a successful one.",
           "image_region": {
             "kind": "rect",
             "x": 5503,
@@ -267,19 +271,20 @@
         },
         {
           "id": "R09",
-          "name": "R09",
-          "state": "unexplored",
+          "name": "Apothecary of Venom",
+          "state": "known",
           "tags": [
-            "empty"
+            "special",
+            "treasure"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "If the party decoded the R06 map, they expected this room \u2014 the schematic glyph marking it pays off here. The cipher notes combined with the R06 map give the party meaningful evidence that the cult ran a professional operation. Basic Poison rules: PHB p.153 \u2014 injury poison only, applied to weapons (not surfaces). Antitoxin powder: advantage on saving throws against poison, immunity to poisoned condition, for 1 hour. The two doses of venom base are the most immediately valuable find on the level for an XP-for-gold party.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "Shelves of clay amphorae and cracked glass vessels line three walls from floor to ceiling. A low worktable at the room's center is stained black and smells sharply of something acrid and very old. Several jars along the middle shelf remain sealed with wax. A carved wooden rack holds a dozen reed cases \u2014 most have been pried open and looted long ago.",
           "encounter_text": "",
-          "treasure_text": "",
-          "special_text": "",
+          "treasure_text": "A systematic search of the sealed jars and intact rack yields: 2 sealed clay amphorae of serpent venom base (each functions as Basic Poison per PHB p.153 \u2014 as a bonus action, coat one weapon or three pieces of ammunition; 1d4 poison damage on hit; lasts 1 minute or until a successful hit; market value 50 gp each to an appropriate buyer); 1 small sealed tin of dried antitoxin powder (identical to Antitoxin, PHB p.151, but must be dissolved in water before use); and a sealed reed case holding 3 slim notes in cult cipher (dilution ratios for various venoms \u2014 same handwriting as the R06 map; useless without cipher key but identifiable as the same script).",
+          "special_text": "This was the cult's active poison preparation chamber. DC 12 Intelligence (Nature) or DC 14 Wisdom (Medicine) to identify the equipment and residue as a working poison lab for injury and contact poisons. No check required to recognize the sealed amphorae as containing liquid of some kind. Searching the room for usable materials takes one full dungeon turn and yields the items listed under treasure automatically \u2014 no additional check.",
           "statblocks": "",
           "image_region": {
             "kind": "rect",
@@ -291,16 +296,16 @@
         },
         {
           "id": "R10",
-          "name": "R10",
+          "name": "Curved Corridor",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "treasure"
           ],
-          "reaction_required": false,
+          "reaction_required": true,
           "notes": "",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "Curbed hallway, the connects multiple rooms. Old and dusty, but without the deep sand that is dripped into other parts of the forgotten temple.",
           "encounter_text": "",
           "treasure_text": "",
           "special_text": "",
@@ -343,19 +348,21 @@
       "rooms": [
         {
           "id": "R01",
-          "name": "R01",
+          "name": "The Assembly Hall",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "special",
+            "stairs_up",
+            "stairs_down"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "Lizardfolk know this room but will not approach the SW stairs \u2014 in Draconic they describe what lies below as 'fire and madness.' The heat and tremors originate from the Djinn's ongoing ritual on Level 3. The east stair connects to Level 1 R7 (eastern watch); the SW stair descends to Level 3. Iconography advantage on Charisma checks (from the cult-study result) is optional; drop it if it complicates faction play.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "The air is still and heavy with old incense and dry sand. Every wall is carved floor to ceiling with hooded figures bearing blades, repeating into darkness above. Two stone archways lead to staircases \u2014 one rising east, one descending southwest into a heat that does not belong underground. From the descending passage comes the faint smell of lightning-struck stone.",
           "encounter_text": "",
           "treasure_text": "",
-          "special_text": "",
+          "special_text": "The carvings can be studied with 10 minutes and a DC 12 Intelligence (History or Religion) check, identifying this as a death-cult sanctuary devoted to a shadow aspect of a desert death-god. On a result of 16 or higher, one motif stands out in the highest register: a cloaked figure bearing a key instead of a blade \u2014 the DM may use this to foreshadow something locked on Level 3. The southwest staircase is measurably warmer than the rest of the room; a DC 10 Wisdom (Perception) check at the stair-head detects slow rhythmic tremors rising from below and a persistent smell of ozone.",
           "statblocks": "",
           "image_region": {
             "kind": "polygon",
@@ -417,20 +424,21 @@
         },
         {
           "id": "R02",
-          "name": "R02",
+          "name": "Detention Cells",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "encounter",
+            "treasure"
           ],
-          "reaction_required": false,
-          "notes": "",
+          "reaction_required": true,
+          "notes": "The sealed cells are not locked \u2014 bars are latched from outside. Lizardfolk here will attempt to alert R05 if given time; assume reinforcements arrive in 2 rounds. The cipher note has no key on this level \u2014 a DM hook for later. The sealed cells can be opened freely by any PC on the exterior side.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
-          "encounter_text": "",
-          "treasure_text": "",
+          "box_text": "Three iron-barred cells line the wall, the bars cold and solid. Two cell doors are sealed with their original latches still intact. The third stands open; from inside comes the smell of woodsmoke and animal musk, and the sound of something eating.",
+          "encounter_text": "4 Lizardfolk (MM p.204). Neutral \u2014 one is dozing on a reed mat, one is gnawing a bone near the open cell door. Neither attacks on sight; they hiss and display threat postures first. If the party does not yield ground or make a clear gesture of peace, one calls toward R05 on its second turn.",
+          "treasure_text": "A loose stone in the far corner of the northernmost sealed cell \u2014 DC 14 Wisdom (Perception) or Intelligence (Investigation) to find \u2014 conceals a rotted leather pouch: 18 gp in mixed coin, a bone stylus engraved with a small hooded-figure mark (worth 12 gp to a fence or scholar), and a folded paper scrap covered in cipher.",
           "special_text": "",
-          "statblocks": "",
+          "statblocks": "### Lizardfolk\n\n_Medium humanoid (lizardfolk), neutral_\n\n- **Armor Class** 15 (natural armor, shield)\n- **Hit Points** 22 (4d8 + 4)\n- **Speed** 30 ft., swim 30 ft.\n\n|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |\n|------------------|--------|--------|--------|--------|--------|--------|\n| **Score**        |     15 |     10 |     13 |      7 |     12 |      7 |\n| **Modifier**     |     +2 |     +0 |     +1 |     -2 |     +1 |     -2 |\n| **Saving Throw** |     +2 |     +0 |     +1 |     -2 |     +1 |     -2 |\n\n- **Skills** Perception +3, Stealth +4, Survival +5\n- **Senses** passive Perception 13\n- **Languages** Draconic\n- **Challenge** 1/2 (100 XP)\n\n#### Traits\n\n_**Hold Breath.**_ The lizardfolk can hold its breath for 15 minutes.\n\n#### Actions\n\n_**Multiattack.**_ The lizardfolk makes two melee attacks, each one with a different weapon.\n\n_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.\n\n_**Heavy Club.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) bludgeoning damage.\n\n_**Javelin.**_ _Melee or Ranged Weapon Attack:_ +4 to hit, reach 5 ft. or range 30/120 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.\n\n_**Spiked Shield.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.",
           "image_region": {
             "kind": "rect",
             "x": 4075,
@@ -441,19 +449,20 @@
         },
         {
           "id": "R03",
-          "name": "R03",
+          "name": "Overseer's Gallery",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "trap",
+            "special"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "TRAP: A pressure plate sits 10 feet inside the entrance, hidden under grit \u2014 DC 14 Wisdom (Perception) to spot (slightly raised stone, old scuff marks at its perimeter). DC 14 Dexterity (Thieves' Tools) to disarm. Trigger: 50+ lbs fires a crossbow bolt from a slot in the south wall. Effect: 2d6 piercing damage, DC 14 Dexterity saving throw for half. Single-use \u2014 mechanism is spent after one firing. The bolt slot is visible from 5 feet away with a DC 12 Perception check, but only if the character is approaching from the correct angle (not from the door).",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "A low-ceilinged room, the air close and unmoving. A long horizontal slot has been cut into one wall at eye level \u2014 a narrow slit that looks down into the cell corridor below. The floor near the far door is worn smooth and stained darker than the surrounding stone.",
           "encounter_text": "",
           "treasure_text": "",
-          "special_text": "",
+          "special_text": "A character who spends a full turn at the observation slit and succeeds on a DC 12 Dexterity (Stealth) check can observe the full interior of R02 without alerting its occupants, learning exactly how many lizardfolk are present and what they are doing. A failed check means movement at the slit is noticed by at least one lizardfolk below.",
           "statblocks": "",
           "image_region": {
             "kind": "rect",
@@ -465,20 +474,21 @@
         },
         {
           "id": "R04",
-          "name": "R04",
+          "name": "Commandant's Office",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "encounter",
+            "treasure"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "If R05 has been cleared before this room is entered, the chief fights to the death; otherwise it fights until reduced below 10 HP, then retreats to R05 to rally the warband. The bark floor plan gives the party advantage on one Dexterity (Stealth) or Intelligence check on Level 1 if they have not already cleared it.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
-          "encounter_text": "",
-          "treasure_text": "",
+          "box_text": "The room smells of rendered fat and close animal musk. A heavy desk has been pushed to the far wall and covered with lizard hides. A large figure crouches in the shadow beyond it \u2014 scaled, still, watching with flat amber eyes.",
+          "encounter_text": "1 Lizardfolk (MM p.204), sub-chief \u2014 use maximum hit points (27), armed with a shortsword (cultist relic, +4 to hit, 1d6+2 piercing) in addition to natural weapons. Hostile \u2014 rises immediately on intrusion. On its first turn it calls toward R05; reinforcements arrive in 1d4+1 rounds if R05 has not been dealt with.",
+          "treasure_text": "On the chief's person: a shortsword with silver-inlaid hilt (worth 15 gp for the metalwork) and a leather pouch containing 28 gp. Beneath the hides on the desk: a clay cylinder seal (worth 40 gp to a scholar or antiquarian) and a piece of bark bearing a charcoal sketch \u2014 a crude but accurate floor plan of Level 1's upper rooms, drawn by a lizardfolk scout.",
           "special_text": "",
-          "statblocks": "",
+          "statblocks": "### Lizardfolk\n\n_Medium humanoid (lizardfolk), neutral_\n\n- **Armor Class** 15 (natural armor, shield)\n- **Hit Points** 22 (4d8 + 4)\n- **Speed** 30 ft., swim 30 ft.\n\n|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |\n|------------------|--------|--------|--------|--------|--------|--------|\n| **Score**        |     15 |     10 |     13 |      7 |     12 |      7 |\n| **Modifier**     |     +2 |     +0 |     +1 |     -2 |     +1 |     -2 |\n| **Saving Throw** |     +2 |     +0 |     +1 |     -2 |     +1 |     -2 |\n\n- **Skills** Perception +3, Stealth +4, Survival +5\n- **Senses** passive Perception 13\n- **Languages** Draconic\n- **Challenge** 1/2 (100 XP)\n\n#### Traits\n\n_**Hold Breath.**_ The lizardfolk can hold its breath for 15 minutes.\n\n#### Actions\n\n_**Multiattack.**_ The lizardfolk makes two melee attacks, each one with a different weapon.\n\n_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.\n\n_**Heavy Club.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) bludgeoning damage.\n\n_**Javelin.**_ _Melee or Ranged Weapon Attack:_ +4 to hit, reach 5 ft. or range 30/120 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.\n\n_**Spiked Shield.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.",
           "image_region": {
             "kind": "rect",
             "x": 1477,
@@ -489,20 +499,20 @@
         },
         {
           "id": "R05",
-          "name": "R05",
+          "name": "Lizardfolk Encampment",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "encounter"
           ],
-          "reaction_required": false,
-          "notes": "",
+          "reaction_required": true,
+          "notes": "This is the level's most dangerous combat \u2014 4 Lizardfolk vs. 3 level-2 characters is likely lethal in the open if negotiation fails. In Draconic, the lizardfolk describe the stairs in R01 as 'fire and madness below'; they will share this freely. A DC 14 Charisma (Persuasion) check with a tangible offering (food, coin, a weapon) may buy neutral passage; Draconic speakers have advantage. Offering information about the Djinn makes the lizardfolk cautiously cooperative. They arrived via R06 and have no knowledge of Level 3 beyond what they have heard and felt.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
-          "encounter_text": "",
+          "box_text": "The smell of smoke and raw meat reaches you before the room does. Reed mats and scraps of stolen cloth cover most of the floor. A fire burns low in a stone bowl at the center, a skewered rat carcass turning above it. Several large scaled figures are scattered around the bowl \u2014 some sitting, one sprawled asleep.",
+          "encounter_text": "2 Lizardfolk (MM p.204). Territorial \u2014 alert, not immediately hostile; they rise and fan out to block exits if the party enters without a clear peace gesture or a Draconic speaker. They attack without hesitation if any lizardfolk elsewhere on the level has been harmed, if weapons are drawn, or if the party pushes past them. They do not pursue beyond the level.",
           "treasure_text": "",
           "special_text": "",
-          "statblocks": "",
+          "statblocks": "### Lizardfolk\n\n_Medium humanoid (lizardfolk), neutral_\n\n- **Armor Class** 15 (natural armor, shield)\n- **Hit Points** 22 (4d8 + 4)\n- **Speed** 30 ft., swim 30 ft.\n\n|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |\n|------------------|--------|--------|--------|--------|--------|--------|\n| **Score**        |     15 |     10 |     13 |      7 |     12 |      7 |\n| **Modifier**     |     +2 |     +0 |     +1 |     -2 |     +1 |     -2 |\n| **Saving Throw** |     +2 |     +0 |     +1 |     -2 |     +1 |     -2 |\n\n- **Skills** Perception +3, Stealth +4, Survival +5\n- **Senses** passive Perception 13\n- **Languages** Draconic\n- **Challenge** 1/2 (100 XP)\n\n#### Traits\n\n_**Hold Breath.**_ The lizardfolk can hold its breath for 15 minutes.\n\n#### Actions\n\n_**Multiattack.**_ The lizardfolk makes two melee attacks, each one with a different weapon.\n\n_**Bite.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.\n\n_**Heavy Club.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) bludgeoning damage.\n\n_**Javelin.**_ _Melee or Ranged Weapon Attack:_ +4 to hit, reach 5 ft. or range 30/120 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.\n\n_**Spiked Shield.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 5 (1d6 + 2) piercing damage.",
           "image_region": {
             "kind": "polygon",
             "points": [
@@ -539,19 +549,20 @@
         },
         {
           "id": "R06",
-          "name": "R06",
+          "name": "West Stair Landing",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "stairs_up",
+            "special"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "Stairs connect to Level 1, R06 area (west side). The lizardfolk entered this level through this stairwell and placed the ward shortly after. No other creatures currently use this stair. The ward's social mechanic only applies once \u2014 after a negotiation attempt, its advantage is spent.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "Stone steps rise into dry darkness above, carrying the faint smell of desert air \u2014 grit on a warm updraft from the level above. Lashed to the wall beside the passage is a bundle of small bones and dried vegetation, bound tightly with gut cord.",
           "encounter_text": "",
           "treasure_text": "",
-          "special_text": "",
+          "special_text": "The bundle is a lizardfolk territorial marker. A DC 12 Intelligence (Nature) check identifies it as a boundary warning meaning 'claimed ground, trespassers challenged.' Disturbing or removing it causes the lizardfolk in R05 to become immediately hostile when next encountered \u2014 they will scent the change. Left intact, the party may gesture toward it as a sign of respect, granting advantage on the first Charisma (Persuasion) check made to negotiate with the lizardfolk on this level. A DC 13 Wisdom (Perception) check at floor level notices clawed lizardfolk tracks leading deeper into the dungeon.",
           "statblocks": "",
           "image_region": {
             "kind": "rect",
@@ -563,16 +574,16 @@
         },
         {
           "id": "R07",
-          "name": "R07",
+          "name": "Old Supply Alcove",
           "state": "unexplored",
           "tags": [
             "empty"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "HIDDEN CACHE: DC 16 Wisdom (Perception) or DC 14 Intelligence (Investigation) to find a false-backed panel on the lowest shelf along the south wall. Behind it, in a hollow cut into the stone: a wax-sealed clay jar containing 22 gp in coin, a vial of antitoxin (PHB p.151, 50 gp), and a scrap of vellum showing a partial floor plan of Level 3 \u2014 three rooms sketched and labeled in Elvish script (old cultist notation, legible to anyone who reads Elvish). The vellum is fragile; careless handling without a DC 10 Dexterity check tears it.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "Low ironwood shelves line three walls, heavy and still solid. The floor is thick with fine grit and shards of broken pottery. The shelves are bare but for a few desiccated pellets of hardened resin and a scatter of empty ceramic vials.",
           "encounter_text": "",
           "treasure_text": "",
           "special_text": "",
@@ -587,19 +598,20 @@
         },
         {
           "id": "R08",
-          "name": "R08",
+          "name": "The Reliquary",
           "state": "unexplored",
           "tags": [
-            "empty"
+            "treasure",
+            "special"
           ],
           "reaction_required": false,
-          "notes": "",
+          "notes": "The Oil of Taggit is the level's highest-value single item in utility terms; its context (rendering a target unconscious via contact, no visible wound) fits the assassin-cult setting. The idol is heavy enough to force a carrying-capacity decision. Removing it is not trapped but may read as desecration to any cultist remnants encountered elsewhere. The 'Third Vault' reference is a deliberate Level 3 hook \u2014 develop as needed.",
           "encounter_ref": null,
           "treasure_tier": null,
-          "box_text": "",
+          "box_text": "The room smells of old clay and the ghost of burned offerings \u2014 something sweet and resinous beneath the dust. Shelves on two walls hold rows of clay tablets, most crumbled to powder. At the far end, a low stone altar supports a bronze idol: a cloaked figure, one hand raised, a curved blade in the other.",
           "encounter_text": "",
-          "treasure_text": "",
-          "special_text": "",
+          "treasure_text": "Three intact clay tablets in a sealed clay box on the top shelf (each worth 25 gp to a scholar or antiquarian). A sealed clay jar on the altar contains 67 gp in cult tithe money. The bronze idol (120 gp, 15 lbs) has a hollow base sealed with a wax plug; inside, wrapped in oilcloth, is a glass vial of colorless liquid \u2014 Oil of Taggit (contact poison, DMG p.258: Constitution save DC 13, failure = unconscious for 24 hours).",
+          "special_text": "The tablets can be partially deciphered with 10 minutes and a DC 14 Intelligence (History) check. On a success, the character reads enough to identify these as assassination contract ledgers \u2014 the targets named are desert trade families and caravan masters, some whose descendants may still be active merchants. One tablet references 'the Third Vault' below as the location of 'the covenant seals,' a hook to Level 3. Selling or publicizing the tablets could attract unwanted attention from surviving family members or merchant guild investigators.",
           "statblocks": "",
           "image_region": {
             "kind": "rect",
@@ -636,7 +648,204 @@
           "encounter": "Stirge"
         }
       ],
-      "rooms": [],
+      "rooms": [
+        {
+          "id": "R01",
+          "name": "Vestibule of Ashes",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "HIDDEN TREASURE: A false stone panel behind the base of the easternmost pillar (DC 14 Perception while actively searching; DC 16 passive). Inside: 38 gp in archaic crescent-stamped coinage and 1 vial of Serpent Venom (DMG p. 258, injury, DC 11 Con save, 3d6 poison damage on fail, half on save). The hieroglyphs describe the oaths of the assassin cult \u2014 translatable with Comprehend Languages or DC 17 History. Key phrase: 'blood given freely buys passage beyond.' This is a soft clue for the Djinni encounter in R03 \u2014 the cult's password for entering the sanctum in peace was a ritual bloodletting at the basin.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "Sand and ash have drifted through the far doorway, covering the floor in a smooth, undisturbed layer. Dense hieroglyphs crowd the walls from floor to ceiling \u2014 figures, blades, open eyes, desert symbols. A shallow stone basin stands at the room's center, cracked dry and cold. No sound reaches you here.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                3212,
+                2935
+              ],
+              [
+                3296,
+                6730
+              ],
+              [
+                809,
+                6683
+              ],
+              [
+                689,
+                4002
+              ],
+              [
+                2257,
+                3047
+              ],
+              [
+                3184,
+                2926
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R02",
+          "name": "The Hall of Proving",
+          "state": "unexplored",
+          "tags": [
+            "encounter",
+            "treasure"
+          ],
+          "reaction_required": false,
+          "notes": "Two Wights is a Deadly encounter for 3 level-3 PCs \u2014 intentional per brief. Life Drain on a wounded character can be a kill. Wights will not pursue past the room threshold (they are bound to the hall). KEY CROSS-LINK: If the name-tablet in R04 is destroyed before this room is entered, both Wights crumble immediately \u2014 their binding is dissolved. The chest has no trap (the needle trap is in R04, not here). The scroll of Silence and +1 shortsword are the level's primary magical rewards; they are rare for party level 3 but appropriate for a dungeon capstone.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "Four stone plinths divide this long hall, each carved in relief \u2014 a pursuit through dunes, an execution at dawn, a signing in blood, a burial at sea. At the far end a low dais holds a darkwood chest. The plinths cast long shadows. Nothing moves.",
+          "encounter_text": "2 Wights (MM p. 300). Unaware \u2014 standing motionless beside the first and last plinths, facing them, backs to the door. They are the bound spirits of failed initiates. They animate and attack the moment any creature crosses the midpoint of the room. One targets the nearest character with Life Drain; the second moves immediately to block the doorway.",
+          "treasure_text": "The darkwood chest is locked (DC 15 Thieves' Tools, or DC 18 Str to force). Inside: 85 gp in loose coin, a scroll of Silence (2nd level, PHB p. 275), and a slender shortsword with a pale desert-glass pommel \u2014 this is a +1 weapon, unmarked, indistinguishable from fine masterwork until identified.",
+          "special_text": "",
+          "statblocks": "### Wight\n\n_Medium undead, neutral evil_\n\n- **Armor Class** 14 (studded leather)\n- **Hit Points** 45 (6d8 + 18)\n- **Speed** 30 ft.\n\n|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |\n|------------------|--------|--------|--------|--------|--------|--------|\n| **Score**        |     15 |     14 |     16 |     10 |     13 |     15 |\n| **Modifier**     |     +2 |     +2 |     +3 |     +0 |     +1 |     +2 |\n| **Saving Throw** |     +2 |     +2 |     +3 |     +0 |     +1 |     +2 |\n\n- **Skills** Perception +3, Stealth +4\n- **Damage Resistances** necrotic; bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered\n- **Damage Immunities** poison\n- **Condition Immunities** exhaustion, poisoned\n- **Senses** darkvision 60 ft., passive Perception 13\n- **Languages** the languages it knew in life\n- **Challenge** 3 (700 XP)\n\n#### Traits\n\n_**Sunlight Sensitivity.**_ While in sunlight, the wight has disadvantage on attack rolls, as well as on Wisdom (Perception) checks that rely on sight.\n\n#### Actions\n\n_**Multiattack.**_ The wight makes two longsword attacks or two longbow attacks. It can use its Life Drain in place of one longsword attack.\n\n_**Life Drain.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one creature. _Hit:_ 5 (1d6 + 2) necrotic damage. The target must succeed on a DC 13 Constitution saving throw or its hit point maximum is reduced by an amount equal to the damage taken. This reduction lasts until the target finishes a long rest. The target dies if this effect reduces its hit point maximum to 0.\n\nA humanoid slain by this attack rises 24 hours later as a zombie under the wight's control, unless the humanoid is restored to life or its body is destroyed. The wight can have no more than twelve zombies under its control at one time.\n\n_**Longsword.**_ _Melee Weapon Attack:_ +4 to hit, reach 5 ft., one target. _Hit:_ 6 (1d8 + 2) slashing damage, or 7 (1d10 + 2) slashing damage if used with two hands.\n\n_**Longbow.**_ _Ranged Weapon Attack:_ +4 to hit, range 150/600 ft., one target. _Hit:_ 6 (1d8 + 2) piercing damage.\n\n_(fuzzy match \u2014 input said 'spirits')_\n### Sprite\n\n_Tiny fey, neutral good_\n\n- **Armor Class** 15 (leather armor)\n- **Hit Points** 2 (1d4)\n- **Speed** 10 ft., fly 40 ft.\n\n|                  |   Str. |   Dex. |   Con. |   Int. |   Wis. |   Cha. |\n|------------------|--------|--------|--------|--------|--------|--------|\n| **Score**        |      3 |     18 |     10 |     14 |     13 |     11 |\n| **Modifier**     |     -4 |     +4 |     +0 |     +2 |     +1 |     +0 |\n| **Saving Throw** |     -4 |     +4 |     +0 |     +2 |     +1 |     +0 |\n\n- **Skills** Perception +3, Stealth +8\n- **Senses** passive Perception 13\n- **Languages** Common, Elvish, Sylvan\n- **Challenge** 1/4 (50 XP)\n\n#### Actions\n\n_**Longsword.**_ _Melee Weapon Attack:_ +2 to hit, reach 5 ft., one target. _Hit:_ 1 slashing damage.\n\n_**Shortbow.**_ _Ranged Weapon Attack:_ +6 to hit, range 40/160 ft., one target. _Hit:_ 1 piercing damage, and the target must succeed on a DC 10 Constitution saving throw or become poisoned for 1 minute. If its saving throw result is 5 or lower, the poisoned target falls unconscious for the same duration, or until it takes damage or another creature takes an action to shake it awake.\n\n_**Heart Sight.**_ The sprite touches a creature and magically knows the creature's current emotional state. If the target fails a DC 10 Charisma saving throw, the sprite also knows the creature's alignment. Celestials, fiends, and undead automatically fail the saving throw.\n\n_**Invisibility.**_ The sprite magically turns invisible until it attacks or casts a spell, or until its concentration ends (as if concentrating on a spell). Any equipment the sprite wears or carries is invisible with it.",
+          "image_region": {
+            "kind": "rect",
+            "x": 3296,
+            "y": 4086,
+            "width": 1549,
+            "height": 2087
+          }
+        },
+        {
+          "id": "R03",
+          "name": "The Inner Sanctum",
+          "state": "unexplored",
+          "tags": [
+            "encounter",
+            "special"
+          ],
+          "reaction_required": true,
+          "notes": "Do not run this as combat. The Djinni is a social and environmental encounter. Information it shares freely: (1) the guild masters' bodies are entombed in the collapsed vault to the south (R06); (2) a reliquary nearby holds the cult's name-records (R04); (3) it arrived 3 days ago when a desert storm tore open the upper temple. It will NOT share without Persuasion DC 16: why this specific crack exists, or what lies below. The Djinni is curious about the cult's history and genuinely not interested in harming the party \u2014 but it is ancient, proud, and will not be trifled with. The ritual is nearly complete; if the PCs leave it alone entirely and do nothing, the Djinni finishes in 2d6 turns and departs without incident.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "A column of shimmering heated air rises from a geometric pattern scratched into the floor \u2014 and within it, an enormous luminous figure slowly rotates, shifting between solid form and moving wind. The ceiling above it is gone, broken open to sky or deeper darkness. Sand blows upward from dunes heaped against the walls, caught in the updraft. The room smells of lightning and hot copper.",
+          "encounter_text": "1 Djinni (MM p. 144). Aware \u2014 it senses the party immediately and turns to regard them without moving from the ritual column. It speaks Common and Primordial. If addressed respectfully it will not attack and will converse. If attacked or if the ritual pattern on the floor is damaged, it becomes hostile \u2014 CR 11, this is not a fight the party can survive.",
+          "treasure_text": "",
+          "special_text": "The geometric pattern is a Binding Seal. A DC 14 Arcana check identifies it as a planar membrane patch \u2014 wild elemental wind is venting upward from a crack in the deep desert substrate below. If the circle is broken or the Djinni is attacked, one Dust Devil (Air Elemental stat block, MM p. 124, treat as CR 1 for XP) emerges at initiative count 20 each round for 1d4 rounds. A PC can assist the ritual (DC 12 Arcana check, must sustain concentration for 3 consecutive full rounds without casting or being hit). Success earns the Djinni's genuine gratitude: player's choice of one boon \u2014 a casting of Wind Walk, or the exact location of the reliquary next door (R04) plus a specific warning that the name-tablet niche is trapped and how to bypass it.",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                4771,
+                4011
+              ],
+              [
+                4687,
+                1729
+              ],
+              [
+                3611,
+                1711
+              ],
+              [
+                3555,
+                3650
+              ],
+              [
+                3259,
+                3622
+              ],
+              [
+                3286,
+                4011
+              ],
+              [
+                4734,
+                3993
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R04",
+          "name": "The Reliquary of Names",
+          "state": "unexplored",
+          "tags": [
+            "special",
+            "trap"
+          ],
+          "reaction_required": false,
+          "notes": "TRAP \u2014 niche (2), the name-tablet, only. Touching the crystal panel without first pressing the hidden release stud at the niche's base (DC 14 Perception to notice while examining the niche; DC 12 if the Djinni's boon warned about it) triggers a spring-loaded blade: DC 13 Dex save. Failure: 7 (2d6) slashing + 7 (2d6) poison damage. Success: half. The blade was coated in preserved assassin venom \u2014 still viable after centuries in a sealed, dry environment. The trap does not trigger if the stud is pressed first. KEY CROSS-LINK: Destroying the name-tablet before entering R02 or R06 removes the Wights and the Mummy entirely, making those rooms dramatically safer. DM should make the decision feel weighty \u2014 the party may not realize what they're disabling until they see the effect.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "This hexagonal room is lined floor to ceiling with shallow stone niches \u2014 most bare, their shelves collapsed or empty. Three niches near the far wall are sealed behind panels of pale crystal, clouded by centuries of still air. The room smells of cedar and something metallic beneath it. Nothing has moved here in a very long time.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "Three intact niches, left to right: (1) A preserved human hand resting palm-up on a velvet pad, wearing a signet ring bearing an eye-and-blade glyph. Worth 25 gp as jewelry. At DM's discretion, presenting it to cult undead (R02, R06) may grant a social advantage or brief hesitation \u2014 their binding recognizes the symbol of authority. (2) A name-tablet of fired clay, inscribed in Thieves' Cant \u2014 the true names of the seven founding guild masters. Destroying this tablet (any damage) releases all bound undead on this level: the Wights in R02 crumble; the Mummy in R06 never rises. Only 2 Shadows remain in R06. (3) A blackened brass oil lamp, sealed and unlit. Non-magical antique worth 30 gp. The Djinni (R03) is aware of its existence \u2014 it found the name in the cult records. There is nothing special about it beyond being old.",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 2052,
+            "y": 616,
+            "width": 2022,
+            "height": 1697
+          }
+        },
+        {
+          "id": "R05",
+          "name": "The Council Chamber",
+          "state": "unexplored",
+          "tags": [
+            "encounter"
+          ],
+          "reaction_required": false,
+          "notes": "Giant Scorpion is CR 3 \u2014 a single creature with Multiattack (2 claws + sting) and a lethal sting poison (DC 12 Con save, 4d10 poison on fail). At 3 PCs level 3, a surprise round targeting a low-Con character can be immediately lethal. No formal treasure. DM option: searching beneath the table (1 minute of work) turns up 1d6 \u00d7 5 gp in coins and small items swallowed or dragged in by the scorpion over the years. The painted judges on the walls are non-magical but deeply unsettling \u2014 DM may use them for atmosphere during the encounter.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "Long stone tables with geometric inlays fill the room, their surfaces caked with packed sand. The wooden benches around them have rotted to dark frames. Painted figures cover every wall \u2014 robed and masked, in postures of cold judgment, their hollow eyes watching from all sides. Something shifts once behind the central table. Then is still.",
+          "encounter_text": "1 Giant Scorpion (MM p. 327). Hostile \u2014 nested beneath the central stone table. When the first PC enters, the scorpion rolls Dexterity (Stealth) against that character's passive Perception. If it wins, it gets a surprise round; otherwise it emerges on initiative and immediately attacks the nearest creature. It will not pursue past the room's entrance.",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 485,
+            "y": 597,
+            "width": 1558,
+            "height": 1345
+          }
+        },
+        {
+          "id": "R06",
+          "name": "The Collapsed Vault",
+          "state": "unexplored",
+          "tags": [
+            "encounter",
+            "treasure"
+          ],
+          "reaction_required": false,
+          "notes": "LETHALITY NOTE: The Wight's Life Drain (DC 13 Con save, reduces HP max on fail) is dangerous but recoverable on a long rest \u2014 unlike Mummy Rot, it is not a death sentence. Ghoul paralysis (DC 10 Con save on Claw hit) is the primary threat: a paralyzed PC takes auto-crits, which can down someone fast. Smart play \u2014 kill the Ghouls first to eliminate paralysis, then focus the Wight \u2014 gives the party a real path to survival. KEY CROSS-LINK: If the name-tablet in R04 is destroyed before entering this room, the Wight does not rise (binding broken). Only the 2 Ghouls remain \u2014 survivable even if the party is already hurt. The funerary mask matching the signet ring in R04 is a thematic reward for attentive players: the hand in the reliquary belonged to this master.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "Half the ceiling has fallen. Great stone blocks lie tumbled in heaps, and drifted sand has buried everything to knee height. Against the far wall, wedged between two massive fallen slabs, a crypt facade is still visible \u2014 funerary glyphs, a bas-relief eye watching from above a sealed stone door. The rubble shifts. And then shifts again.",
+          "encounter_text": "1 Wight (MM p. 300) + 2 Ghouls (MM p. 148). All hostile. The Wight is the embalmed founding master \u2014 it rises from behind the crypt door at initiative count 20 on round 1. The two Ghouls are lesser masters interred in the rubble; they drag themselves upright on the Wight's first turn. The Wight commands the Ghouls (Ghouls act on the Wight's turn order). Priority: Ghouls claw the most lightly-armored target to trigger paralysis; the Wight uses Life Drain on paralyzed characters.",
+          "treasure_text": "Excavating the rubble near the crypt facade takes 10 minutes of noisy work. Roll a WM check at the start and again at the end regardless of turn timing. Inside the sealed crypt: a stone coffer containing 120 gp in antique desert coinage, a silver funerary mask worth 60 gp (bearing the eye-and-blade glyph \u2014 it matches the signet ring in R04), and a sealed clay jar containing 3 doses of Assassin's Blood poison (DMG p. 257).",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 123,
+            "y": 1943,
+            "width": 1864,
+            "height": 1911
+          }
+        }
+      ],
       "corridors": []
     }
   ]

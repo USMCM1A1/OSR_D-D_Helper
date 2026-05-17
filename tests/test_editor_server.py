@@ -129,6 +129,31 @@ class TestGet:
         finally:
             srv.shutdown()
 
+    def test_room_fragment_endpoint_returns_one_card(self, server):
+        """GET /room?level_number=N&room_id=R01 returns just that
+        room's card — used by the editor's BroadcastChannel listener
+        to swap a single card in place when /assistant applies a room."""
+        _, host, port = server
+        resp, body = _http_get(
+            host, port, "/room?level_number=1&room_id=R01")
+        assert resp.status == 200
+        text = body.decode("utf-8")
+        assert 'id="room-R01"' in text
+        assert 'name="level_number" value="1"' in text
+        # Only the card, no full-page chrome.
+        assert "<html" not in text.lower()
+
+    def test_room_fragment_endpoint_unknown_room_404(self, server):
+        _, host, port = server
+        resp, _ = _http_get(
+            host, port, "/room?level_number=1&room_id=GHOST")
+        assert resp.status == 404
+
+    def test_room_fragment_endpoint_missing_args_400(self, server):
+        _, host, port = server
+        resp, _ = _http_get(host, port, "/room?level_number=1")
+        assert resp.status == 400
+
 
 # --- POST --------------------------------------------------------------------
 
@@ -404,3 +429,334 @@ class TestFragmentSave:
             "tags": ["empty"],
         })
         assert resp.status == 303
+
+
+# --- Assistant page + apply --------------------------------------------------
+
+
+def _http_post_json(host, port, path, payload):
+    body = json.dumps(payload).encode("utf-8")
+    headers = {
+        "Content-Type": "application/json",
+        "Content-Length": str(len(body)),
+    }
+    conn = HTTPConnection(host, port, timeout=2)
+    conn.request("POST", path, body=body, headers=headers)
+    resp = conn.getresponse()
+    raw = resp.read()
+    conn.close()
+    return resp, raw
+
+
+class TestAssistantPage:
+    def test_get_renders_setup_card_when_cli_missing(self, server, monkeypatch):
+        # Force the CLI-missing branch by making which() return None.
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda _: None)
+        _, host, port = server
+        resp, body = _http_get(host, port, "/assistant")
+        assert resp.status == 200
+        assert b"Setup needed" in body
+        assert b"claude.com/download" in body
+        # No chat form is rendered when the CLI isn't available.
+        assert b'id="theme"' not in body
+
+    def test_get_renders_chat_form_when_cli_present(self, server, monkeypatch):
+        # Pretend the CLI is on PATH.
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda name: "/usr/local/bin/" + name)
+        _, host, port = server
+        resp, body = _http_get(host, port, "/assistant")
+        assert resp.status == 200
+        assert b'id="theme"' in body
+        assert b'id="start-btn"' in body
+
+    def test_apply_without_session_returns_400(self, server, monkeypatch):
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda name: "/usr/local/bin/" + name)
+        _, host, port = server
+        # Drop any leftover sessions from prior tests.
+        editor_server._assistant_sessions.clear()
+        resp, raw = _http_post_json(host, port, "/assistant/apply",
+                                    {"room_id": "R01"})
+        assert resp.status == 400
+        payload = json.loads(raw)
+        assert payload["error"] == "no_proposal"
+
+    def test_apply_writes_room_and_returns_card(self, server, dungeon_json):
+        # Inject a session with a pre-populated proposal so we can test
+        # the apply path without invoking the real CLI.
+        import dungeon_assistant as da
+        import dungeon as dungeon_mod
+        d = dungeon_mod.load(dungeon_json)
+        sess = da.AssistantSession(
+            dungeon_path=dungeon_json,
+            dungeon=d,
+            theme="test",
+            level_number=1,
+            party_level=3,
+            runner=lambda args: {  # never invoked on the apply path
+                "is_error": False, "result": "", "structured_output": {},
+                "session_id": "sesn-x",
+            },
+        )
+        sess._proposals["R01"] = da.RoomProposal(
+            id="R01", name="The Threshold",
+            tags=("encounter",),
+            reaction_required=True,
+            box_text="A vaulted hall.",
+            encounter_text="2 Skeletons (MM p.272). Hostile.",
+            notes="They charge on first sight.",
+        )
+        editor_server._assistant_sessions[dungeon_json.resolve()] = sess
+
+        _, host, port = server
+        resp, body = _http_post_json(host, port, "/assistant/apply",
+                                     {"room_id": "R01"})
+        assert resp.status == 200, body
+        # Returns a room-card HTML fragment.
+        assert b'id="room-R01"' in body
+        assert b"The Threshold" in body
+
+        # The dungeon JSON on disk now reflects the proposal.
+        d2 = dungeon_mod.load(dungeon_json)
+        room = d2.levels[0].rooms_by_id["R01"]
+        assert room.name == "The Threshold"
+        assert room.box_text == "A vaulted hall."
+        assert "encounter" in room.tags
+
+        # A backup file exists in the same folder.
+        baks = list(dungeon_json.parent.glob(dungeon_json.name + ".*.bak"))
+        assert len(baks) >= 1
+
+    def test_reset_clears_session(self, server, dungeon_json):
+        editor_server._assistant_sessions[dungeon_json.resolve()] = "sentinel"
+        _, host, port = server
+        resp, _ = _http_post_json(host, port, "/assistant/reset", {})
+        assert resp.status == 204
+        assert dungeon_json.resolve() not in editor_server._assistant_sessions
+
+
+class TestAssistantMultiDungeon:
+    """Multi-dungeon picker: ?dungeon=<folder> on GET, dungeon_folder
+    in POST bodies. The handler resolves a folder name under
+    dungeons_dir against the bound default and rejects anything that
+    doesn't live under that root."""
+
+    @pytest.fixture
+    def multi_dungeon_root(self, tmp_path):
+        """Build two dungeon folders under one root."""
+        root = tmp_path / "dungeons"
+        root.mkdir()
+        for name, party in [("alpha", 3), ("beta", 5)]:
+            folder = root / name
+            folder.mkdir()
+            payload = json.loads(json.dumps(SEED_DUNGEON))
+            payload["dungeon_name"] = f"The {name.title()} Dungeon"
+            payload["party_level"] = party
+            (folder / "dungeon.json").write_text(
+                json.dumps(payload, indent=2)
+            )
+        return root
+
+    @pytest.fixture
+    def multi_server(self, multi_dungeon_root):
+        bound = multi_dungeon_root / "alpha" / "dungeon.json"
+        srv, _ = editor_server.start_editor_server(
+            bound, port=0, dungeons_dir=multi_dungeon_root,
+        )
+        host, port = srv.server_address[:2]
+        try:
+            yield srv, host, port, multi_dungeon_root
+        finally:
+            srv.shutdown()
+
+    def test_picker_lists_all_dungeons_in_root(self, multi_server, monkeypatch):
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda n: "/usr/local/bin/" + n)
+        _, host, port, _ = multi_server
+        resp, body = _http_get(host, port, "/assistant")
+        assert resp.status == 200
+        # Both dungeons should appear in the picker dropdown.
+        assert b"Alpha Dungeon" in body
+        assert b"Beta Dungeon" in body
+        # Folder names round-trip in the option values.
+        assert b'value="alpha"' in body
+        assert b'value="beta"' in body
+
+    def test_get_with_dungeon_query_renders_that_dungeon(
+        self, multi_server, monkeypatch
+    ):
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda n: "/usr/local/bin/" + n)
+        _, host, port, _ = multi_server
+        resp, body = _http_get(host, port, "/assistant?dungeon=beta")
+        assert resp.status == 200
+        # H1 reflects the picked dungeon.
+        assert b"Beta Dungeon" in body
+        # The hidden current-dungeon-folder input is "beta".
+        assert b'id="current-dungeon-folder" value="beta"' in body
+        # Party level default mirrors the picked dungeon.
+        assert b'value="5"' in body
+
+    def test_get_with_unknown_dungeon_404s(self, multi_server, monkeypatch):
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda n: "/usr/local/bin/" + n)
+        _, host, port, _ = multi_server
+        resp, _ = _http_get(host, port, "/assistant?dungeon=ghost")
+        assert resp.status == 404
+
+    def test_get_rejects_path_traversal(self, multi_server, monkeypatch):
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda n: "/usr/local/bin/" + n)
+        _, host, port, _ = multi_server
+        # `..` would otherwise resolve outside dungeons_dir.
+        resp, _ = _http_get(host, port, "/assistant?dungeon=../etc")
+        assert resp.status == 404
+
+    def test_assistant_page_marks_levels_as_ready_or_not(
+        self, multi_server, monkeypatch
+    ):
+        """Level dropdown options carry data-ready/data-n-annotated/
+        data-image-present attributes the JS uses to drive the
+        readiness banner. Levels with rooms but no map image are
+        flagged not-ready, levels with image+rooms are ready."""
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda n: "/usr/local/bin/" + n)
+        _, host, port, _ = multi_server
+        # SEED_DUNGEON's level 1 has a couple rooms but no PNG file
+        # in tmp_path → image_present should be 0, ready should be 0.
+        resp, body = _http_get(host, port, "/assistant?dungeon=alpha")
+        assert resp.status == 200
+        text = body.decode("utf-8")
+        assert 'data-ready="0"' in text
+        assert 'data-image-present="0"' in text
+        # The "(not ready)" suffix shows in the option label too.
+        assert "(not ready)" in text
+
+    def test_assistant_start_refuses_when_level_has_no_annotated_rooms(
+        self, multi_server, monkeypatch
+    ):
+        """Start is gated server-side too — even if a JS-disabled
+        client POSTed to /assistant/start, an empty level returns 400
+        with a level_not_ready error and the message that explains
+        what to fix."""
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda n: "/usr/local/bin/" + n)
+        _, host, port, root = multi_server
+        # Strip image_region from every room on alpha's L1 so it counts
+        # as un-annotated.
+        alpha_path = root / "alpha" / "dungeon.json"
+        d = dungeon_mod.load(alpha_path)
+        for r in d.levels[0].rooms:
+            r.image_region = None
+        dungeon_mod.dump(d, alpha_path)
+
+        resp, raw = _http_post_json(host, port, "/assistant/start", {
+            "theme": "tomb of test",
+            "level_number": 1,
+            "party_level": 3,
+            "model": "claude-sonnet-4-6",
+            "dungeon_folder": "alpha",
+        })
+        assert resp.status == 400
+        payload = json.loads(raw)
+        assert payload["error"] == "level_not_ready"
+        assert "annotated" in payload["message"]
+        assert "annotation" in payload["message"]
+
+    def test_assistant_page_renders_theme_textarea_not_input(
+        self, multi_server, monkeypatch,
+    ):
+        """The Theme field is a multi-line textarea so the DM can paste
+        a paragraph-length concept (level structure, current events,
+        key NPCs)."""
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda n: "/usr/local/bin/" + n)
+        _, host, port, _ = multi_server
+        resp, body = _http_get(host, port, "/assistant")
+        assert resp.status == 200
+        text = body.decode("utf-8")
+        # Textarea, not single-line input.
+        assert '<textarea id="theme"' in text
+        # Field label hints at the richer purpose.
+        assert "Theme &amp; concept" in text or "Theme & concept" in text
+        # Old single-line input shape is gone.
+        assert '<input type="text" id="theme"' not in text
+
+    def test_assistant_start_accepts_multiline_theme(
+        self, multi_server, monkeypatch,
+    ):
+        """A multi-paragraph theme should round-trip through the start
+        endpoint to the AssistantSession (verified by the level-not-ready
+        guard firing AFTER the theme is read — proves the body parsed)."""
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda n: "/usr/local/bin/" + n)
+        _, host, port, root = multi_server
+        # Strip image_region so start fails on level_not_ready instead
+        # of blowing budget on a real CLI call. We only care that the
+        # multi-line theme parsed.
+        alpha_path = root / "alpha" / "dungeon.json"
+        d = dungeon_mod.load(alpha_path)
+        for r in d.levels[0].rooms:
+            r.image_region = None
+        dungeon_mod.dump(d, alpha_path)
+
+        long_theme = (
+            "A long-lost assassins cult.\n\n"
+            "Three levels: living quarters, torture and dungeon "
+            "areas, then the temple and holy relics.\n\n"
+            "Recently a desert genie has burst in and is conducting a "
+            "ritual on the third level."
+        )
+        resp, raw = _http_post_json(host, port, "/assistant/start", {
+            "theme": long_theme,
+            "level_number": 1,
+            "party_level": 3,
+            "model": "claude-sonnet-4-6",
+            "dungeon_folder": "alpha",
+        })
+        # Falls through to the level_not_ready guard, which is exactly
+        # the post-parse path — proves the body parsed cleanly.
+        assert resp.status == 400
+        payload = json.loads(raw)
+        assert payload["error"] == "level_not_ready"
+
+    def test_apply_with_dungeon_folder_targets_picked_dungeon(
+        self, multi_server, monkeypatch
+    ):
+        # Inject a session against `beta` (not the bound default `alpha`)
+        # and confirm Apply writes to beta's dungeon.json.
+        import dungeon_assistant as da
+        import shutil
+        monkeypatch.setattr(shutil, "which", lambda n: "/usr/local/bin/" + n)
+        _, host, port, root = multi_server
+        beta_path = root / "beta" / "dungeon.json"
+        d_beta = dungeon_mod.load(beta_path)
+        sess = da.AssistantSession(
+            dungeon_path=beta_path,
+            dungeon=d_beta,
+            theme="x",
+            level_number=1,
+            party_level=5,
+            runner=lambda args: {"is_error": False, "result": "",
+                                  "structured_output": {},
+                                  "session_id": "sesn-x"},
+        )
+        sess._proposals["R01"] = da.RoomProposal(
+            id="R01", name="Beta Hall",
+            tags=("encounter",),
+            box_text="A beta-only room.",
+        )
+        editor_server._assistant_sessions[beta_path.resolve()] = sess
+
+        resp, body = _http_post_json(host, port, "/assistant/apply",
+                                     {"room_id": "R01",
+                                      "dungeon_folder": "beta"})
+        assert resp.status == 200, body
+        assert b"Beta Hall" in body
+        # Beta's JSON got the change; alpha's didn't.
+        d_beta_after = dungeon_mod.load(beta_path)
+        assert d_beta_after.levels[0].rooms_by_id["R01"].name == "Beta Hall"
+        d_alpha_after = dungeon_mod.load(root / "alpha" / "dungeon.json")
+        assert d_alpha_after.levels[0].rooms_by_id["R01"].name != "Beta Hall"

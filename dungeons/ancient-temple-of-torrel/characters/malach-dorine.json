@@ -1,0 +1,91 @@
+{
+  "name": "Malach Dorine",
+  "class": "bard",
+  "level": 1,
+  "ac": 11,
+  "hp_max": 8,
+  "speed": 30,
+  "init_bonus": 0,
+  "ability_mods": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 1,
+    "wis": 1,
+    "cha": 3
+  },
+  "saves": {
+    "str": 0,
+    "dex": 2,
+    "con": 0,
+    "int": 1,
+    "wis": 1,
+    "cha": 5
+  },
+  "attacks": [
+    {
+      "name": "Rapier",
+      "to_hit": 2,
+      "damage": "1d8",
+      "damage_type": "Piercing",
+      "range": "melee"
+    },
+    {
+      "name": "Dagger",
+      "to_hit": 2,
+      "damage": "1d4",
+      "damage_type": "Piercing",
+      "range": "melee"
+    },
+    {
+      "name": "Unarmed Strike",
+      "to_hit": 2,
+      "damage": "1",
+      "damage_type": "Bludgeoning",
+      "range": "melee"
+    }
+  ],
+  "spells": {
+    "slots": {
+      "1": 2
+    },
+    "memorized": [
+      {
+        "name": "Vicious Mockery",
+        "level": 0,
+        "type": "save_attack",
+        "save": "WIS",
+        "dc": 13,
+        "damage": "1d4",
+        "half_on_save": false,
+        "aoe": false
+      },
+      {
+        "name": "Dissonant Whispers",
+        "level": 1,
+        "type": "save_attack",
+        "save": "WIS",
+        "dc": 13,
+        "damage": "3d6",
+        "half_on_save": true,
+        "aoe": false
+      },
+      {
+        "name": "Sleep",
+        "level": 1,
+        "type": "save_attack",
+        "dc": 13,
+        "damage": "5d8",
+        "half_on_save": false,
+        "aoe": true
+      }
+    ]
+  },
+  "features": {
+    "sneak_attack_dice": 0,
+    "second_wind": false,
+    "divine_smite_slots_usable": false,
+    "rage": false
+  },
+  "tactics_notes": "Fragile frontliner \u2014 AC 11, 8 HP. Open with Sleep (5d8 HP pool, no save, AoE 20 ft sphere) to neutralise weak enemies before combat begins. Use Vicious Mockery (WIS DC 13) on failed save to deal 1d4 psychic and impose disadvantage on the target's next attack \u2014 best spent protecting low-AC allies. Dissonant Whispers (WIS DC 13, 3d6 psychic, half on save) forces movement and burns enemy reactions. Melee with Rapier (Finesse, +2/1d8) only when cornered \u2014 DEX 10 means no AC benefit from Finesse. Bardic Inspiration (bonus action, 3/long rest) grants a d6 die to an ally for an ability check, attack roll, or saving throw; apply reactively after seeing a near-miss roll. Fey Ancestry: advantage on saves vs. charm, immune to magical sleep."
+}

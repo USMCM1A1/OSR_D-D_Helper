@@ -597,6 +597,77 @@ class TestRestoreFogOfWar:
             s.close()
 
 
+class TestScaffoldDungeon:
+    """New Dungeon flow: scaffold a folder + minimal valid dungeon.json
+    on a free-text name. Used by the pygame Options menu's New Dungeon
+    modal."""
+
+    def test_creates_loadable_dungeon(self, tmp_path: Path) -> None:
+        target = tmp_path / "scaffold-test"
+        json_path = Session.scaffold_dungeon(target, name="Tomb of Test")
+        assert json_path.exists()
+        assert json_path.parent == target
+        d = dungeon.load(json_path)
+        assert d.name == "Tomb of Test"
+        assert d.party_level == 3
+        assert len(d.levels) == 1
+        # Zero rooms — DM annotates them in pygame.
+        assert len(d.levels[0].rooms) == 0
+        # Default level points at level1.png. The image-existence check
+        # auto-skips when zero referenced images are present, so the
+        # JSON loads cleanly even though level1.png doesn't exist yet.
+        assert d.levels[0].map_image == "level1.png"
+
+    def test_party_size_and_level_overrides(self, tmp_path: Path) -> None:
+        target = tmp_path / "sized"
+        Session.scaffold_dungeon(
+            target, name="Sized", party_level=7, party_size=2,
+        )
+        d = dungeon.load(target / "dungeon.json")
+        assert d.party_level == 7
+        assert d.party.size == 2
+        assert len(d.party.characters) == 2
+
+    def test_existing_folder_raises(self, tmp_path: Path) -> None:
+        target = tmp_path / "occupied"
+        target.mkdir()
+        with pytest.raises(FileExistsError):
+            Session.scaffold_dungeon(target, name="x")
+
+    def test_empty_name_raises(self, tmp_path: Path) -> None:
+        with pytest.raises(ValueError, match="empty"):
+            Session.scaffold_dungeon(tmp_path / "x", name="   ")
+
+    def test_session_opens_against_scaffolded_dungeon(
+        self, tmp_path: Path
+    ) -> None:
+        # End-to-end: scaffold → open via Session.open_dungeon. This is
+        # the path the New Dungeon UI takes.
+        target = tmp_path / "endtoend"
+        Session.scaffold_dungeon(target, name="End To End")
+        s = Session.open_dungeon(target)
+        try:
+            assert s.tracker.turn == 0
+            assert s.dungeon.name == "End To End"
+        finally:
+            s.close()
+
+
+class TestSlugify:
+    @pytest.mark.parametrize("inp,expected", [
+        ("Tomb of the Iron Lich", "tomb-of-the-iron-lich"),
+        ("  --   The   Sunken Vault  ", "the-sunken-vault"),
+        ("CamelCase Goes Lower", "camelcase-goes-lower"),
+        ("digits 123 ok", "digits-123-ok"),
+        ("!!!—weird—chars???", "weird-chars"),
+        ("", "untitled-dungeon"),
+        ("   ", "untitled-dungeon"),
+        ("/etc/passwd", "etc-passwd"),  # path-traversal chars stripped
+    ])
+    def test_slug_cases(self, inp, expected):
+        assert Session.slugify_dungeon_name(inp) == expected
+
+
 class TestResetProgress:
     """Phase: Reset Dungeon Progress wipes runtime state to a fresh-
     session baseline (turn=0, fog, supplies, exhaustion, journal,

@@ -491,6 +491,89 @@ class Session:
         return backup
 
     @staticmethod
+    def scaffold_dungeon(
+        folder: str | Path,
+        *,
+        name: str,
+        party_level: int = 3,
+        party_size: int = 4,
+    ) -> Path:
+        """Create a new dungeon folder with a minimal valid dungeon.json.
+        Designed for the "New Dungeon…" UI flow: the DM types a name in
+        a modal, the app scaffolds the folder, and they drop their level
+        PNG in afterwards.
+
+        The scaffolded dungeon has exactly one level (`level1.png`),
+        zero rooms (the DM annotates them in pygame), and a placeholder
+        WM table. PNGs don't need to exist yet — the dungeon-loader's
+        image-existence check is auto-skipped when zero referenced
+        images are present, so the new dungeon opens cleanly until the
+        DM drops in their map.
+
+        Returns the path to the created dungeon.json. Raises
+        FileExistsError if `folder` already exists, ValueError if
+        `name` is empty after trimming."""
+        clean_name = (name or "").strip()
+        if not clean_name:
+            raise ValueError("dungeon name cannot be empty")
+        folder = Path(folder)
+        if folder.exists():
+            raise FileExistsError(f"{folder} already exists")
+        folder.mkdir(parents=True)
+
+        characters = [
+            {"name": f"PC {i + 1}", "darkvision": False, "exhaustion": 0}
+            for i in range(max(1, party_size))
+        ]
+        scaffold = {
+            "dungeon_name": clean_name,
+            "party_level": int(party_level),
+            "current_level": 1,
+            "party": {
+                "size": int(party_size),
+                "characters": characters,
+            },
+            "levels": [{
+                "level_number": 1,
+                "display_name": "Level 1",
+                "map_image": "level1.png",
+                "map_image_scale": 1.0,
+                "wm_check_method": "d20",
+                "wm_check_threshold": 18,
+                "wm_check_frequency": "every_turn",
+                "wandering_monster_table": [
+                    {"roll": 1, "encounter": "TBD"},
+                    {"roll": 2, "encounter": "TBD"},
+                    {"roll": 3, "encounter": "TBD"},
+                ],
+                "rooms": [],
+                "corridors": [],
+            }],
+        }
+        json_path = folder / DUNGEON_JSON_NAME
+        dungeon_mod.atomic_write_text(
+            json_path, json.dumps(scaffold, indent=2) + "\n"
+        )
+        return json_path
+
+    @staticmethod
+    def slugify_dungeon_name(name: str) -> str:
+        """Normalise a free-text dungeon name into a folder-safe slug
+        (lowercase, hyphenated, alphanumeric). Used by the New Dungeon
+        modal to translate the user's typed name into a folder name."""
+        out: list[str] = []
+        prev_dash = True  # collapse leading dashes
+        for ch in (name or "").strip().lower():
+            if ch.isalnum():
+                out.append(ch)
+                prev_dash = False
+            elif not prev_dash:
+                out.append("-")
+                prev_dash = True
+        slug = "".join(out).strip("-")
+        return slug or "untitled-dungeon"
+
+    @staticmethod
     def list_dungeons(root: str | Path) -> list[DungeonInfo]:
         """Walk `root` (typically PROJECT_ROOT/dungeons/) and return one
         DungeonInfo per folder containing a valid dungeon.json."""

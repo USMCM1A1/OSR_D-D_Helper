@@ -397,7 +397,18 @@ This replaces the prior "war room / dark background / amber + sans-serif" direct
 - **pygame** for rendering and input
 - **SQLite** via `sqlite3` stdlib for persistence
 - **JSON** for dungeon definition files
-- Fully local, no network required
+- Fully local, no network required for play, annotation, or editing
+- **Optional**: the dungeon assistant at
+  `http://127.0.0.1:8765/assistant` (chat-style room population from
+  a theme + level + party level, with vision on the level PNG)
+  subprocesses the local `claude` CLI and rides on Claude Code's
+  existing subscription auth — no separate API key, no extra
+  Python deps. Install Claude Code from claude.com/download and run
+  `claude login` if you haven't already. The assistant is the only
+  feature that calls out to a remote service, and only when the DM
+  clicks Start session. Without Claude Code installed, the assistant
+  page renders a setup-instructions card and the rest of the app
+  behaves identically.
 - Target OS: macOS (cross-platform compatible)
 
 ---

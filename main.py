@@ -46,6 +46,115 @@ DEFAULT_EDITOR_PORT = 8765
 MIN_TAB_REOPEN_SECONDS = 60.0
 
 
+def _ensure_editor_port_free(port: int, host: str = "127.0.0.1") -> bool:
+    """Make sure `port` is bindable. If it's held by a stale instance
+    of this same app (e.g. the previous run didn't shut down cleanly
+    when the terminal closed), kill it and proceed. If something else
+    owns the port, print a clear message and return False so `main`
+    can exit non-zero.
+
+    Returns True when the port is free or was successfully freed."""
+    import errno
+    import os
+    import signal as _signal
+    import socket
+    import subprocess
+
+    def _try_bind() -> bool:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            s.bind((host, port))
+            return True
+        except OSError as e:
+            if e.errno != errno.EADDRINUSE:
+                raise
+            return False
+        finally:
+            s.close()
+
+    if _try_bind():
+        return True
+
+    # Identify what's holding the port. lsof is preinstalled on macOS;
+    # if it's missing we fall back to the generic error path.
+    try:
+        result = subprocess.run(
+            ["lsof", "-ti", f":{port}", "-sTCP:LISTEN"],
+            capture_output=True, text=True, timeout=5, check=False,
+        )
+        pids = [int(p) for p in result.stdout.split() if p.strip().isdigit()]
+    except (FileNotFoundError, subprocess.SubprocessError):
+        pids = []
+
+    project_root = str(PROJECT_ROOT.resolve())
+    own_pids: list[int] = []
+    foreign_descriptions: list[str] = []
+    for pid in pids:
+        if pid == os.getpid():
+            continue
+        try:
+            ps = subprocess.run(
+                ["ps", "-p", str(pid), "-o", "command="],
+                capture_output=True, text=True, timeout=5, check=False,
+            )
+            cmdline = ps.stdout.strip()
+        except subprocess.SubprocessError:
+            cmdline = ""
+        # A stale instance of this app: a Python process running
+        # main.py from this project directory. We won't kill anything
+        # else.
+        if "main.py" in cmdline and project_root in cmdline:
+            own_pids.append(pid)
+        else:
+            foreign_descriptions.append(
+                f"  pid={pid}: {cmdline[:90] or '(unknown command)'}"
+            )
+
+    for pid in own_pids:
+        print(
+            f"[port {port}] previous instance still running (pid={pid}); "
+            f"sending SIGTERM",
+            file=sys.stderr,
+        )
+        try:
+            os.kill(pid, _signal.SIGTERM)
+        except (OSError, ProcessLookupError):
+            continue
+        # Wait up to ~3 s for the OS to release the socket. Re-probe
+        # rather than sleep blindly so the common case is fast.
+        for _ in range(15):
+            time.sleep(0.2)
+            if _try_bind():
+                return True
+        # SIGTERM didn't work — escalate to SIGKILL and try once more.
+        try:
+            os.kill(pid, _signal.SIGKILL)
+        except (OSError, ProcessLookupError):
+            pass
+        for _ in range(10):
+            time.sleep(0.2)
+            if _try_bind():
+                return True
+
+    if foreign_descriptions:
+        print(
+            f"\nPort {port} is in use by something other than this app:",
+            file=sys.stderr,
+        )
+        for desc in foreign_descriptions:
+            print(desc, file=sys.stderr)
+    else:
+        print(f"\nPort {port} is in use.", file=sys.stderr)
+    print(
+        f"\nTo free it manually:\n"
+        f"  lsof -ti :{port} | xargs kill\n"
+        f"...then re-run.",
+        file=sys.stderr,
+    )
+    return False
+
+
 class BrowserOpener:
     """webbrowser.open with per-URL rate limiting and stderr tracing."""
 
@@ -99,7 +208,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                    help="Play mode: skip the localhost editor server and "
                         "the browser tabs. Annotation mode (A) still works "
                         "in-pygame for mid-session room sketches; the "
-                        "browser room editor is disabled.")
+                        "browser room editor and the dungeon assistant "
+                        "are both unavailable in play mode.")
     p.add_argument("--dungeons-dir", type=Path, default=DEFAULT_DUNGEONS_DIR,
                    help="Override the dungeons/ root directory used by --list.")
     return p.parse_args(argv)
@@ -231,8 +341,11 @@ def main(argv: list[str] | None = None) -> int:
         server = None
         editor_url = None
         if not args.play:
+            if not _ensure_editor_port_free(DEFAULT_EDITOR_PORT):
+                return 2
             server, _thread = editor_server.start_editor_server(
                 json_path, port=DEFAULT_EDITOR_PORT,
+                dungeons_dir=args.dungeons_dir,
             )
             bound_port = server.server_address[1]
             editor_url = f"http://127.0.0.1:{bound_port}/"

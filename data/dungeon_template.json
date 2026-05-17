@@ -1,0 +1,154 @@
+{
+  "dungeon_name": "",
+  "party_level": 1,
+  "current_level": 1,
+  "party": {
+    "size": 4,
+    "characters": [
+      {
+        "name": "",
+        "darkvision": false,
+        "exhaustion": 0
+      },
+      {
+        "name": "",
+        "darkvision": false,
+        "exhaustion": 0
+      },
+      {
+        "name": "",
+        "darkvision": false,
+        "exhaustion": 0
+      },
+      {
+        "name": "",
+        "darkvision": false,
+        "exhaustion": 0
+      }
+    ]
+  },
+  "levels": [
+    {
+      "level_number": 1,
+      "display_name": "Level 1 \u2014 ",
+      "map_image": "target_dungeon_maps/.png",
+      "map_image_scale": 1.0,
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": ""
+        },
+        {
+          "roll": 2,
+          "encounter": ""
+        },
+        {
+          "roll": 3,
+          "encounter": ""
+        }
+      ],
+      "rooms": [
+        {
+          "id": "R01",
+          "name": "",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          }
+        },
+        {
+          "id": "R02",
+          "name": "",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          }
+        }
+      ],
+      "corridors": []
+    },
+    {
+      "level_number": 2,
+      "display_name": "Level 2 \u2014 ",
+      "map_image": "target_dungeon_maps/.png",
+      "map_image_scale": 1.0,
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": ""
+        },
+        {
+          "roll": 2,
+          "encounter": ""
+        },
+        {
+          "roll": 3,
+          "encounter": ""
+        }
+      ],
+      "rooms": [],
+      "corridors": []
+    },
+    {
+      "level_number": 3,
+      "display_name": "Level 3 \u2014 ",
+      "map_image": "target_dungeon_maps/.png",
+      "map_image_scale": 1.0,
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": ""
+        },
+        {
+          "roll": 2,
+          "encounter": ""
+        },
+        {
+          "roll": 3,
+          "encounter": ""
+        }
+      ],
+      "rooms": [],
+      "corridors": []
+    }
+  ]
+}

@@ -1,0 +1,995 @@
+{
+  "dungeon_name": "Reliquary of Whispering Steel",
+  "party_level": 3,
+  "current_level": 1,
+  "party": {
+    "size": 4,
+    "characters": [
+      {
+        "name": "PC 1",
+        "darkvision": false,
+        "exhaustion": 0
+      },
+      {
+        "name": "PC 2",
+        "darkvision": false,
+        "exhaustion": 0
+      },
+      {
+        "name": "PC 3",
+        "darkvision": false,
+        "exhaustion": 0
+      },
+      {
+        "name": "PC 4",
+        "darkvision": false,
+        "exhaustion": 0
+      }
+    ]
+  },
+  "levels": [
+    {
+      "level_number": 1,
+      "display_name": "Level 1",
+      "map_image": "level1.png",
+      "map_image_scale": 1.0,
+      "challenge_rating": "",
+      "wm_check_method": "d20",
+      "wm_check_threshold": 18,
+      "wm_check_frequency": "every_turn",
+      "wm_check_every_n_turns": 1,
+      "wandering_monster_table": [
+        {
+          "roll": 1,
+          "encounter": "TBD"
+        },
+        {
+          "roll": 2,
+          "encounter": "TBD"
+        },
+        {
+          "roll": 3,
+          "encounter": "TBD"
+        }
+      ],
+      "rooms": [
+        {
+          "id": "R01",
+          "name": "The Naming Hall",
+          "state": "unexplored",
+          "tags": [
+            "special"
+          ],
+          "reaction_required": false,
+          "notes": "Pick one dead warrior's name before the session and plant it consistently: bracket in R01, bolt in R02, plinth in R09, parchment inventory in R10. No treasure, no combat \u2014 this room exists to establish that the dungeon notices the party and will keep trying to reach them.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "The smell of old iron reaches you before you cross the threshold. A broad vaulted hall stretches ahead, both walls lined with empty iron weapon-mounts \u2014 each bracket sized for a different blade. The stone between them is darker where the weapons once hung. It is very quiet, and then it is not.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "Whisper contact \u2014 the dungeon's introduction. Any character who spends more than one round here hears their own name spoken softly in a voice they almost recognize. The first character to hear their name makes a DC 12 WIS saving throw. Failure: they spend their next action moving involuntarily 10 feet toward the far corridor (free movement, no attack of opportunity triggered). Success: they feel observed but retain full control. The effect resets each time a new group enters. A DC 14 Perception check on the weapon-mounts finds a name scored deep into the iron at the base of one bracket \u2014 old script, not any living character's name. It matches a name the party will encounter again. Link this name to R02's crossbow bolt and R09's empty plinth.",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 2723,
+            "y": 4491,
+            "width": 408,
+            "height": 2187
+          }
+        },
+        {
+          "id": "R02",
+          "name": "The Wire",
+          "state": "unexplored",
+          "tags": [
+            "trap"
+          ],
+          "reaction_required": false,
+          "notes": "Tripwire: DC 14 Perception to spot before triggering (advantage if actively searching the floor). DC 12 DEX save to avoid if triggered by moving at normal pace; moving slowly (half speed) gives advantage on the save. On failure: a wall-mounted crossbow fires (+5 to hit, 2d6 piercing). The bolt is engraved with a warrior's name \u2014 the same name from R01's bracket and R09's plinth; this is intentional and should feel eerie. After firing, anyone within 10 feet hears that name whispered once, barely audible, from no discernible direction. Single-use trap. DC 13 Investigation after the bolt fires reveals the crossbow mechanism set in a carved recess in the wall \u2014 not hidden, just easy to miss until you know where to look.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "A low passage connecting the entrance to the halls beyond. The floor is dust-thick and undisturbed \u2014 except for a faint glint at shin height, strung taut between the walls.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 3118,
+            "y": 4900,
+            "width": 1280,
+            "height": 1038
+          }
+        },
+        {
+          "id": "R03",
+          "name": "R03",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 3118,
+            "y": 5938,
+            "width": 1377,
+            "height": 297
+          }
+        },
+        {
+          "id": "R04",
+          "name": "Basin Court",
+          "state": "unexplored",
+          "tags": [
+            "special"
+          ],
+          "reaction_required": false,
+          "notes": "Basin 3 is the key mechanical reward \u2014 a genuine safe haven from the R10 wights if the party discovers it. Don't announce it; let observation earn it. Basin 1 is DM prep: decide before the session exactly what the vision shows for the next room the drinker enters, and keep it honest. If players catch the pattern they will use it as a scouting tool, which is correct play. Do not fake the vision.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "The room is round, the ceiling high and dark. Three stone basins sit at equal intervals in the floor, connected by shallow channels cut in the stone. The first holds clear, still water. The second, something dark that does not move. The third is dry \u2014 its basin cracked and stained the deep rust of old blood.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "Three basins, three effects. Basin 1 (clear water): A character who drinks makes a DC 13 WIS save. Failure: they experience a 5-second auditory fragment from the next distinct room they enter \u2014 voices, weapon-sounds, a rough number or direction. The information is directionally accurate but imprecise ('...two of them, near the far wall...'). Success: no effect; water tastes of cold minerals. Basin 2 (dark fluid, congealed blood): Touching it deals 1d4 necrotic damage. The fluid whispers every party member's name aloud to the whole room. The creature that touched it gains advantage on death saving throws until a long rest. If collected in a container, the fluid evaporates within 1 minute. Basin 3 (dry, cracked): DC 15 Investigation reveals a warding symbol inside \u2014 a broken sword. Undead without a controlling intelligence cannot approach within 5 feet of this basin. Undead from R10 will not willingly enter this room. This fact is not obvious until the party witnesses it in play.",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 4481,
+            "y": 4367,
+            "width": 456,
+            "height": 1993
+          }
+        },
+        {
+          "id": "R05",
+          "name": "Gallery of Blades",
+          "state": "unexplored",
+          "tags": [
+            "encounter",
+            "treasure"
+          ],
+          "reaction_required": true,
+          "notes": "Alternative resolution: a character who sheathes all weapons and approaches with open hands may attempt DC 14 CHA (Persuasion). Success: one blade stills and dips toward them \u2014 it will orbit the character at 5 feet for the rest of the dungeon. Non-magical, but it whispers softly (mostly distances and rough counts, often slightly wrong). Failure triggers immediate hostility from all three. The whispering blade is the dungeon trying to be helpful; it does not know how to stop. If the party drank from Basin 1 in R04 before entering here, the fragment they heard described this room \u2014 reward players who make the connection.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "Weapons cover every surface \u2014 hung on wall-pegs, racked floor to ceiling, arranged on pedestals worn smooth by old hands. The air smells of iron and something older. At the room's center, six blades hang at shoulder height, turning slowly in no discernible wind. They have been here a very long time. They are still moving.",
+          "encounter_text": "3 Flying Swords (MM p. 20). Currently in slow rotation \u2014 non-hostile until a creature moves within 5 feet of any blade or draws a weapon within the room. Fight as a cluster: 2 press the nearest threat while 1 circles toward the rear. Will not pursue beyond the room's doorways.",
+          "treasure_text": "A cedar case wedged beneath the central pedestal (DC 13 Investigation to find, takes 1 turn of searching): inside, a shortsword with a leather scabbard stamped with an unfamiliar clan-mark (non-magical antique, worth 40 gp), a dagger of exceptional balance (non-magical, worth 15 gp), and 28 gp in a worn canvas purse.",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 4280,
+            "y": 2948,
+            "width": 705,
+            "height": 1405
+          }
+        },
+        {
+          "id": "R06",
+          "name": "Resonance Chamber",
+          "state": "unexplored",
+          "tags": [
+            "trap"
+          ],
+          "reaction_required": false,
+          "notes": "THE LISTENING ROOM \u2014 self-resetting acoustic trap. Any sound louder than a whisper (normal speech, weapon clanking, combat noise, a dropped object) triggers the mechanism: the carved channels amplify and return the sound as a focused sonic burst. All creatures in the room make a DC 13 CON save or are stunned until the end of their next turn. The trap resets immediately and fires again on the next triggering sound. Silent movement and whisper-level communication are entirely safe. DC 14 Investigation (1 round examining the walls) identifies the channel pattern and the trigger mechanism \u2014 the party can then plan accordingly. Stuffing channels with cloth, wax, mud, or similar material (covering at least a quarter of the visible channels) reduces the save DC by 4. No treasure in this room \u2014 the room is the trap. A character who succeeds their save hears, beneath the sonic burst, something like a laugh.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "A low vaulted room with walls that lean slightly inward. The surface is pocked with hundreds of small carved channels running floor to ceiling in irregular patterns. The space feels close despite its size. Something about it wants to hear you.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 4410,
+            "y": 1803,
+            "width": 507,
+            "height": 1146
+          }
+        },
+        {
+          "id": "R07",
+          "name": "The Quiet Room",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "No encounter, no active trap. Hidden treasure: DC 15 passive Perception or DC 13 Investigation (1 turn searching) reveals a false panel in the bench's stone base, secured with an iron pin. Inside: a waxed leather pouch containing 55 gp and a carnelian set in silver wire (15 gp). Notable detail: this room has no whispers. A perceptive character (DC 13 Perception) notices the silence as conspicuous \u2014 and any magic weapon or whispering weapon the party carries has also gone quiet here. This is the only room on the level where the dungeon cannot speak. The reason is unknown. It should feel wrong rather than reassuring.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "A plain rectangular room. Old weapon-racks stand collapsed in the far corner, their wood long rotted from iron crossbars. A stone bench runs the length of the south wall. The dust here has not been touched.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 4902,
+            "y": 1788,
+            "width": 518,
+            "height": 1167
+          }
+        },
+        {
+          "id": "R08",
+          "name": "R08",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                5384,
+                1767
+              ],
+              [
+                5331,
+                1071
+              ],
+              [
+                3882,
+                1060
+              ],
+              [
+                3892,
+                1599
+              ],
+              [
+                4536,
+                1604
+              ],
+              [
+                4552,
+                1788
+              ],
+              [
+                5363,
+                1751
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R09",
+          "name": "Bound Warrior Hall",
+          "state": "unexplored",
+          "tags": [
+            "encounter",
+            "special"
+          ],
+          "reaction_required": true,
+          "notes": "The empty plinth is the Wight's own. Its bound weapon is what it currently carries \u2014 destroying the weapon kills it permanently with no possibility of undead resurrection. If the party takes the weapon without destroying it, the Wight will follow and bargain (it wants the weapon secured, not wielded). The Wight has been here centuries and knows the dungeon's broad layout; it will share information if treated as a person and not immediately attacked. Initial disposition: suspicious-neutral. Becomes hostile if the party damages the statues, draws weapons without acknowledging it first, or attacks. The name on this Wight's plinth matches the name from R01 and R02 \u2014 this is the through-line warrior. If possible, let the party read the plinth inscription before they realize the 'statue' at the far end is standing differently than the others.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "A long hall lined with stone plinths, each bearing a warrior carved in full detail \u2014 different armor, different weapons, different stances. Some are mid-strike. Some seem to face the door you entered through. A low hum fills the space, felt in the teeth more than heard. At the far end, one plinth stands empty.",
+          "encounter_text": "1 Wight (MM p. 300). Unaware \u2014 positioned at the empty plinth at the far end, motionless, facing away, weapon sheathed. Indistinguishable from the statues on casual inspection; DC 16 Perception or close approach reveals it breathes. Not immediately hostile; will speak if addressed. Will not pursue beyond the room.",
+          "treasure_text": "",
+          "special_text": "Each statue whispers when touched. Contact triggers a 3-5 second sensory fragment of that warrior's final moments \u2014 not words, just sensation: cold metal, sudden impact, the smell of smoke, a sound cut short. Any creature touching a statue makes a DC 12 WIS save or takes 1 psychic damage (involuntary empathy \u2014 not a trap, not avoidable except by not touching). A character who touches three or more statues and succeeds on all saves has assembled enough fragments to understand that each warrior's soul is bound to a specific weapon still somewhere in the dungeon, and that destroying a bound weapon destroys the soul permanently. This information is accurate.",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 3892,
+            "y": 490,
+            "width": 889,
+            "height": 575
+          }
+        },
+        {
+          "id": "R10",
+          "name": "The Coffin Alcoves",
+          "state": "unexplored",
+          "tags": [
+            "encounter",
+            "treasure"
+          ],
+          "reaction_required": true,
+          "notes": "The underlined item on the parchment should connect to a weapon the party has already encountered (the clan-marked shortsword from R05, or the whispering orbiting blade) or to a weapon still ahead in the dungeon \u2014 DM's call based on what the party found. Neither Wight will enter R04 (the basin ward blocks them). If the Wight in R09 became a tentative NPC ally, it warned the party that 'the sleepers in the south hall have broken their restraints' \u2014 players who heeded that warning arrive here less surprised. Both Wights will demand to know who sent the party and what they want with the relics; they will share information about the dungeon's original purpose if the party is persuasive and not immediately violent \u2014 but they define plunder broadly and are watching the party's hands.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "The room is lined on both sides with stone alcoves, each sized to hold a body. Most are sealed with carved lids. Several are not \u2014 the lids lie in pieces on the floor, and the wrappings inside have been shredded outward. Whatever was in those coffins opened them from inside.",
+          "encounter_text": "2 Wights (MM p. 300). One stands near the broken coffins, motionless, facing the wall \u2014 reacts to light sources or noise above a whisper. The second is in a far alcove with its lid closed but not locked (DC 13 Perception notices the lid trembles slightly with movement in the room). The alcove Wight rises on round 2 of combat, or immediately if its coffin is touched. Both may speak; both are bound and partially rational.",
+          "treasure_text": "A corroded iron box wedged into the wrappings of a broken coffin (DC 13 Investigation, takes 1 turn searching): 40 gp, a bone-handled dagger (non-magical, worth 12 gp), and a folded parchment listing six weapon types with a symbol beside each \u2014 a partial inventory of the reliquary's holdings, written in archaic Common. One item on the list is underlined twice.",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 2730,
+            "y": 3143,
+            "width": 397,
+            "height": 1360
+          }
+        },
+        {
+          "id": "R11",
+          "name": "R11",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 2516,
+            "y": 3473,
+            "width": 214,
+            "height": 177
+          }
+        },
+        {
+          "id": "R12",
+          "name": "R12",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                4451,
+                4857
+              ],
+              [
+                3143,
+                4851
+              ],
+              [
+                3150,
+                3162
+              ],
+              [
+                3461,
+                3148
+              ],
+              [
+                3343,
+                1286
+              ],
+              [
+                3343,
+                982
+              ],
+              [
+                3835,
+                919
+              ],
+              [
+                4063,
+                1674
+              ],
+              [
+                4091,
+                4283
+              ],
+              [
+                4437,
+                4408
+              ],
+              [
+                4423,
+                4816
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R13",
+          "name": "R13",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 1779,
+            "y": 504,
+            "width": 1557,
+            "height": 1391
+          }
+        },
+        {
+          "id": "R14",
+          "name": "R14",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 1648,
+            "y": 1874,
+            "width": 948,
+            "height": 1086
+          }
+        },
+        {
+          "id": "R15",
+          "name": "Wardens' Descent",
+          "state": "unexplored",
+          "tags": [
+            "stairs_down",
+            "special"
+          ],
+          "reaction_required": false,
+          "notes": "Secret phrase \u2014 learnable from R04 (Basin Court) if the party listened carefully to the carvings there: 'I serve the silence between strikes.' Spoken aloud, both columns bow and step aside without animating. The columns reset to inert once all creatures who passed have descended. They will not attack creatures retreating back up the stairs.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "Two staircases descend from opposite corners of the room, both cut from the same dark stone. Between them stand a pair of columns shaped as armored warriors, stone blades raised and crossed. Weapon-fragments are fused into the rock \u2014 hilts, broken pommels, the tips of old blades \u2014 as if the columns were built around the dead.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "Passage Protocol. When any creature moves within 10 feet of either staircase, one column speaks in a grinding stone voice: 'Name the blade you serve.' A creature that names any weapon it carries \u2014 mundane or magical \u2014 or speaks a blade-name learned from the dungeon's whispers may pass freely. A creature that gives no answer or tries to push through triggers both columns to animate and attack (use Animated Armor, MM p.19 \u00d7 2). A DC 14 Charisma (Deception) check allows a convincingly invented name to satisfy the demand. The columns are immune to charm, fear, and telepathy, and will not pursue below the threshold of the stairs.",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 1689,
+            "y": 2940,
+            "width": 823,
+            "height": 809
+          }
+        },
+        {
+          "id": "R16",
+          "name": "R16",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 1212,
+            "y": 3743,
+            "width": 899,
+            "height": 747
+          }
+        },
+        {
+          "id": "R17",
+          "name": "R17",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 1426,
+            "y": 615,
+            "width": 359,
+            "height": 844
+          }
+        },
+        {
+          "id": "R18",
+          "name": "The Slow Patrol",
+          "state": "unexplored",
+          "tags": [
+            "encounter"
+          ],
+          "reaction_required": true,
+          "notes": "Hard-to-Deadly encounter for 4 \u00d7 level 3 PCs (~750 adjusted XP). Intended as a skill challenge as much as a fight \u2014 ranged attacks, creative use of the center dead zone, or identifying and speaking one of the whispered names (see below) are all valid solutions. Each sword whispers a different warrior-name on each pass (DC 13 Perception to isolate a single name from the noise). One of the six names is Verantha \u2014 which is also the Banshee's name in R21. A character who speaks 'Verantha' aloud causes that sword to halt and hang motionless for 1 minute. Hilts recovered from destroyed swords still whisper faintly; this is purely atmospheric but may unsettle players who keep them.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "Six blades hang in the air, tracing a slow counter-clockwise circuit near the ceiling. The floor beneath them is scored with concentric rings from centuries of this orbit. They do not react to you entering. The room waits.",
+          "encounter_text": "6 Flying Swords (MM p.20). Unaware \u2014 completing their patrol circuit. Disposition shifts to hostile the moment any creature crosses within 10 feet of the patrol ring (faint carved lines mark the boundary). Tactical note: the room's center is a dead zone the swords never enter; a party that holds the center can attack any sword that commits inward, getting one free attack before it reaches them. The swords do not pursue outside the room.",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                1745,
+                594
+              ],
+              [
+                1378,
+                601
+              ],
+              [
+                1371,
+                1168
+              ],
+              [
+                776,
+                1155
+              ],
+              [
+                782,
+                691
+              ],
+              [
+                1170,
+                677
+              ],
+              [
+                1177,
+                566
+              ],
+              [
+                1343,
+                587
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R19",
+          "name": "R19",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                1661,
+                552
+              ],
+              [
+                1641,
+                289
+              ],
+              [
+                879,
+                303
+              ],
+              [
+                893,
+                649
+              ],
+              [
+                1135,
+                642
+              ],
+              [
+                1163,
+                525
+              ],
+              [
+                1648,
+                552
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R20",
+          "name": "The Vapor Hall",
+          "state": "unexplored",
+          "tags": [
+            "trap"
+          ],
+          "reaction_required": false,
+          "notes": "TRAP \u2014 Memory Vapor. Trigger: pressure plate 5 feet inside the entrance (DC 14 Perception to notice the faint seam in the floor; DC 13 Thieves' Tools to disarm). Effect: chamber floods with memory vapor. Each creature inside makes a DC 13 Wisdom saving throw. Failure: creature is overwhelmed by hallucinated combat \u2014 phantom opponents only it can see. It is Incapacitated for 1d4 rounds. Success: blurry shapes, the sound of clashing steel, no mechanical effect. Vapor dissipates after 1 minute; trap resets automatically after 1 hour. Key detail: any creature that fails the save receives a whisper during their hallucination \u2014 a specific name and a specific room number, accurate. The dungeon is using its own trap to communicate. The DM should predetermine what name and room the whisper delivers (recommended: Verantha / R21, or Harrath / R22).",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "The corridor opens into a low alcove. The air carries a faint blue cast \u2014 not smoke, not mist, something between them. It smells of iron and old cloth. The silence here feels packed in, as if the room is holding its breath.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                755,
+                483
+              ],
+              [
+                250,
+                469
+              ],
+              [
+                284,
+                1411
+              ],
+              [
+                637,
+                1390
+              ],
+              [
+                762,
+                1210
+              ],
+              [
+                755,
+                483
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R21",
+          "name": "The Crescent Sanctum",
+          "state": "unexplored",
+          "tags": [
+            "encounter",
+            "special",
+            "treasure"
+          ],
+          "reaction_required": true,
+          "notes": "BANSHEE LETHALITY: The Wail (all within 60 ft, DC 13 Con or drop to 0 HP) is a potential TPK for level 3 PCs. Telegraph this room's danger heavily through adjacent rooms \u2014 audible grief sounds through the walls, whispers in R18 and R25 warning 'do not wake the pale one.' Harrath in R22 will share the ear-covering tactic if the party befriends him: covering ears and closing eyes on the turn of the Wail means failure drops to 10d6 psychic damage rather than to 0 HP. VERANTHA'S NAME: Readable in R01 (The Naming Hall) if the party decoded the full inscription; also discoverable in R18 (one of the six patrol swords whispers her name) and in R25 (one possible Selective Whisper). THE OFFER (CURSED WEAPON): Functions as a +1 Longsword. Each in-game day carried, the DM secretly increments a Whisper Score for the wielder. At score 10: DC 13 Wisdom save to act against the sword's whispered suggestion. At score 20: DC 15. The character retains agency but the blade shapes decisions. The only way to end the curse without Remove Curse is to return the blade to this stand \u2014 Verantha will acknowledge this with visible relief.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "A vast circular chamber, its ceiling lost to shadow. The floor bears a crescent cut deep into the stone and inlaid with dark metal, ten feet across. At its center, a black iron stand holds a single blade. The room does not echo \u2014 sound ends at the threshold.",
+          "encounter_text": "1 Banshee (MM p.23). Reaction required \u2014 Verantha manifests when any creature enters within 30 feet of the weapon stand or speaks above a whisper. Initial disposition: sorrowful, not immediately hostile. She will speak first if the party holds still and does not draw weapons. Her voice carries only grief. She has been here for centuries and she is tired.",
+          "treasure_text": "The Offer: a longsword of masterwork quality, faintly warm to the touch, clearly magical under Detect Magic. In combat it whispers tactical advice \u2014 position, timing, target priority \u2014 and it is usually correct. (Cursed; see notes.) In recessed niches around the room's perimeter: 3 sealed iron boxes containing 120 gp in old coinage, a vial of holy water, and a folded parchment listing twenty warrior-names in an ancient hand, each marked with a small checkmark.",
+          "special_text": "The Crescent Seal. The inlay is a soul-binding ritual circle (DC 15 Arcana to identify). It prevents the Banshee from leaving this room. A character who addresses Verantha by her name \u2014 learnable elsewhere in the dungeon \u2014 pauses her hostility entirely; she will answer questions about the dungeon's history, the original binding ritual, and the nature of the blade. She cannot be freed by mortal magic. She wants the blade destroyed and is incapable of doing it herself. Tracing the inverse crescent into the floor with any blade (a bonus action) and succeeding on a DC 18 Arcana check weakens the seal \u2014 on success, Verantha may leave the room for 1d6+1 turns before it reasserts.",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                1627,
+                2186
+              ],
+              [
+                1315,
+                2400
+              ],
+              [
+                1267,
+                2484
+              ],
+              [
+                838,
+                2463
+              ],
+              [
+                492,
+                2117
+              ],
+              [
+                388,
+                1425
+              ],
+              [
+                686,
+                1355
+              ],
+              [
+                949,
+                1217
+              ],
+              [
+                1274,
+                1231
+              ],
+              [
+                1392,
+                1307
+              ],
+              [
+                1641,
+                1487
+              ],
+              [
+                1606,
+                2151
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R22",
+          "name": "The Keeper's Post",
+          "state": "unexplored",
+          "tags": [
+            "encounter",
+            "treasure"
+          ],
+          "reaction_required": true,
+          "notes": "Harrath the Keeper. He remembers his duty but not his death and treats his undead state as a bureaucratic inconvenience. His blade \u2014 Harrath's Blade, a standard longsword in a cracked leather scabbard, faintly warm \u2014 is in R10 (The Coffin Alcoves); add it explicitly to that room's inventory. If the party returns his blade: (a) he permits free passage toward R21, (b) names the Banshee as Verantha, (c) shares the ear-covering tactic for the Wail (failure deals 10d6 psychic, not 0 HP), and (d) mentions 'the blue hall teaches you something true if you let it' (referencing R20). If attacked: he fights defensively; at 50% HP he stops and says flatly, 'I can still be of use to you.' He does not pursue outside this room.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "Empty weapon racks line the walls \u2014 whatever hung here has been gone for a long time. At the far end, a figure in tarnished plate armor stands with its back to you, motionless. It has the stillness of something that has been standing there for centuries.",
+          "encounter_text": "1 Wight (MM p.300). Neutral \u2014 does not immediately attack. It turns slowly when creatures enter and speaks in a hollow, measured voice. It was assigned here as anteroom guardian before the binding rituals went wrong. It is coherent enough to hold a conversation and it is looking for its blade.",
+          "treasure_text": "An ornate iron key on a chain around the Wight's neck \u2014 opens the Offertory Lock on the sealed passage, if present on this level. On a small stone shelf: a cloth-wrapped bundle containing 3 vials of antitoxin and a hand-drawn map of this level with three rooms marked in charcoal. Two marks are accurate (encounter rooms); one is wrong.",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 346,
+            "y": 2449,
+            "width": 1266,
+            "height": 1688
+          }
+        },
+        {
+          "id": "R23",
+          "name": "The Swept Hall",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "The sweeping is Harrath's work (R22) \u2014 centuries of habit. Hidden treasure at DC 13 Investigation. The character who finds and holds the crescent medallion hears a single whispered word: a name. The name is Verantha. The dungeon is communicating through a coin purse.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "A long room, surprisingly clean. Someone has swept the debris from the floor into careful rows along the walls \u2014 old shield fragments, broken hilts, cracked scabbards \u2014 arranged with inexplicable care. The tidiness is more unsettling than disorder would be.",
+          "encounter_text": "",
+          "treasure_text": "Hidden (DC 13 Investigation): Beneath the third debris pile on the left wall, a leather coin purse containing 22 gp and a small bronze medallion stamped with the crescent symbol from R21 (non-magical, worth 8 gp as a curiosity).",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                2686,
+                4470
+              ],
+              [
+                1198,
+                4505
+              ],
+              [
+                1184,
+                4138
+              ],
+              [
+                734,
+                4145
+              ],
+              [
+                734,
+                5003
+              ],
+              [
+                1267,
+                5003
+              ],
+              [
+                1281,
+                4878
+              ],
+              [
+                1696,
+                4885
+              ],
+              [
+                2700,
+                4857
+              ],
+              [
+                2693,
+                4491
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R24",
+          "name": "R24",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 1682,
+            "y": 4878,
+            "width": 858,
+            "height": 740
+          }
+        },
+        {
+          "id": "R25",
+          "name": "The Witness Columns",
+          "state": "unexplored",
+          "tags": [
+            "special"
+          ],
+          "reaction_required": false,
+          "notes": "Table dynamics tool. Choose the recipient based on who will create the most interesting tension at the table \u2014 the character most likely to keep a secret, or least likely to. The whisper cannot be intercepted by Detect Thoughts; it is not a mental effect, it is the room speaking. A character who tries to write the whisper down finds the words will not form. A character who speaks the whisper aloud hears it once more, amplified \u2014 and then silence.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "Two squat columns occupy the center of the room, carved with battle scenes worn nearly smooth. They stand close together, angled slightly inward \u2014 as if caught mid-conversation. The room is otherwise empty.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "The Selective Whisper. When the party enters, one character \u2014 chosen secretly by the DM \u2014 hears a whisper clearly meant for them alone: specific, useful, private. It concerns something ahead that the party has not yet encountered. The character must decide whether to share this information. By all detection methods the columns are non-magical. A second character who re-enters alone and waits one full turn in silence may also receive a whisper, at DM's discretion \u2014 but it will be a different piece of information. Suggested whispers: (a) 'The keeper in the iron room wants his blade \u2014 give it to him and he will let you pass the pale woman unharmed.' (b) 'Cover your ears before she screams.' (c) 'The blue air in the low hall will show you something true if you let it.' (d) 'The blade at the center was made for someone who is already dead.'",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 1149,
+            "y": 5252,
+            "width": 539,
+            "height": 885
+          }
+        },
+        {
+          "id": "R26",
+          "name": "The Unfinished Room",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "Genuinely empty \u2014 no treasure, no creature, no feature. The blankness is intentional and should unsettle players conditioned by the dungeon's constant attempts to communicate. DM option: if the party lingers for more than one turn, a single whisper says 'this room was meant for you' \u2014 and nothing follows. The dungeon offers nothing here and that is the point.",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "The passage ends here. The walls are rough-cut, unfinished \u2014 as if the builders ran out of purpose before they ran out of stone. A single empty torch sconce on the east wall. Nothing else.",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 187,
+            "y": 6110,
+            "width": 1218,
+            "height": 1065
+          }
+        },
+        {
+          "id": "R27",
+          "name": "R27",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "polygon",
+            "points": [
+              [
+                1410,
+                6148
+              ],
+              [
+                1416,
+                6491
+              ],
+              [
+                2704,
+                6504
+              ],
+              [
+                2680,
+                5625
+              ],
+              [
+                1699,
+                5625
+              ],
+              [
+                1693,
+                6124
+              ],
+              [
+                1416,
+                6148
+              ]
+            ]
+          }
+        },
+        {
+          "id": "R28",
+          "name": "R28",
+          "state": "unexplored",
+          "tags": [
+            "empty"
+          ],
+          "reaction_required": false,
+          "notes": "",
+          "encounter_ref": null,
+          "treasure_tier": null,
+          "box_text": "",
+          "encounter_text": "",
+          "treasure_text": "",
+          "special_text": "",
+          "statblocks": "",
+          "image_region": {
+            "kind": "rect",
+            "x": 2518,
+            "y": 2964,
+            "width": 979,
+            "height": 201
+          }
+        }
+      ],
+      "corridors": []
+    }
+  ]
+}

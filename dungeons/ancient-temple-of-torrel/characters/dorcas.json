@@ -1,0 +1,115 @@
+{
+  "name": "Dorcas",
+  "class": "cleric",
+  "level": 1,
+  "ac": 18,
+  "hp_max": 10,
+  "speed": 30,
+  "init_bonus": 0,
+  "ability_mods": {
+    "str": 3,
+    "dex": 0,
+    "con": 2,
+    "int": -1,
+    "wis": 3,
+    "cha": 1
+  },
+  "saves": {
+    "str": 3,
+    "dex": 0,
+    "con": 2,
+    "int": -1,
+    "wis": 5,
+    "cha": 3
+  },
+  "attacks": [
+    {
+      "name": "Mace",
+      "to_hit": 5,
+      "damage": "1d6+3",
+      "damage_type": "bludgeoning",
+      "range": "melee"
+    },
+    {
+      "name": "Crossbow, Light",
+      "to_hit": 2,
+      "damage": "1d8",
+      "damage_type": "piercing",
+      "range": "ranged"
+    },
+    {
+      "name": "Unarmed Strike",
+      "to_hit": 5,
+      "damage": "4",
+      "damage_type": "bludgeoning",
+      "range": "melee"
+    }
+  ],
+  "spells": {
+    "slots": {
+      "1": 2
+    },
+    "memorized": [
+      {
+        "name": "Sacred Flame",
+        "level": 0,
+        "type": "save_attack",
+        "save": "DEX",
+        "dc": 13,
+        "damage": "1d8",
+        "half_on_save": false,
+        "aoe": false
+      },
+      {
+        "name": "Guiding Bolt",
+        "level": 1,
+        "type": "attack",
+        "damage": "4d6"
+      },
+      {
+        "name": "Inflict Wounds",
+        "level": 1,
+        "type": "attack",
+        "damage": "3d10"
+      },
+      {
+        "name": "Command",
+        "level": 1,
+        "type": "save_attack",
+        "save": "WIS",
+        "dc": 13,
+        "half_on_save": false,
+        "aoe": false
+      },
+      {
+        "name": "Bane",
+        "level": 1,
+        "type": "save_attack",
+        "save": "CHA",
+        "dc": 13,
+        "half_on_save": false,
+        "aoe": false
+      },
+      {
+        "name": "Healing Word",
+        "level": 1,
+        "type": "heal",
+        "amount": "1d4+3"
+      },
+      {
+        "name": "Cure Wounds",
+        "level": 1,
+        "type": "heal",
+        "amount": "1d8+3"
+      }
+    ]
+  },
+  "features": {
+    "sneak_attack_dice": 0,
+    "second_wind": false,
+    "action_surge": false,
+    "divine_smite_slots_usable": false,
+    "rage": false
+  },
+  "tactics_notes": "Life Domain cleric. Disciple of Life adds 2+spell_level extra HP to all healing spells (Cure Wounds effective 1d8+6, Healing Word effective 1d4+6 at 1st level). Front-liner in Chain Mail + Shield (AC 18, STR 16). Preferred melee: Mace (+5, 1d6+3). Guiding Bolt for ranged burst; Inflict Wounds for melee spike on touch. Only 2 first-level slots \u2014 conserve for heals unless killing blow is critical. WIS saves proficient (+5); immune to magical sleep, advantage vs. charm."
+}
