@@ -2897,6 +2897,7 @@ def run(
     on_open_browser: Callable[[], None] | None = None,
     on_open_editor: Callable[[], None] | None = None,
     on_open_player: Callable[[], None] | None = None,
+    on_external_reload: Callable[[], Path | None] | None = None,
     startup_warnings: list[str] | None = None,
 ) -> ReloadRequest | None:
     """Run the pygame event loop. on_change fires after any state change.
@@ -3085,6 +3086,16 @@ def run(
         view.draw(surface)
         pygame.display.flip()
         clock.tick(60)
+        # External reload signal: the editor_server thread can ask
+        # pygame to switch to a different dungeon (e.g. the SPA just
+        # scaffolded one). The callback returns the new folder Path or
+        # None; we promote it to a ReloadRequest so the existing exit
+        # path handles teardown.
+        if on_external_reload is not None and view._pending_reload is None:
+            ext_folder = on_external_reload()
+            if ext_folder is not None:
+                view._pending_reload = ReloadRequest(folder=ext_folder,
+                                                    do_full_reset=False)
         # If a click handler queued a reload (switch dungeon / full reset),
         # exit cleanly so main.py can rebuild the world. Save first so the
         # next session sees up-to-date state.

@@ -524,6 +524,22 @@ def main(argv: list[str] | None = None) -> int:
         # browser tabs are skipped: the DM is running the session, not
         # editing dungeon content. Annotation mode (A) inside pygame is
         # still available for mid-session sketches.
+        # Shared reload-signal between the editor server thread (the
+        # SPA's "Create new dungeon" POST handler) and the pygame main
+        # thread (which polls each frame). When the SPA scaffolds a
+        # dungeon, the handler writes the new folder here; the run
+        # loop reads it, drops a ReloadRequest, and main loops back
+        # against that folder. dict so a closure can mutate without
+        # re-binding; clear-on-iteration so a stale signal doesn't
+        # fire twice.
+        reload_state: dict = {"folder": None}
+
+        def signal_reload(target: Path) -> None:
+            reload_state["folder"] = Path(target).resolve()
+
+        def poll_reload() -> Path | None:
+            return reload_state["folder"]
+
         server = None
         editor_url = None
         if not args.play:
@@ -532,6 +548,7 @@ def main(argv: list[str] | None = None) -> int:
             server, _thread = editor_server.start_editor_server(
                 json_path, port=DEFAULT_EDITOR_PORT,
                 dungeons_dir=args.dungeons_dir,
+                on_request_reload=signal_reload,
             )
             bound_port = server.server_address[1]
             editor_url = f"http://127.0.0.1:{bound_port}/"
@@ -583,6 +600,7 @@ def main(argv: list[str] | None = None) -> int:
                 on_open_browser=open_all,
                 on_open_editor=open_editor_tab,
                 on_open_player=open_player_tab,
+                on_external_reload=poll_reload,
                 startup_warnings=warnings,
             )
         finally:

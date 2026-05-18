@@ -35,6 +35,7 @@ import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from typing import Callable
 from urllib.parse import parse_qs
 
 import character_ingester
@@ -1329,14 +1330,44 @@ def _render_workflow_page_body(*, d, dungeon_path: Path) -> str:
       submitBtn.disabled = false;
       submitBtn.textContent = 'Scaffold';
       result.hidden = false;
-      if (out.data.ok) {{
+      if (out.data.ok && out.data.switching) {{
+        // Live switch: pygame is tearing down the current session and
+        // reopening against the new dungeon now. The editor server is
+        // about to restart on the same port. Poll /healthz until the
+        // new server answers, then reload this window so the iframes
+        // pick up the new dungeon.
+        result.className = 'dungeon-switcher-result ok';
+        var dungeonName = out.data.name || out.data.folder;
+        result.textContent =
+          'Switching pygame to "' + dungeonName + '" now. ' +
+          'This window will reload once the new dungeon is ready…';
+        var startedAt = Date.now();
+        var pollTimer = setInterval(function () {{
+          fetch('/healthz', {{cache: 'no-store'}}).then(function (r) {{
+            if (r.ok) {{
+              clearInterval(pollTimer);
+              location.reload();
+            }}
+          }}).catch(function () {{
+            // Server is mid-restart; keep polling until it answers
+            // or we hit the safety timeout below.
+          }});
+          if (Date.now() - startedAt > 15000) {{
+            clearInterval(pollTimer);
+            result.className = 'dungeon-switcher-result err';
+            result.textContent =
+              'Switched dungeons but the editor server didn\\'t come ' +
+              'back online within 15 s. Reload this window (Cmd+R) ' +
+              'to recover.';
+          }}
+        }}, 400);
+      }} else if (out.data.ok) {{
+        // Scaffold succeeded but no live switch is available (e.g.
+        // test harness wiring without on_request_reload). Surface
+        // the path so the user knows where the folder landed.
         result.className = 'dungeon-switcher-result ok';
         result.textContent =
-          'Scaffolded at dungeons/' + out.data.folder + '/.\n\n' +
-          'Quit pygame (Esc), then double-click Launch Dungeon.command ' +
-          'and pick "' + out.data.folder + '" to switch into the new dungeon. ' +
-          'Once you\\'re in it, come back here — Step 0 will show an upload ' +
-          'widget for your map PNG.';
+          'Scaffolded at dungeons/' + out.data.folder + '/.';
       }} else {{
         result.className = 'dungeon-switcher-result err';
         result.textContent = 'Failed: ' + (out.data.error || 'unknown error');
@@ -2995,6 +3026,14 @@ class EditorHandler(BaseHTTPRequestHandler):
     # the DM can target a different dungeon without restarting the app.
     dungeon_path: Path = Path()
     dungeons_dir: Path | None = None
+    # Set by main.py to bridge the SPA → pygame "switch dungeon" flow.
+    # When the SPA scaffolds a new dungeon, the POST handler calls this
+    # callback; main.py wires it to a shared reload_state holder that
+    # the renderer polls every frame. None means "no live switching
+    # available" (e.g. tests) — the handler degrades to a non-switching
+    # success response and the SPA shows a plain "scaffolded at <path>"
+    # message instead of auto-reloading.
+    on_request_reload: "Callable[[Path], None] | None" = None
 
     # Silence the default per-request stderr log (pygame stdout is noisy).
     def log_message(self, format: str, *args) -> None:  # noqa: A002
@@ -3864,10 +3903,28 @@ class EditorHandler(BaseHTTPRequestHandler):
                                {"ok": False,
                                 "error": f"scaffold failed: {e}"})
             return
+        # Signal main.py to switch pygame onto the new dungeon. When
+        # the callback is wired (always, in production launches) this
+        # tears down the current editor server iteration and rebinds
+        # a fresh one on the same port pointing at the new folder.
+        # The SPA's response handler reloads itself a moment later so
+        # it picks up the new server.
+        switching = False
+        if self.on_request_reload is not None:
+            try:
+                self.on_request_reload(target)
+                switching = True
+            except Exception as e:  # noqa: BLE001
+                # Reload signal is best-effort — never fail the POST
+                # over an IPC error. The user still got their folder.
+                print(f"[editor_server] reload signal failed: {e}",
+                      file=__import__("sys").stderr)
         self._respond_json(HTTPStatus.OK,
                            {"ok": True,
                             "folder": slug,
-                            "path": str(target)})
+                            "path": str(target),
+                            "switching": switching,
+                            "name": name})
 
     def _handle_character_upload(self, raw: bytes) -> None:
         """Receive a raw PDF body, run extraction, save the JSON.
@@ -4036,6 +4093,7 @@ def start_editor_server(
     host: str = "127.0.0.1",
     port: int = DEFAULT_PORT,
     dungeons_dir: Path | str | None = None,
+    on_request_reload: Callable[[Path], None] | None = None,
 ) -> tuple[HTTPServer, threading.Thread]:
     """Start the editor server in a daemon thread. Returns (server, thread).
 
@@ -4045,9 +4103,23 @@ def start_editor_server(
     `dungeons_dir` enables the assistant's multi-dungeon picker — it's
     the root scanned by `Session.list_dungeons()`. When omitted the
     assistant page falls back to the single dungeon at `dungeon_path`.
+
+    `on_request_reload` is the bridge that turns the SPA's "Create new
+    dungeon" success into a live in-place switch. When set, the
+    POST /workflow/new_dungeon handler invokes it with the new folder's
+    Path after a successful scaffold; main.py wires this callback to
+    its shared reload_state holder so the pygame run loop notices the
+    request, exits cleanly, and main.py opens the new dungeon.
     """
     EditorHandler.dungeon_path = Path(dungeon_path)
     EditorHandler.dungeons_dir = Path(dungeons_dir) if dungeons_dir else None
+    # `staticmethod` so accessing `self.on_request_reload` returns the
+    # callable as-is rather than binding it as an instance method
+    # (which would silently inject `self` as the first arg).
+    EditorHandler.on_request_reload = (
+        staticmethod(on_request_reload) if on_request_reload is not None
+        else None
+    )
     server = HTTPServer((host, port), EditorHandler)
     thread = threading.Thread(
         target=server.serve_forever, name="editor-server", daemon=True,

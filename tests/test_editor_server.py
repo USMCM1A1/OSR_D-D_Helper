@@ -979,3 +979,46 @@ class TestNewDungeonEndpoint:
         assert resp.status == 200, data
         assert data["folder"] == "untitled-dungeon"
         assert (root / "untitled-dungeon").exists()
+
+    def test_invokes_on_request_reload_when_wired(self, tmp_path, dungeon_json):
+        # Production wiring: main.py passes a callback that pokes the
+        # shared reload_state holder. We capture the call and verify
+        # the new dungeon's folder Path is what got passed.
+        dungeons_root = tmp_path / "dungeons"
+        dungeons_root.mkdir()
+        reload_calls: list[Path] = []
+        srv, _ = editor_server.start_editor_server(
+            dungeon_json, port=0, dungeons_dir=dungeons_root,
+            on_request_reload=lambda p: reload_calls.append(p),
+        )
+        host, port = srv.server_address[:2]
+        try:
+            resp, raw = _http_post_json(
+                host, port, "/workflow/new_dungeon",
+                {"name": "Live Switch", "party_level": 3},
+            )
+            data = json.loads(raw.decode("utf-8"))
+            assert resp.status == 200, data
+            assert data["ok"] is True
+            assert data["switching"] is True
+            assert data["name"] == "Live Switch"
+            assert len(reload_calls) == 1
+            assert reload_calls[0].name == "live-switch"
+            assert reload_calls[0] == (dungeons_root / "live-switch").resolve()
+        finally:
+            srv.shutdown()
+
+    def test_switching_false_when_no_callback(self, server_with_dungeons_dir):
+        # No on_request_reload wired (the default for tests + the play
+        # mode where the editor server itself isn't running). The
+        # scaffold still succeeds; the SPA's success handler falls
+        # back to a plain "scaffolded at <path>" message.
+        _, host, port, _ = server_with_dungeons_dir
+        resp, raw = _http_post_json(
+            host, port, "/workflow/new_dungeon",
+            {"name": "No Switch", "party_level": 3},
+        )
+        data = json.loads(raw.decode("utf-8"))
+        assert resp.status == 200, data
+        assert data["ok"] is True
+        assert data["switching"] is False
