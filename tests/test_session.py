@@ -669,11 +669,13 @@ class TestSlugify:
 
 
 class TestResetProgress:
-    """Phase: Reset Dungeon Progress wipes runtime state to a fresh-
-    session baseline (turn=0, fog, supplies, exhaustion, journal,
-    party position, current_level) while preserving annotations and
-    dungeon metadata. Lighter than full_reset (which also wipes the
-    JSON's rooms/corridors)."""
+    """Phase: the "Restart Playthrough" UI action wipes runtime state
+    to a fresh-session baseline (turn=0, fog, supplies, exhaustion,
+    journal, party position, current_level) while preserving
+    annotations and dungeon metadata. Lighter than full_reset (the
+    "Erase All Rooms" action, which also wipes the JSON's
+    rooms/corridors). The underlying API still calls these
+    reset_progress / full_reset for backwards compatibility."""
 
     def test_resets_turn_and_journal(
         self, db_path: Path, example: dungeon.Dungeon

@@ -983,8 +983,9 @@ class MapView:
             ("options",      "Options (O)",
              self.toggle_options_menu, True,
              "Open the Options menu — annotation mode, room editor, "
-             "Player view, level switch, reset, quit. Shortcut: O. "
-             "Press ? any time for the full help legend."),
+             "Player view, level switch, restart playthrough, erase "
+             "rooms, quit. Shortcut: O. Press ? any time for the full "
+             "help legend."),
         ]
 
     def _draw_action_buttons(self, surface: pygame.Surface) -> None:
@@ -1483,7 +1484,7 @@ class MapView:
         # note line so the DM has a marker for "this run started here".
         self.session.tracker.journal.record(
             self.session.tracker.turn, journal_mod.KIND_NOTE,
-            "Dungeon progress reset — fresh run starting.",
+            "Playthrough restarted — fresh run starting.",
         )
         self.session.save()
         # Reload the level so the view re-binds to whichever level
@@ -1555,9 +1556,9 @@ class MapView:
             ("Descend Level", "⌘↓",
              self._action_descend,
              self.session.can_descend() and self._action_descend is not None),
-            ("Reset Dungeon Progress…", "",
+            ("Restart Playthrough…", "",
              self.open_progress_confirm, True),
-            ("Reset Dungeon…", "",
+            ("Erase All Rooms (keep maps)…", "",
              self.open_reset_confirm,
              self._dungeon_path is not None),
             ("Quit", "Esc",
@@ -2022,9 +2023,10 @@ class MapView:
         ]
 
     def _draw_progress_confirm(self, surface: pygame.Surface) -> None:
-        """Confirm modal for Reset Dungeon Progress. Less alarming than
-        the full-reset modal (no red panel border, no "destructive"
-        copy) since annotations are preserved — just runtime state."""
+        """Confirm modal for the Restart Playthrough action. Less
+        alarming than the Erase All Rooms modal (no red panel border,
+        no "destructive" copy) since annotations are preserved —
+        just runtime state."""
         ink = (26, 26, 26)
         panel_w = 540
         title_h = 56
@@ -2042,7 +2044,7 @@ class MapView:
         surface.blit(panel_bg, panel_rect.topleft)
         pygame.draw.rect(surface, ink, panel_rect, 3, border_radius=6)
 
-        title = self.title_font.render("RESET PROGRESS", True, ink)
+        title = self.title_font.render("RESTART PLAYTHROUGH", True, ink)
         surface.blit(title, (panel_x + (panel_w - title.get_width()) // 2,
                              panel_y + 16))
 
@@ -2080,7 +2082,7 @@ class MapView:
         # Confirm — dark fill (matches the Advance Turn / save buttons),
         # not red, since annotations survive.
         pygame.draw.rect(surface, ink, confirm_rect, border_radius=4)
-        confirm_label = self.title_font.render("Reset progress",
+        confirm_label = self.title_font.render("Restart playthrough",
                                                True, (244, 228, 193))
         surface.blit(confirm_label,
                      (confirm_rect.x + (confirm_rect.width - confirm_label.get_width()) // 2,
@@ -2092,7 +2094,12 @@ class MapView:
         ]
 
     def _draw_reset_confirm(self, surface: pygame.Surface) -> None:
-        """Inside the options modal: destructive confirm for full reset."""
+        """Inside the options modal: destructive confirm for Erase All
+        Rooms (full reset). Wipes rooms + corridors and the session DB;
+        keeps map PNGs, level structure, and WM tables. The method
+        name still says 'reset_confirm' because the underlying
+        session.full_reset() API name didn't change — the rename is
+        UI-only."""
         panel_w = 540
         title_h = 56
         panel_pad = 22
@@ -2109,14 +2116,15 @@ class MapView:
         surface.blit(panel_bg, panel_rect.topleft)
         pygame.draw.rect(surface, ALERT_RED, panel_rect, 3, border_radius=6)
 
-        title = self.title_font.render("RESET DUNGEON", True, ALERT_RED)
+        title = self.title_font.render("ERASE ALL ROOMS", True, ALERT_RED)
         surface.blit(title, (panel_x + (panel_w - title.get_width()) // 2,
                              panel_y + 16))
 
         body_lines = [
             "This will delete every annotated room and corridor on every level,",
-            "and reset turn / fog / supplies. Level metadata and wandering monster",
-            "tables are preserved.",
+            "and clear turn / fog / supplies. Map PNGs, level metadata, and the",
+            "wandering-monster tables are preserved — you can re-annotate from",
+            "scratch on the same maps.",
             "",
             "A timestamped .bak of the current dungeon.json is saved next to it",
             "before anything is overwritten.",
@@ -2146,7 +2154,7 @@ class MapView:
         # Wipe button (red fill, white ink — destructive emphasis).
         pygame.draw.rect(surface, ALERT_RED, wipe_rect, border_radius=4)
         pygame.draw.rect(surface, (26, 26, 26), wipe_rect, 2, border_radius=4)
-        wipe_label = self.title_font.render("Wipe annotations + session",
+        wipe_label = self.title_font.render("Erase all rooms",
                                             True, (255, 255, 255))
         surface.blit(wipe_label,
                      (wipe_rect.x + (wipe_rect.width - wipe_label.get_width()) // 2,
