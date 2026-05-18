@@ -12,6 +12,16 @@ This is a **Dungeon Master tool**, not a player-facing VTT. Character management
 
 ---
 
+## UX Principle — app-first, no terminal escape hatches
+
+User-facing workflows must complete inside the GUI. Telling the user to *"quit pygame and re-pick from the launcher,"* *"open a terminal and run …,"* *"restart to apply changes,"* or otherwise leave the app to finish a task is a **design failure**, not an acceptable workaround. The point of building this as an application is that it behaves like one.
+
+When a feature needs to span the pygame DM View ↔ the editor-server SPA (separate threads in the same process), build the IPC channel rather than asking the user to bridge it manually. The renderer already exposes a `_pending_reload` / `ReloadRequest` mechanism for in-place dungeon switching — wire new flows into it instead of telling the user to relaunch.
+
+CLI flags and shell scripts are fine as plumbing (automation, tests, the launcher). They are not acceptable as the **only** path for a user-facing operation. If a proposed solution starts with *"quit X and then …"* — that's the signal that the architecture, not the copy, needs to change.
+
+---
+
 ## Dungeon Authoring
 
 A dungeon is a self-contained folder under `dungeons/`:
